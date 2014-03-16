@@ -1,0 +1,10 @@
+<Configurations>
+  <!--Option to enable the user share balance or not (true/false)-->
+  <BalanceUserShare balanceUserShare="true"></BalanceUserShare>
+  <!--The desired dataset size. Should be less than the rawData(passed in the constructor) size, otherwise the dataset size is used-->
+  <DatasetSize datasetSize="10000"></DatasetSize>
+  <!--The desired percent of the dataset for testing. The rest is for training. Value must be < 1-->
+  <TestSetShare testSetShare="0.1"></TestSetShare>
+  <!--The number of entries per csv file dumped. If "All" means all the dataset will be dumped to one file-->
+  <NumberTweetsPerCsvFile numberTweetsPerCsvFile="500"></NumberTweetsPerCsvFile>
+</Configurations>

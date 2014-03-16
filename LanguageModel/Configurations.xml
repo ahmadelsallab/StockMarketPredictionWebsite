@@ -1,0 +1,4 @@
+<Configurations>
+  <!--The language model to buid-->
+  <NGram NGram=1></NGram>
+</Configurations>
