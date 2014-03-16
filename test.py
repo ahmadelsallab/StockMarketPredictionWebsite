@@ -93,3 +93,12 @@ for irrelKey, irrelFreq in irrel.items():
             finalModel[irrelKey] = irrelFreq
             numIrrel += 1        
 print("aa")
+
+
+print(max(irrel.values()))
+print(sum(irrel.values()))
+
+a = [1, 2, 3]
+x = 1
+if(x in a):
+    print("found")

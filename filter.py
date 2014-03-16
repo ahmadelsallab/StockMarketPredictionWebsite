@@ -28,6 +28,9 @@ datasetSerializationFile = ".\\DatasetBuilder\\Output\\dataset.bin"
 # Train/Test serialization file
 trainTestSerializationFile = ".\\DatasetBuilder\\Output\\train_test_dataset.bin"
 
+# The XLSX file name for train set
+xlsxTrainFileName = ".\\DatasetBuilder\\Input\\train"
+xlsxTestFileName = ".\\DatasetBuilder\\Input\\test"
 
 
 # Initialize the DatasetBuilder from serialization file
@@ -37,14 +40,19 @@ datasetBuilder = DatasetBuilder(configFileDatasetBuilder, [], datasetSerializati
 #datasetBuilder.LoadDataset()
 
 # Update the labels
+'''
 numFiles = 50
 for i in range(numFiles):
 	print('Updating labels from file ' + xlsxManualLabelsFileName  + "_" + str(i + 1) + '...')
 	datasetBuilder.UpdateManualLabelsFromXLSXFile(xlsxManualLabelsFileName  + "_" + str(i + 1), (i + 1)) # This should be done separately when dataset is manually labeled
 
-
 # Form or load the train/test sets
 datasetBuilder.SplitTrainTest()
+'''
+datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
+# Set the dataset to the train set so that the language model is built from train tweets only
+datasetBuilder.dataSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
+datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
 
 
 # Configurations file xml of the language model
@@ -118,11 +126,13 @@ testLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\test_labels.bin"
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
 trainFeaturesExtractor.ExtractFeatures()
+#trainFeaturesExtractor.ExtractTFIDFFeatures()
 trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
 
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
 testFeaturesExtractor.ExtractFeatures()
+#testFeaturesExtractor.ExtractTFIDFFeatures()
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
 
