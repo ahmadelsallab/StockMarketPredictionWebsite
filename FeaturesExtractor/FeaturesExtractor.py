@@ -229,14 +229,18 @@ class FeaturesExtractor(object):
                                 #itemFeatures[self.featuresNamesMap[term]] = (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
                                 #itemFeatures[self.featuresNamesMap[term]] = (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(sum(self.languageModel.languageModel.values()) / self.languageModel.languageModel[term])
                                 #itemFeatures[self.featuresNamesMap[term]] = (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(sum(documentFequency.values()) / documentFequency[term])
-                                itemFeatures[self.featuresNamesMap[term]] = (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                #itemFeatures[self.featuresNamesMap[term]] = (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                #itemFeatures[self.featuresNamesMap[term]] = (termFrequency[self.featuresNamesMap[term]]) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                itemFeatures[self.featuresNamesMap[term]] = (0.5 + 0.5 * termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
                             else:
                                 #itemFeatures[term] = 1+math.log(termFrequency[term])*(self.languageModel.languageModel[term]/len(self.dataSet))
                                 #itemFeatures[term] = (0.5 + 0.5 * termFrequency[term] / max(termFrequency.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
                                 #itemFeatures[term] = (0.5 + 0.5 * termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
                                 #itemFeatures[term] = (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(sum(self.languageModel.languageModel.values()) / self.languageModel.languageModel[term])
                                 #itemFeatures[term] = (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(sum(documentFequency.values()) / documentFequency[term])
-                                itemFeatures[term] = (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                #itemFeatures[term] = (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                #itemFeatures[term] = (termFrequency[term]) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                itemFeatures[term] = (0.5 + 0.5 * termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
                         except:
                             if(self.libSVMFormat == 'true'):
                                 if self.featureFormat != 'Binary':
@@ -245,7 +249,9 @@ class FeaturesExtractor(object):
                                     #itemFeatures[self.featuresNamesMap[term]] += (0.5 + 0.5 * termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
                                     #itemFeatures[self.featuresNamesMap[term]] += (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(sum(self.languageModel.languageModel.values()) / self.languageModel.languageModel[term])
                                     #itemFeatures[self.featuresNamesMap[term]] += (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(sum(documentFequency.values()) / documentFequency[term])
-                                    itemFeatures[self.featuresNamesMap[term]] += (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                    #itemFeatures[self.featuresNamesMap[term]] += (termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                    #itemFeatures[self.featuresNamesMap[term]] += (termFrequency[self.featuresNamesMap[term]]) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                    itemFeatures[self.featuresNamesMap[term]] += (0.5 + 0.5 * termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
                             else:
                                 if self.featureFormat != 'Binary':
                                     #itemFeatures[term] += 1+math.log(termFrequency[term])*(self.languageModel.languageModel[term]/len(self.dataSet))
@@ -253,18 +259,22 @@ class FeaturesExtractor(object):
                                     #itemFeatures[term] += (0.5 + 0.5 * termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
                                     #itemFeatures[term] += (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(sum(self.languageModel.languageModel.values()) / self.languageModel.languageModel[term])
                                     #itemFeatures[term] += (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(sum(documentFequency.values()) / documentFequency[term])
-                                    itemFeatures[term] += (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                    #itemFeatures[term] += (termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                    #itemFeatures[term] += (termFrequency[term]) * math.log(self.dataSet.__len__() / documentFequency[term])
+                                    itemFeatures[term] += (0.5 + 0.5 * termFrequency[term] / max(self.languageModel.languageModel.values())) * math.log(self.dataSet.__len__() / documentFequency[term])
                        
             
                
                 if(itemFeatures.__len__() != 0):   
                     # Add to the global features list
                     self.features.append(itemFeatures)
+                    '''
                     for itemFeature in itemFeatures:
                         try:
                             itemFeature /= max(itemFeatures.values())
                         except:
                             itemFeature = itemFeature
+                    '''
                     '''
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:

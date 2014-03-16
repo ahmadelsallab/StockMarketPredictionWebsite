@@ -4,5 +4,5 @@
   <!--Consider the stop words-->
   <ConsiderStopWords considerStopWords="false"></ConsiderStopWords>  
   <!--Set to true if the language model enables stemming-->
-  <EnableStemming enableStemming="false"></EnableStemming>
+  <EnableStemming enableStemming="true"></EnableStemming>
 </Configurations>
