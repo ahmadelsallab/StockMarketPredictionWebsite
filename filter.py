@@ -14,7 +14,7 @@ from collections import OrderedDict
 # Start the DatasetBuilder
 #-------------------------
 # Configurations file xml of the dataset builder
-configFileDatasetBuilder = ".\\DatasetBuilder\\Configurations\\Configurations.xml"
+configFileDatasetBuilder = ".\\DatasetBuilder\\Configurations\\Configurations.xmlaa"
 
 # The CSV file name for tweets to be manually labeled
 csvManualLabelsFileName = ".\\DatasetBuilder\\Output\\ManualLabels"
