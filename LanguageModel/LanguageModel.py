@@ -49,11 +49,7 @@ class LanguageModel(object):
         
         # Initialize total docs
         self.totalNumberOfDocs = len(self.dataset)
-        
-
-        
-
-    
+            
     # Manager to choose which language model to build    
     def BuildLanguageModel(self):
         
