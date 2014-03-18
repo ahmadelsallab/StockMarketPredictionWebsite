@@ -4,7 +4,7 @@
   <!--Set to true if the used package is LibSVM-->
   <LibSVMFormat libSVMFormat="true"></LibSVMFormat>
   <!--Set to true if the language model enables stemming-->
-  <EnableStemming enableStemming="true"></EnableStemming>
+  <EnableStemming enableStemming="false"></EnableStemming>
   <!--Format of features presentation. Normal means count of each feature divided by number of words per item. Binary means 1 if the word exists and 0 otherwise (so count is not taken into consideration)-->
   <FeatureFormat featureFormat="Normal"></FeatureFormat> 
   <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->

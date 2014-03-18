@@ -102,3 +102,5 @@ a = [1, 2, 3]
 x = 1
 if(x in a):
     print("found")
+
+irrel['word_7']['w'] = 5

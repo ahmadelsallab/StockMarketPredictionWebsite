@@ -55,7 +55,7 @@ LOAD_LANGUAGE_MODEL = False
 LOAD_LANGUAGE_MODEL_FROM_TXT = False
 # Set if language model is required to be built on relevant tweets only
 LANGUAGE_MODEL_ON_RELEVANT = False
-LANGUAGE_MODEL_ON_UNIQ_RELEVANT_AND_IRREL = False 
+LANGUAGE_MODEL_ON_UNIQ_RELEVANT_AND_IRREL = True 
 # Set if you want to include uni-gram
 MERGE_UNI_GRAM = True
 # Set if you want to include bi-gram
@@ -209,7 +209,16 @@ if(DATASET_BUILDER):
         # Set the dataset to the train set so that the language model is built from train tweets only
         datasetBuilder.dataSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
         datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
-        #datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
+        
+        datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
+        '''
+        datasetBuilder.trainSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName))
+        datasetBuilder.trainSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName))
+        datasetBuilder.trainSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName))
+        datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
+        datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
+        datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
+        '''
         
         if DATASET_BUILDER_SAVE_DATASET:
             datasetBuilder.SaveDataset()
@@ -393,7 +402,8 @@ if(LANGUAGE_MODEL):
         # Merge the two models
         languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, datasetBuilder.dataSet)
         mergedLanguageModel = {}
-        reqNumRel = 1000
+        mergedLanguageModelFreqInfo = {}
+        reqNumRel = 10
         reqNumIrrel = 1000
         
         numRel = 0
@@ -406,15 +416,18 @@ if(LANGUAGE_MODEL):
             if not relKey in irrelLanguageModel.languageModel:
                 if(numRel < reqNumRel):
                     mergedLanguageModel[relKey] = relFreq
+                    mergedLanguageModelFreqInfo[relKey] = relLanguageModel.languageModelFreqInfo[relKey]
                     numRel += 1
                 
         for irrelKey, irrelFreq in irrelLanguageModel.languageModel.items():
             if not irrelKey in relLanguageModel.languageModel:
                 if(numIrrel < reqNumIrrel):
                     mergedLanguageModel[irrelKey] = irrelFreq
+                    mergedLanguageModelFreqInfo[irrelKey] = irrelLanguageModel.languageModelFreqInfo[irrelKey]
                     numIrrel += 1        
 
         languageModel.languageModel = OrderedDict(reversed(sorted(mergedLanguageModel.items(), key=lambda t:t[1])))
+        languageModel.languageModelFreqInfo = mergedLanguageModelFreqInfo;
         
         languageModel.DumpLanguageModel(langModelLogFile)
         languageModel.SaveModel()  

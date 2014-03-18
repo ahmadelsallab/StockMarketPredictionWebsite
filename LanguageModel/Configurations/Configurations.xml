@@ -4,5 +4,8 @@
   <!--Consider the stop words-->
   <ConsiderStopWords considerStopWords="false"></ConsiderStopWords>  
   <!--Set to true if the language model enables stemming-->
-  <EnableStemming enableStemming="true"></EnableStemming>
+  <EnableStemming enableStemming="false"></EnableStemming>
+  <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->
+  <Label label="relevant"></Label>
+  <Label label="irrelevant"></Label>
 </Configurations>

@@ -53,6 +53,7 @@ datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileNam
 # Set the dataset to the train set so that the language model is built from train tweets only
 datasetBuilder.dataSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
 datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
+datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
 
 
 # Configurations file xml of the language model
@@ -125,14 +126,14 @@ testLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\test_labels.bin"
 #-----------------------------    
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
-#trainFeaturesExtractor.ExtractFeatures()
-trainFeaturesExtractor.ExtractTFIDFFeatures()
+trainFeaturesExtractor.ExtractFeatures()
+#trainFeaturesExtractor.ExtractTFIDFFeatures()
 trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
 
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
-#testFeaturesExtractor.ExtractFeatures()
-testFeaturesExtractor.ExtractTFIDFFeatures()
+testFeaturesExtractor.ExtractFeatures()
+#testFeaturesExtractor.ExtractTFIDFFeatures()
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
 

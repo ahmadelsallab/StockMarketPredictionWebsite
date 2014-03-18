@@ -13,22 +13,26 @@ class LanguageModel(object):
     classdocs
     '''
 
-    # The dataset to work on to extract the model
-    dataset = []
-    
-    # Term/Freq langauge model
-    languageModel = {}
-    
-    # Dict of stop words
-    stopWords = {}
         
     def __init__(self, configFileName, stopWordsFileName, languageModelSerializationFileName, dataset):
         '''
         Constructor
         '''
+        # The dataset to work on to extract the model
+        self.dataset = []
+        
+        # Term/Freq langauge model
+        self.languageModel = {}    
+        self.languageModelFreqInfo = {}
+        
+        # Dict of stop words
+        self.stopWords = {}
         
         # Store the dataset
         self.dataset = dataset
+        
+        # Initialize number of terms per label
+        self.numTermsPerLabel = {}
         
         # Parse the configurations file
         self.ParseConfigFile(configFileName)
@@ -42,6 +46,11 @@ class LanguageModel(object):
         
         # Store the serialization file
         self.languageModelSerializationFileName = languageModelSerializationFileName 
+        
+        # Initialize total docs
+        self.totalNumberOfDocs = len(self.dataset)
+        
+
         
 
     
@@ -83,7 +92,7 @@ class LanguageModel(object):
         '''                                    
  
     def BuildNGram(self, N):
-         
+                
         # Loop on all dataset entries
         for item in self.dataset:
             # Get the text
@@ -95,7 +104,9 @@ class LanguageModel(object):
             except:
                 print('Error in tweet text' + str(text))
                 #items = str(text)
-                
+            documentCounted = {}
+            
+            # Update the language model
             for i in range(len(items) - (N-1)):
                 # Form the term
                 term = ''
@@ -109,14 +120,55 @@ class LanguageModel(object):
                 
                 # Insert the term in the model
                 self.InsertInLanguageModel(term)
-    
+                
+                # Initialize the dictionary of frequency info of the term
+                if not term in self.languageModelFreqInfo:
+                    self.languageModelFreqInfo[term] = {}
+                    self.languageModelFreqInfo[term]['documentFrequency'] = 0
+                    for label in self.labels:
+                        self.languageModelFreqInfo[term][label] = 0
+                    
+                # We want for each term, a dictionary of:
+                # Word    Freq    RelFreq    IrrelFreq    DocFreq
+                
+                # Update document frequency and label frequencies
+                if self.considerStopWords == "true":
+                    # Insert the term if not in stopWords
+                    if not term in self.stopWords:
+                        # Update label frequency
+                        self.languageModelFreqInfo[term][item['label']] += 1
+                        
+                        # Increment number of terms per label
+                        self.numTermsPerLabel[item['label']] += 1
+
+                            
+                        # The term document frequency is incremented once per document, that's why we need documentCounted
+                        if not term in documentCounted:                        
+                            # Update document frequency
+                            documentCounted[term] = "true" 
+                            self.languageModelFreqInfo[term]['documentFrequency'] += 1
+
+                else:
+                    # Update label frequency
+                    self.languageModelFreqInfo[term][item['label']] += 1
+                    
+                    # Increment number of terms per label
+                    self.numTermsPerLabel[item['label']] += 1
+                        
+                    # The term document frequency is incremented once per document, that's why we need documentCounted
+                    if not term in documentCounted:                        
+                        # Update document frequency
+                        documentCounted[term] = "true" 
+                        self.languageModelFreqInfo[term]['documentFrequency'] += 1
+
     # Add term and update frequency                
     def InsertInLanguageModel(self, term):
         
         # If it's required to check on stop words, then we consider them, else just insert or update the word freq
         if self.considerStopWords == "true":
             # Insert the term if not in stopWords
-            if not term in self.stopWords:            
+            if not term in self.stopWords:
+                               
                 # Insert the word only if it doesn't exist before in the model
                 if not term in self.languageModel:
                     # Put the word frequency as 1 since it's the first incident
@@ -125,6 +177,7 @@ class LanguageModel(object):
                     # Increment the frequency
                     self.languageModel[term] += 1    
         else:
+
             # Insert the word only if it doesn't exist before in the model
             if not term in self.languageModel:
                 # Put the word frequency as 1 since it's the first incident
@@ -171,8 +224,16 @@ class LanguageModel(object):
         fout = open(fileName, 'w', encoding='utf-8')
         
         # Loop on languageModel and write the key = term and value = frequency
+        # We want for each term, a dictionary of:
+        # Word    Freq    RelFreq    IrrelFreq    DocFreq
+
         for term, freq in self.languageModel.items():
-            fout.write(term + " " + str(freq) + "\n")
+            fout.write(term + " " + str(freq) + " ")
+            # Print frequency info
+            
+            for key, item in self.languageModelFreqInfo[term].items():                
+                fout.write(str(item) + " ")
+            fout.write("\n")
         
         # Close the file
         fout.close()
@@ -246,6 +307,13 @@ class LanguageModel(object):
         
         # Get the stemming enable flag
         self.enableStemming = xmldoc.getElementsByTagName('EnableStemming')[0].attributes['enableStemming'].value
+        
+        # Get the list of labels
+        labels = xmldoc.getElementsByTagName('Label')
+        self.labels = []
+        for label in labels:
+            self.labels.append(label.attributes['label'].value)
+            self.numTermsPerLabel[label.attributes['label'].value] = 0
                         
         
     # To save to serialzation file
