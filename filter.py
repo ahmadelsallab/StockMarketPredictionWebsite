@@ -126,13 +126,13 @@ testLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\test_labels.bin"
 #-----------------------------    
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
-trainFeaturesExtractor.ExtractFeatures()
+trainFeaturesExtractor.ExtractTFFeatures()
 #trainFeaturesExtractor.ExtractTFIDFFeatures()
 trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
 
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
-testFeaturesExtractor.ExtractFeatures()
+testFeaturesExtractor.ExtractTFFeatures()
 #testFeaturesExtractor.ExtractTFIDFFeatures()
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()

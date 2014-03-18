@@ -71,7 +71,7 @@ class FeaturesExtractor(object):
         self.features = []
         self.labels = []
 
-    def ExtractFeatures(self):
+    def ExtractTFFeatures(self):
         
         # Loop on the dataset items
         irrelevantNum = 0

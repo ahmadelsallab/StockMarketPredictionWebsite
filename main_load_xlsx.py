@@ -460,12 +460,12 @@ if(FEATURES_EXTRACTION):
     if not LOAD_FEATURES:
         # Initialize the FeaturesExtractor
         trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
-        trainFeaturesExtractor.ExtractFeatures()
+        trainFeaturesExtractor.ExtractTFFeatures()
         trainFeaturesExtractor.SaveFeatures()
         trainFeaturesExtractor.SaveLabels()
 
         testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
-        testFeaturesExtractor.ExtractFeatures()
+        testFeaturesExtractor.ExtractTFFeatures()
         testFeaturesExtractor.SaveFeatures()
         testFeaturesExtractor.SaveLabels()
 
