@@ -29,7 +29,7 @@ class Classifier(object):
         if(self.classifierType == "SVM"):
             
             from liblinearutil import train            
-            self.cParam = 4# Best cross validation accuracy
+            self.cParam = 32# Best cross validation accuracy
             self.nFoldsParam = 10
             self.svmModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
             train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam) + ' -v ' + str(self.nFoldsParam))

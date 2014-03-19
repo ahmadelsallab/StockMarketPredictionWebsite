@@ -55,7 +55,7 @@ LOAD_LANGUAGE_MODEL = False
 LOAD_LANGUAGE_MODEL_FROM_TXT = False
 # Set if language model is required to be built on relevant tweets only
 LANGUAGE_MODEL_ON_RELEVANT = False
-LANGUAGE_MODEL_ON_UNIQ_RELEVANT_AND_IRREL = False 
+LANGUAGE_MODEL_ON_UNIQ_RELEVANT_AND_IRREL = True 
 # Set if you want to include uni-gram
 MERGE_UNI_GRAM = True
 # Set if you want to include bi-gram
@@ -460,14 +460,14 @@ if(FEATURES_EXTRACTION):
     if not LOAD_FEATURES:
         # Initialize the FeaturesExtractor
         trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
-        trainFeaturesExtractor.ExtractTFFeatures()
-        #trainFeaturesExtractor.ExtractTFIDFFeatures()
+        #trainFeaturesExtractor.ExtractTFFeatures()
+        trainFeaturesExtractor.ExtractTFIDFFeatures()
         trainFeaturesExtractor.SaveFeatures()
         trainFeaturesExtractor.SaveLabels()
 
         testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
-        testFeaturesExtractor.ExtractTFFeatures()
-        #testFeaturesExtractor.ExtractTFIDFFeatures()
+        #testFeaturesExtractor.ExtractTFFeatures()
+        testFeaturesExtractor.ExtractTFIDFFeatures()
         testFeaturesExtractor.SaveFeatures()
         testFeaturesExtractor.SaveLabels()
 
