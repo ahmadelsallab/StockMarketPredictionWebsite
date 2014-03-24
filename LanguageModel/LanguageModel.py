@@ -8,6 +8,11 @@ from xml.dom import minidom
 from collections import OrderedDict
 import pickle
 from nltk.stem.isri import ISRIStemmer
+import re
+from bs4 import BeautifulSoup
+import urllib.request
+from _io import open
+
 class LanguageModel(object):
     '''
     classdocs
@@ -49,6 +54,7 @@ class LanguageModel(object):
         
         # Initialize total docs
         self.totalNumberOfDocs = len(self.dataset)
+        
             
     # Manager to choose which language model to build    
     def BuildLanguageModel(self):
@@ -329,3 +335,50 @@ class LanguageModel(object):
         serializatoinDatasetFile = open(self.languageModelSerializationFileName, 'rb')
         self.languageModel = pickle.load(serializatoinDatasetFile)
         serializatoinDatasetFile.close()
+    
+    #Create Database File
+    def BuildLinksDatabase(self):
+        file = open(".\\FeaturesExtractor\\Input\\Links_database.txt","w",encoding="utf-8")
+        for item in self.dataset:
+            url = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
+            if len(url) > 0:
+                noOfText = self.calculate(url[0])
+                if noOfText > 0 :
+                    file.write(url[0] +' relevant\n')
+				elif noOfText == 0 :	
+					file.write(url[0] +' irrelevant\n')
+        file.close()
+        
+        
+        
+    def extractText(self,urlstr):
+        #Extract Text from Link
+        try:
+            fileHandle = urllib.request.urlopen(urlstr)
+            print(urlstr)
+            html = fileHandle.read()
+            soup = BeautifulSoup(html)
+            data =  [b.string for b in soup.findAll('div')]
+            data += [b.string for b in soup.findAll('p')]
+            data += [b.string for b in soup.findAll('a')]
+            data += [b.string for b in soup.findAll('title')]
+            data += [b.string for b in soup.findAll('span')]
+            data += [b.string for b in soup.findAll(attrs = 'content')]
+            filter(None, data)
+            return data
+        except:
+            print('URL error ' + urlstr )
+            return []     
+            
+    def calculate(self,url): 
+        numberofWords = -1;
+        text = self.extractText(url)
+        numberofWords = 0;
+        i = 0;
+        for word in self.languageModel:
+            if word in text:
+                numberofWords = numberofWords + 1
+            i = i + 1
+        return numberofWords;
+        
+    

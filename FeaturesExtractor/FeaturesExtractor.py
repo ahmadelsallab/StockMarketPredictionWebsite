@@ -14,10 +14,6 @@ class FeaturesExtractor(object):
     classdocs
     '''
 
-    # Initialize empty list of features corresponding to each item of a dataset
-    features = []
-    labels = []
-
     # Map table to map the language model into index
     featuresNamesMap = {}
     labelsNamesMap = {}
@@ -261,7 +257,117 @@ class FeaturesExtractor(object):
         
         for label in self.labelsNamesMap:
             print(label + '  ' + str(self.labelsNamesMap[label]))
+    
+    def ExtractKLFeatures(self):
+        
+        # Loop on the dataset items
+        irrelevantNum = 0
+        for item in self.dataSet:
+            if(not (item['text'] is None) and not(item['label'] is None)):
+                # Initialize the items dictionary. It's sparse dictionary, with only words in the language model that exist in the item.
+                itemFeatures = {}
+                # Initialize the features vector
+                
+                for term in self.languageModel.languageModel:
+                    if(self.libSVMFormat == 'true'):
+                        itemFeatures[self.featuresNamesMap[term]] = 0
+                    else:
+                        itemFeatures[term] = 0
+                    
+                # Form the list of language model terms
+                terms = self.languageModel.SplitIntoTerms(item['text'])
+                
+                # Calculate TF
+                for term in terms:
+                    
+                    # If the term exist in the language model
+                    if term in self.languageModel.languageModel:
+                        
+                        
+                        probRel = self.languageModel.languageModelFreqInfo[term]['relevant'] / self.languageModel.numTermsPerLabel['relevant']
+                        probIrrel = self.languageModel.languageModelFreqInfo[term]['irrelevant'] / self.languageModel.numTermsPerLabel['irrelevant']
+                        #probTerm = self.languageModel.languageModel[term] / sum(self.languageModel.languageModel.values())
+                        '''
+                        probRel = self.languageModel.languageModelFreqInfo[term]['relevant']
+                        probIrrel = self.languageModel.languageModelFreqInfo[term]['irrelevant']
+                        '''
+                        # Add the feature if not exists or increment it if exists
+                        if(self.libSVMFormat == 'true'):
+                            
+                            #itemFeatures[self.featuresNamesMap[term]] = (probRel - probIrrel) / probTerm
+                            itemFeatures[self.featuresNamesMap[term]] = (probRel - probIrrel)
+                            #itemFeatures[self.featuresNamesMap[term]] = probRel
+                            '''
+                            if (probIrrel != 0):
+                                try:
+                                    itemFeatures[self.featuresNamesMap[term]] = math.log(probRel / probIrrel)
+                                except:
+                                    itemFeatures[self.featuresNamesMap[term]] = math.log(probIrrel)
+                            else:
+                                itemFeatures[self.featuresNamesMap[term]] = math.log(probRel)
+                            '''
+                        else:
+                            itemFeatures[term] = (probRel - probIrrel)
+                            '''
+                            if (probIrrel != 0):
+                                try:
+                                    itemFeatures[term] = math.log(probRel / probIrrel)
+                                except:
+                                    itemFeatures[term] = math.log(probIrrel)
+                            else:
+                                itemFeatures[term] = math.log(probRel)
+                            '''                          
+   
+                if(itemFeatures.__len__() != 0) :
+                    '''
+                    values = []
+                    for value in itemFeatures.values():
+                        values.append(abs(value))
+                        
+                    maxValue = max(values)
+                    for itemFeature in itemFeatures:
+                        itemFeature /= maxValue
+                    '''
+                    # Add to the global features list
+                    self.features.append(itemFeatures)
+                    
+                    '''
+                    if(self.libSVMFormat == 'true'):
+                        if not item['label'] in self.labelsNamesMap:
+                            self.labelsNamesMap[item['label']] = labelIdx
+                            labelIdx += 1
+                        self.labels.append(self.labelsNamesMap[item['label']])
+                        #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+                        if DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST:
+                            if(item['label'] == 'irrelevant'):
+                                irrelevantNum += 1
+                        #/DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+                    else:
+                        self.labels.append(item['label'])
+                    '''
+                    if(self.libSVMFormat == 'true'):
+                        if not item['label'] in self.labelsNamesMap:
+                            print('Incorrect label ' + item['label']) 
+                        if item['label'] == 'irirrelevant':
+                            item['label'] = 'irrelevant'
+                            print('Incorrect label ' + item['label'])
+                        try:
+                            self.labels.append(self.labelsNamesMap[item['label']])
+                        except KeyError:
+                            print('Incorrect label ' + item['label'])
+                    else:
+                        self.labels.append(item['label'])
+        #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+        if DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST:
+            print('Number of irrelevant examples: ' + str(irrelevantNum) + '\n')
+        #/DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+        
+        # Print the label/index mapping
+        
+        for label in self.labelsNamesMap:
+            print(label + '  ' + str(self.labelsNamesMap[label]))
 
+        
         
     def DumpFeaturesToTxt(self, exportFileName):
         # Open the file
@@ -290,7 +396,7 @@ class FeaturesExtractor(object):
                 # features indices start from 1 to match liblinear requirements 
                 if((i+1) in feature.keys()):
                     if(self.featureFormat == "Normal"):
-                        exportFile.write(str(feature[i]) + ", ")
+                        exportFile.write(str(feature[i+1]) + ", ")
                     elif (self.featureFormat == "Binary"):
                         exportFile.write("1, ")
                 else:

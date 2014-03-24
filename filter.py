@@ -54,6 +54,7 @@ datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileNam
 datasetBuilder.dataSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
 datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
 #datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
+#datasetBuilder.trainSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
 
 
 # Configurations file xml of the language model
@@ -122,21 +123,29 @@ trainFeaturesSerializationFile = ".\\FeaturesExtractor\\Output\\train_features.b
 trainLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\train_labels.bin"
 testFeaturesSerializationFile = ".\\FeaturesExtractor\\Output\\test_features.bin"
 testLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\test_labels.bin"
+testExportFileName = ".\\FeaturesExtractor\\Output\\test_data.txt"
+trainExportFileName = ".\\FeaturesExtractor\\Output\\train_data.txt"
+
 # Start the FeaturesExtractor:
 #-----------------------------    
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
 #trainFeaturesExtractor.ExtractTFFeatures()
 trainFeaturesExtractor.ExtractTFIDFFeatures()
+#trainFeaturesExtractor.ExtractKLFeatures()
+trainFeaturesExtractor.ExtractLinkFeatures(1)
 #trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
+trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
 
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
 #testFeaturesExtractor.ExtractTFFeatures()
 testFeaturesExtractor.ExtractTFIDFFeatures()
+#testFeaturesExtractor.ExtractKLFeatures()
+testFeaturesExtractor.ExtractLinkFeatures(1)
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
-
+testFeaturesExtractor.DumpFeaturesToTxt(testExportFileName)
 
 # The serialization file to save the features
 modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
