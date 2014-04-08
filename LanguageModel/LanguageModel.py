@@ -19,7 +19,7 @@ class LanguageModel(object):
     '''
 
         
-    def __init__(self, configFileName, stopWordsFileName, languageModelSerializationFileName, dataset):
+    def __init__(self, configFileName, stopWordsFileName, languageModelSerializationFileName, linksDBFileName, dataset):
         '''
         Constructor
         '''
@@ -38,6 +38,10 @@ class LanguageModel(object):
         
         # Initialize number of terms per label
         self.numTermsPerLabel = {}
+        
+        # Initialize the links DB
+        self.linksDB = {}
+        self.linksDBFileName = linksDBFileName
         
         # Parse the configurations file
         self.ParseConfigFile(configFileName)
@@ -65,6 +69,8 @@ class LanguageModel(object):
         # Order with the highest encountered word first
         self.languageModel = OrderedDict(reversed(sorted(self.languageModel.items(), key=lambda t:t[1])))
         
+        if(self.buildLinksDB == "true"):
+            self.SaveLinksDatabase()   
         '''
         if(self.languageModelMode == "Unigram"):
             self.BuildUniGram()
@@ -80,7 +86,10 @@ class LanguageModel(object):
         # Update the dataset
         self.dataset = dataset
         # Update the model
-        self.BuildNGram(self.NGram)       
+        self.BuildNGram(self.NGram)
+        
+        if(self.buildLinksDB == "true"):
+            self.SaveLinksDatabase()       
         
         '''
         if(self.languageModelMode == "Unigram"):
@@ -92,13 +101,28 @@ class LanguageModel(object):
         else:
             print('Error! No language defined for' + self.languageModelMode)
         '''                                    
- 
-    def BuildNGram(self, N):
+            
+    def BuildNGram(self, Ngram):
                 
         # Loop on all dataset entries
         for item in self.dataset:
-            # Get the text
+
+            # Get the text of the body of the tweet
             text = item['text']
+            
+
+            # Parse the link pattern
+            url = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
+                        
+            # if there's any link add it to the Db
+            if len(url) > 0:
+                if(self.buildLinksDB == "true"):
+                    self.linksDB[url[0]] = item['label']
+                if(self.parseLinkBody == "true"):      
+                    linkText = self.ExtractLinkText(url[0])
+                    if(linkText != ''):
+                        text += linkText
+            
             
             # Split into words
             try:
@@ -106,18 +130,24 @@ class LanguageModel(object):
             except:
                 print('Error in tweet text' + str(text))
                 #items = str(text)
+
+            # Check if leading/trailing #tags to be removed
+            if(self.removeLeadTrailTags == "true"):
+                items = self.TrimLeadTrailTags(items)
+
+
             documentCounted = {}
             
             # Update the language model
-            for i in range(len(items) - (N-1)):
+            for i in range(len(items) - (Ngram-1)):
                 # Form the term
                 term = ''
-                for j in range(N):
+                for j in range(Ngram):
                     if(self.enableStemming == "true"):
                         term += self.stemmer.stem(items[i + j])
                     else:                        
                         term += items[i + j]
-                    if(j < N-1):
+                    if(j < Ngram-1):
                         term += ' '
                 
                 # Insert the term in the model
@@ -142,14 +172,14 @@ class LanguageModel(object):
                         
                         # Increment number of terms per label
                         self.numTermsPerLabel[item['label']] += 1
-
+    
                             
                         # The term document frequency is incremented once per document, that's why we need documentCounted
                         if not term in documentCounted:                        
                             # Update document frequency
                             documentCounted[term] = "true" 
                             self.languageModelFreqInfo[term]['documentFrequency'] += 1
-
+    
                 else:
                     # Update label frequency
                     self.languageModelFreqInfo[term][item['label']] += 1
@@ -163,6 +193,23 @@ class LanguageModel(object):
                         documentCounted[term] = "true" 
                         self.languageModelFreqInfo[term]['documentFrequency'] += 1
 
+                
+    def TrimLeadTrailTags(self, words):
+        # Remove leading tags
+        withoutLeadingTags = self.TrimTagsRecursive(words)
+        # Remove trailing tags
+        # Reverse the words to work on trailing tags
+        withoutTrailingTags = self.TrimTagsRecursive(withoutLeadingTags[::-1])
+        # Reverse the words back
+        return withoutTrailingTags[::-1]
+
+    def TrimTagsRecursive(self, words):
+        if '#' in words[0]:
+            del words[0]
+            return self.TrimTagsRecursive(words)
+        else:
+            return words
+                                  
     # Add term and update frequency                
     def InsertInLanguageModel(self, term):
         
@@ -310,6 +357,15 @@ class LanguageModel(object):
         # Get the stemming enable flag
         self.enableStemming = xmldoc.getElementsByTagName('EnableStemming')[0].attributes['enableStemming'].value
         
+        # Get the buildLinksDB flag
+        self.buildLinksDB = xmldoc.getElementsByTagName('BuildLinksDB')[0].attributes['buildLinksDB'].value
+
+        # Get the parseLinkBody flag
+        self.parseLinkBody = xmldoc.getElementsByTagName('ParseLinkBody')[0].attributes['parseLinkBody'].value
+
+        # Get the removeLeadTrailTags flag
+        self.removeLeadTrailTags = xmldoc.getElementsByTagName('RemoveLeadTrailTags')[0].attributes['removeLeadTrailTags'].value        
+        
         # Get the list of labels
         labels = xmldoc.getElementsByTagName('Label')
         self.labels = []
@@ -336,49 +392,42 @@ class LanguageModel(object):
         self.languageModel = pickle.load(serializatoinDatasetFile)
         serializatoinDatasetFile.close()
     
-    #Create Database File
-    def BuildLinksDatabase(self):
-        file = open(".\\FeaturesExtractor\\Input\\Links_database.txt","w",encoding="utf-8")
-        for item in self.dataset:
-            url = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
-            if len(url) > 0:
-                noOfText = self.calculate(url[0])
-                if noOfText > 0 :
-                    file.write(url[0] +' relevant\n')
-				elif noOfText == 0 :	
-					file.write(url[0] +' irrelevant\n')
-        file.close()
+
         
-        
-        
-    def extractText(self,urlstr):
+    def ExtractLinkText(self, urlstr):
         #Extract Text from Link
         try:
             fileHandle = urllib.request.urlopen(urlstr)
-            print(urlstr)
+            #print(urlstr)
             html = fileHandle.read()
             soup = BeautifulSoup(html)
-            data =  [b.string for b in soup.findAll('div')]
-            data += [b.string for b in soup.findAll('p')]
-            data += [b.string for b in soup.findAll('a')]
-            data += [b.string for b in soup.findAll('title')]
-            data += [b.string for b in soup.findAll('span')]
-            data += [b.string for b in soup.findAll(attrs = 'content')]
-            filter(None, data)
-            return data
+            text = ''
+            
+            t = ''
+            #for b in soup.findAll('div'):
+            for b in soup.findAll('b'):
+                t += str(b)
+            text += t 
+            
+            #data += [str(b) for b in soup.findAll('p')]
+            #data += [str(b) for b in soup.findAll('a')]
+            t = ''
+            for b in soup.findAll('title'):
+                t += str(b)
+            text += t 
+            
+            
+            #data += [str(b) for b in soup.findAll('span')]
+            #data += [str(b) for b in soup.findAll(attrs = 'content')]
+            #filter(None, data)
+            return text
         except:
             print('URL error ' + urlstr )
-            return []     
+            return ''     
             
-    def calculate(self,url): 
-        numberofWords = -1;
-        text = self.extractText(url)
-        numberofWords = 0;
-        i = 0;
-        for word in self.languageModel:
-            if word in text:
-                numberofWords = numberofWords + 1
-            i = i + 1
-        return numberofWords;
-        
-    
+    #Create Database File
+    def SaveLinksDatabase(self):
+        file = open(self.linksDBFileName, "w" , encoding="utf-8")
+        for link, label in self.linksDB.items():
+            file.write(link +' '+ label +'\n')
+        file.close()

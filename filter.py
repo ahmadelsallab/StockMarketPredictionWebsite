@@ -62,13 +62,14 @@ configFileLanguageModel = ".\\LanguageModel\\Configurations\\Configurations.xml"
 langModelLogFile = ".\\LanguageModel\\Output\\language_model.txt"
 langModelTxtLoadFile = ".\\LanguageModel\\Output\\language_model_stocks_mix.txt"
 stopWordsFileName = ".\\LanguageModel\\Input\\stop_words.txt"
+linksDBFile = ".\\LanguageModel\\Output\\links_database.txt"
 # The serialization file to save the model
 languageModelSerializationFile = ".\\LanguageModel\\Output\\language_model.bin"
 
 # Start the LanguageModel:
 
 # Initialize the LanguageModel
-languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, datasetBuilder.trainSet)
+languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
 languageModel.BuildLanguageModel()
 '''
 # Extract relevant tweets only
@@ -133,7 +134,6 @@ trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFea
 #trainFeaturesExtractor.ExtractTFFeatures()
 trainFeaturesExtractor.ExtractTFIDFFeatures()
 #trainFeaturesExtractor.ExtractKLFeatures()
-trainFeaturesExtractor.ExtractLinkFeatures(1)
 #trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
 trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
@@ -142,7 +142,6 @@ testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeatu
 #testFeaturesExtractor.ExtractTFFeatures()
 testFeaturesExtractor.ExtractTFIDFFeatures()
 #testFeaturesExtractor.ExtractKLFeatures()
-testFeaturesExtractor.ExtractLinkFeatures(1)
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
 testFeaturesExtractor.DumpFeaturesToTxt(testExportFileName)
