@@ -10,7 +10,7 @@
   <!--Set to true if the contents of the link is needed to update the model-->
   <ParseLinkBody parseLinkBody="false"></ParseLinkBody>
   <!--Set to true to remove trailing and leading #tags-->
-  <RemoveLeadTrailTags removeLeadTrailTags="true"></RemoveLeadTrailTags>
+  <RemoveLeadTrailTags removeLeadTrailTags="false"></RemoveLeadTrailTags>
   <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->
   <Label label="relevant"></Label>
   <Label label="irrelevant"></Label>
