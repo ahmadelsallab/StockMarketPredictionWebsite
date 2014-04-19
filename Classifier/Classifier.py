@@ -4,6 +4,7 @@ Created on Nov 14, 2013
 @author: ASALLAB
 '''
 import pickle
+import nltk
 class Classifier(object):
     '''
     classdocs
@@ -37,6 +38,18 @@ class Classifier(object):
             from svmutil import svm_train
             self.svmModel = svm_train(self.trainTargets, self.trainFeatures, '-c 4 -s 2 -t 2')
             '''
+        if(self.classifierType == "naive bayesian classifier"):
+            import nltk
+#             for (trainDataFeatureSet in self.trainFeatures) and (trainDataLabel in self.trainTargets):
+            nbtrainData = []
+            i = 0
+            while i<len(self.trainFeatures):
+                row = [self.trainFeatures[i] , self.trainTargets[i]]
+                nbtrainData.append(row)
+                i+=1
+
+            self.naiveBayesClassifier = nltk.NaiveBayesClassifier.train(nbtrainData)
+    
 
     # Method to test the classifier    
     def Test(self):        
@@ -52,6 +65,27 @@ class Classifier(object):
             label, acc, val = svm_predict(self.testTargets, self.testFeatures, self.svmModel)
             return label, acc, val
             '''
+        
+        if(self.classifierType == "naive bayesian classifier"):
+            label = []
+            acc = 0.0
+            val = 0.0
+      
+            nGood = 0
+            nBad = 0
+            i = 0
+            while i<len(self.testFeatures):  
+                classifiedLabel = (self.naiveBayesClassifier.classify(self.testFeatures[i]))
+                label.append(classifiedLabel)
+                if classifiedLabel == self.testTargets[i]:
+                    nGood +=1
+                else:
+                    nBad +=1
+                i+=1
+                
+            acc = nGood/(nGood+nBad)
+            return label, acc, val
+                
     # For cross validation accuracy
     # nFoldsParam = 10
     # crossValidationAccuracy = train(featuresExtractor.labels, featuresExtractor.features, '-c' + str(cParam) + '-v' + str(nFoldsParam))
