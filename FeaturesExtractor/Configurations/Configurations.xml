@@ -9,6 +9,8 @@
   <FeatureFormat featureFormat="Normal"></FeatureFormat> 
    <!--Set to true if a database of relevant/irrelevant links in tweets is considered-->
   <ConsiderLinksDB considerLinksDB="false"></ConsiderLinksDB>
+   <!--Set to true if numbers features in tweets is considered-->
+  <ConsiderNumbersFeatures considerNumbersFeatures="true"></ConsiderNumbersFeatures>  
   <!--Set to true if the contents of the link is needed to update the features vector-->
   <ParseLinkBody parseLinkBody="false"></ParseLinkBody>
    <!--Set to true to remove trailing and leading #tags-->
