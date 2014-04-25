@@ -33,10 +33,9 @@ class FeaturesExtractor(object):
         self.languageModel = languageModel
         
         self.linksDB = {}
-        
+        self.ranges=[]
         # Parse the configurations file
         self.ParseConfigFile(configFileName)
-        
         if(self.considerLinksDB == "true"):
             self.LoadLinksDatabase()
                 
@@ -63,7 +62,6 @@ class FeaturesExtractor(object):
             
         #Ranges of Numbers to give higher weight    
         #Format:  1st & 2nd entries are digits range,3rd & 4th entries are numbers range  
-        self.ranges = [3,5,250,10000]
         self.numOfRanges = int(len(self.ranges)/4)        
         featureIdx = 1
         if(self.libSVMFormat == 'true'):
@@ -76,11 +74,9 @@ class FeaturesExtractor(object):
                 self.featuresNamesMap['isLinkRelevant'] = featureIdx
                 featureIdx += 1
             if(self.considerNumbersFeatures == "true"):
-                for i in range(1,self.numOfRanges+1):
+                for i in range(0,self.numOfRanges+1):
                     self.featuresNamesMap['numFeature'+str(i)] = featureIdx
-                    featureIdx += 1
-                self.featuresNamesMap['isNumberRelevant'] = featureIdx
-                featureIdx += 1                                                
+                    featureIdx += 1                                              
         # Store the dataset
         self.dataSet = dataSet
         
@@ -297,30 +293,18 @@ class FeaturesExtractor(object):
                     if len(nums) == 0:                              
                         # No Number
                         if(self.libSVMFormat == 'true'):
-                            for i in range(1,self.numOfRanges+1):
-                                itemFeatures[self.featuresNamesMap['numFeature'+str(i)]] = 0
-                            itemFeatures[self.featuresNamesMap['isNumberRelevant']] = 0                                
-
+                            for i in range(0,self.numOfRanges+1):
+                                itemFeatures[self.featuresNamesMap['numFeature'+str(i)]] = 0                           
                         else:
-                            for i in range(1,self.numOfRanges+1):
+                            for i in range(0,self.numOfRanges+1):
                                 itemFeatures['numFeature'+str(i)] = 0
-                            itemFeatures['isNumberRelevant'] = 0
                     else:
                         if(self.libSVMFormat == 'true'):
-                            for i in range(1,self.numOfRanges+1):
-                                itemFeatures[self.featuresNamesMap['numFeature'+str(i)]] = numFeaturesInfo[i-1]
-                            if item['label'] == 'relevant':    
-                                itemFeatures[self.featuresNamesMap['isNumberRelevant']] = 1
-                            else:
-                                itemFeatures[self.featuresNamesMap['isNumberRelevant']] = 0                                    
-                                       
+                            for i in range(0,self.numOfRanges+1):
+                                itemFeatures[self.featuresNamesMap['numFeature'+str(i)]] = numFeaturesInfo[i]                         
                         else:
-                            for i in range(1,self.numOfRanges+1):
-                                itemFeatures['numFeature'+str(i)] = numFeaturesInfo[i-1]
-                            if item['label'] == 'relevant':                                 
-                                itemFeatures['isNumberRelevant'] = 1
-                            else:
-                                itemFeatures['isNumberRelevant'] = 0
+                            for i in range(0,self.numOfRanges+1):
+                                itemFeatures['numFeature'+str(i)] = numFeaturesInfo[i]
                 # if at least one relevant link exists, then set the corresponding places in the vector
                 if(self.considerLinksDB == "true"):
                     for url in urls:
@@ -851,6 +835,14 @@ class FeaturesExtractor(object):
                 if not label.attributes['label'].value in self.labelsNamesMap:
                     self.labelsNamesMap[label.attributes['label'].value] = labelIdx
                     labelIdx += 1
+        if(self.considerNumbersFeatures == 'true'):
+            ranges = xmldoc.getElementsByTagName('Range')
+            for range in ranges:
+                self.ranges.append(int(range.attributes['DigitLimitFrom'].value))
+                self.ranges.append(int(range.attributes['DigitLimitTo'].value))
+                self.ranges.append(int(range.attributes['NumberLimitFrom'].value))
+                self.ranges.append(int(range.attributes['NumberLimitTo'].value))            
+                    
                 
     # To save to serialzation file
     def SaveFeatures(self):

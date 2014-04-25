@@ -17,5 +17,6 @@
   <RemoveLeadTrailTags removeLeadTrailTags="false"></RemoveLeadTrailTags>
   <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->
   <Label label="relevant"></Label>
-  <Label label="irrelevant"></Label>
+  <Label label="irrelevant"></Label>>
+  <Range DigitLimitFrom="3" DigitLimitTo="10000" NumberLimitFrom="900" NumberLimitTo="10000"></Range>
 </Configurations>
