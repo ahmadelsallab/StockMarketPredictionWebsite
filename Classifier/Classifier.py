@@ -4,16 +4,24 @@ Created on Nov 14, 2013
 @author: ASALLAB
 '''
 import pickle
+from xml.dom import minidom
+import nltk, nltk.classify.util, nltk.metrics
+from nltk.classify import MaxentClassifier
+from encodings.utf_8 import encode
+
 class Classifier(object):
     '''
     classdocs
     '''    
 
-    def __init__(self, featuresSerializationFileName, classifierType, trainFeatures, trainTargets, testFeatures, testTargets):
+    def __init__(self,configDocName ,featuresSerializationFileName,  trainFeatures, trainTargets, testFeatures, testTargets):
         '''
         Constructor
         '''
-        self.classifierType = classifierType
+         # Parse the configurations file
+        self.ParseConfigFile(configDocName)
+        
+         
         self.trainFeatures = trainFeatures
         self.trainTargets = trainTargets
         self.testFeatures = testFeatures
@@ -37,6 +45,21 @@ class Classifier(object):
             from svmutil import svm_train
             self.svmModel = svm_train(self.trainTargets, self.trainFeatures, '-c 4 -s 2 -t 2')
             '''
+        else:
+            train_set = []
+            i = 0;
+            weights = [];
+            encoding = []
+            for fet in self.trainFeatures:
+                train_set.append((self.trainFeatures[i],self.trainTargets[i]))
+                weights.append( i * 0.5)
+               
+                i +=1
+            if(self.classifierType == "DecisionTree"):
+                self.svmModel = nltk.DecisionTreeClassifier.train(train_set,entropy_cutoff=.01,depth_cutoff=300,binary=True,verbose=True)
+                sorted(self.svmModel.labels())
+                print(self.svmModel)
+            
 
     # Method to test the classifier    
     def Test(self):        
@@ -47,11 +70,38 @@ class Classifier(object):
             label, acc, val = predict(self.testTargets, self.testFeatures, self.svmModel)
             return label, acc, val
             
+            
             '''
             from svmutil import svm_predict
             label, acc, val = svm_predict(self.testTargets, self.testFeatures, self.svmModel)
             return label, acc, val
             '''
+        else:
+            label = []
+            acc  = 0
+            rel = 0
+            irrel = 0;
+            i = 0;
+            for test in self.testFeatures:
+                res = self.svmModel.classify(test)
+                label.append(res)
+                if self.testTargets[i] == res:
+                    acc += 1
+                if res == 1.0:
+                    rel +=1
+                else:
+                    irrel +=1
+                i +=1 
+            val = [rel/len(self.testFeatures) , irrel /len(self.testFeatures) ]
+            acc = acc / len(self.testFeatures) *100 
+            print("Count " + str(rel+irrel))
+            print("Acc = " + str(acc) + " %")
+            return label,acc, val
+                    
+                
+              
+            
+           
     # For cross validation accuracy
     # nFoldsParam = 10
     # crossValidationAccuracy = train(featuresExtractor.labels, featuresExtractor.features, '-c' + str(cParam) + '-v' + str(nFoldsParam))
@@ -121,4 +171,8 @@ class Classifier(object):
         
         return mConfusionMatrix, mNormalConfusionMatrix, vNumTrainExamplesPerClass, vAccuracyPerClass, nOverallAccuracy
     
-            
+    def ParseConfigFile(self, configDocName):
+        # Get the name of configuration file from the cmd line argument
+        xmldoc = minidom.parse(configDocName)    
+        # Get the classifierType
+        self.classifierType = xmldoc.getElementsByTagName('classifierType')[0].attributes['classifierType'].value

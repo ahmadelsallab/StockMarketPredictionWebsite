@@ -1,0 +1,4 @@
+<Configurations>
+  <!--The desired length of features vector to be considered from the N-gram languge model. "Full" means the whole language model-->
+  <classifierType classifierType="DecisionTree"></classifierType> 
+</Configurations>
