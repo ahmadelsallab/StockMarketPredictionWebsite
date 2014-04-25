@@ -18,5 +18,5 @@
   <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->
   <Label label="relevant"></Label>
   <Label label="irrelevant"></Label>>
-  <Range DigitLimitFrom="3" DigitLimitTo="10000" NumberLimitFrom="900" NumberLimitTo="10000"></Range>
+  <Range DigitLimitFrom="4" DigitLimitTo="5" NumberLimitFrom="6000.00" NumberLimitTo="12500.00"></Range>
 </Configurations>

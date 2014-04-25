@@ -276,7 +276,7 @@ class FeaturesExtractor(object):
                                 itemFeatures[term] = 1
                                 
                                                       
-                nums = re.findall(u'([\d|\u0661|\u0662|\u0663|\u0664|\u0665|\u0666|\u0667|\u0668|\u0669|\u0660]*[,|\.]*?[\d|\u0661|\u0662|\u0663|\u0664|\u0665|\u0666|\u0667|\u0668|\u0669|\u0660]+)+', text)
+                nums = re.findall(u'([\d|\u0661|\u0662|\u0663|\u0664|\u0665|\u0666|\u0667|\u0668|\u0669|\u0660]*[066B|066C|060C|,|\.]*?[\d|\u0661|\u0662|\u0663|\u0664|\u0665|\u0666|\u0667|\u0668|\u0669|\u0660]+)+', text)
                 numFeaturesInfo = [0] * (self.numOfRanges+1) #Create List to set the output of each row
                 for num in nums:
                     if self.isNumber(text,num) == 1: #check is it real number
@@ -838,10 +838,10 @@ class FeaturesExtractor(object):
         if(self.considerNumbersFeatures == 'true'):
             ranges = xmldoc.getElementsByTagName('Range')
             for range in ranges:
-                self.ranges.append(int(range.attributes['DigitLimitFrom'].value))
-                self.ranges.append(int(range.attributes['DigitLimitTo'].value))
-                self.ranges.append(int(range.attributes['NumberLimitFrom'].value))
-                self.ranges.append(int(range.attributes['NumberLimitTo'].value))            
+                self.ranges.append(float(range.attributes['DigitLimitFrom'].value))
+                self.ranges.append(float(range.attributes['DigitLimitTo'].value))
+                self.ranges.append(float(range.attributes['NumberLimitFrom'].value))
+                self.ranges.append(float(range.attributes['NumberLimitTo'].value))            
                     
                 
     # To save to serialzation file
