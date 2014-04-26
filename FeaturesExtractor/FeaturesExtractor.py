@@ -11,9 +11,9 @@ import math
 import re
 from bs4 import BeautifulSoup
 import urllib.request
+import locale
 
-
-
+locale.setlocale(locale.LC_NUMERIC, 'English_USA.1252')
 DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST = False
 class FeaturesExtractor(object):
     '''
@@ -62,7 +62,7 @@ class FeaturesExtractor(object):
             
         #Ranges of Numbers to give higher weight    
         #Format:  1st & 2nd entries are digits range,3rd & 4th entries are numbers range  
-        self.numOfRanges = int(len(self.ranges)/4)        
+        self.numOfRanges = int(len(self.ranges)/2)        
         featureIdx = 1
         if(self.libSVMFormat == 'true'):
             for term in self.languageModel.languageModel:
@@ -276,18 +276,18 @@ class FeaturesExtractor(object):
                                 itemFeatures[term] = 1
                                 
                                                       
-                nums = re.findall(u'([\d|\u0661|\u0662|\u0663|\u0664|\u0665|\u0666|\u0667|\u0668|\u0669|\u0660]*[066B|066C|060C|,|\.]*?[\d|\u0661|\u0662|\u0663|\u0664|\u0665|\u0666|\u0667|\u0668|\u0669|\u0660]+)+', text)
+                nums = re.findall(u'([\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]*[066B|066C|060C|,|\.]*?[\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]+)+', text)
                 numFeaturesInfo = [0] * (self.numOfRanges+1) #Create List to set the output of each row
                 for num in nums:
-                    if self.isNumber(text,num) == 1: #check is it real number
+                    if self.isDateLink(text,num) == 1: #If Date or Link Do Not Proceed
                         numFeaturesInfo[0] += 1
                         v = 0
                         for k in range(1,self.numOfRanges+1): #check ranges
-                            if(self.isfloat(num)):
-                                if( self.ranges[v] <= self.length(num) <= self.ranges[v+1] ) and ( self.ranges[v+2] <= float(num) <= self.ranges[v+3] ):
+                            if(self.isNumber(num)): #Make sure Regex output is Correct
+                                if( self.ranges[v] <= locale.atof(num) <= self.ranges[v+1] ):
                                     numFeaturesInfo[k] +=1
-                                v+=4                    
-                
+                                v+=2        
+                        
                 #Extract Numbers features
                 if(self.considerNumbersFeatures == "true"):
                     if len(nums) == 0:                              
@@ -410,6 +410,37 @@ class FeaturesExtractor(object):
         
         for label in self.labelsNamesMap:
             print(label + '  ' + str(self.labelsNamesMap[label]))
+            
+    ##
+    #Returns 1 if not Date or Link
+    ##
+    def isDateLink(self,d , matched):
+        month = [ 'ديسمبر' , 'نوفمبر' , 'اكتوبر' ,'سبتمبر' , 'اغسطس' , 'يوليو' ,'يونيو' , 'مايو' , 'ابريل' ,'مارس' , 'فبراير' , 'يناير'  , 'أبريل'  , 'أكتوبر' , 'يولية' , 'يونية' , 'أعسطس' ]
+        for m in month:
+            str1 = str(matched) + ' ' + str(m)
+            str2 =  str(m) + ' ' + str(matched)
+            if (str1 in d) or (str2 in d):
+                return 0
+        str3 =  str(matched) + '/'
+        str4 =  '/' + str(matched)
+        if (str3 in d) or ( str4 in d):
+            return 0
+        pattern = '[Aa-zZ]+' + str(matched) + '[Aa-zZ]*\s*'
+        s = re.search (pattern , d)
+        if s:
+            return 0
+        return 1
+    
+
+    ##
+    #Correct cases in which output of regex fails (i.e B9)
+    ##
+    def isNumber(self,value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False             
 
     def ExtractTFIDFFeatures(self):
         
@@ -563,48 +594,6 @@ class FeaturesExtractor(object):
         
         for label in self.labelsNamesMap:
             print(label + '  ' + str(self.labelsNamesMap[label]))
-
-    ##
-    #Get the length of the matched number
-    ##
-    def length(self,matched):
-        if '.' in matched or ',' in matched:
-            s = matched.split("[,|\.]")
-            r =len(matched) - (len(s)-1)
-        else:
-            r = len(matched)
-        return r
-    
-    ##
-    #check is this number or date or in link
-    ##
-    def isNumber(self,d , matched):
-        month = [ 'ديسمبر' , 'نوفمبر' , 'اكتوبر' ,'سبتمبر' , 'اغسطس' , 'يوليو' ,'يونيو' , 'مايو' , 'ابريل' ,'مارس' , 'فبراير' , 'يناير'  , 'أبريل'  , 'أكتوبر' , 'يولية' , 'يونية' , 'أعسطس' ]
-        for m in month:
-            str1 = str(matched) + ' ' + str(m)
-            str2 =  str(m) + ' ' + str(matched)
-            if (str1 in d) or (str2 in d):
-                return 0
-        str3 =  str(matched) + '/'
-        str4 =  '/' + str(matched)
-        if (str3 in d) or ( str4 in d):
-            return 0
-        pattern = '[Aa-zZ]+' + str(matched) + '[Aa-zZ]*\s*'
-        s = re.search (pattern , d)
-        if s:
-            return 0
-        return 1
-    
-    ##
-    # check is this float or not to compare in the ranges
-    ##
-    def isfloat(self,value):
-        try:
-            float(value)
-            return True
-        except ValueError:
-            return False 
-    
        
     def ExtractKLFeatures(self):
         
@@ -758,9 +747,7 @@ class FeaturesExtractor(object):
         
         for label in self.labelsNamesMap:
             print(label + '  ' + str(self.labelsNamesMap[label]))
-
-        
-        
+ 
     def DumpFeaturesToTxt(self, exportFileName):
         # Open the file
         exportFile = open(exportFileName, 'w')
@@ -838,12 +825,9 @@ class FeaturesExtractor(object):
         if(self.considerNumbersFeatures == 'true'):
             ranges = xmldoc.getElementsByTagName('Range')
             for range in ranges:
-                self.ranges.append(float(range.attributes['DigitLimitFrom'].value))
-                self.ranges.append(float(range.attributes['DigitLimitTo'].value))
-                self.ranges.append(float(range.attributes['NumberLimitFrom'].value))
-                self.ranges.append(float(range.attributes['NumberLimitTo'].value))            
-                    
-                
+                self.ranges.append(locale.atof(range.attributes['NumberLimitFrom'].value))
+                self.ranges.append(locale.atof(range.attributes['NumberLimitTo'].value))            
+                                
     # To save to serialzation file
     def SaveFeatures(self):
         # You must close and open to append to the binary file
