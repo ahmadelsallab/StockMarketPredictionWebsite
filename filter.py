@@ -128,27 +128,31 @@ testLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\test_labels.bin"
 testExportFileName = ".\\FeaturesExtractor\\Output\\test_data.txt"
 trainExportFileName = ".\\FeaturesExtractor\\Output\\train_data.txt"
 
+pca_n_components = 1188
 # Start the FeaturesExtractor:
 #-----------------------------    
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
-#trainFeaturesExtractor.ExtractTFFeatures()
-# trainFeaturesExtractor.ExtractTFIDFFeatures()
-trainFeaturesExtractor.ExtractKLFeatures()
+# trainFeaturesExtractor.ExtractTFFeatures()
+trainFeaturesExtractor.ExtractTFIDFFeatures()
+# trainFeaturesExtractor.ExtractKLFeatures()
 #trainFeaturesExtractor.SaveFeatures()
 # trainFeaturesExtractor.ExtractTFIDF_MultipliedBy_KLFeatures()
 trainFeaturesExtractor.SaveLabels()
 trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
-
+# 	"KernelPCA"   "SparsePCA"  "PCA" 
+pca_object = trainFeaturesExtractor.initiatePCAObject(pca_n_components,pcaType="PCA")
+trainFeaturesExtractor.applyPCA(pca_object)
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
 # testFeaturesExtractor.ExtractTFFeatures()
-# testFeaturesExtractor.ExtractTFIDFFeatures()
-testFeaturesExtractor.ExtractKLFeatures()
+testFeaturesExtractor.ExtractTFIDFFeatures()
+# testFeaturesExtractor.ExtractKLFeatures()
 # testFeaturesExtractor.ExtractTFIDF_MultipliedBy_KLFeatures()
 
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
 testFeaturesExtractor.DumpFeaturesToTxt(testExportFileName)
+testFeaturesExtractor.applyPCA(pca_object)
 
 # The serialization file to save the features
 modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
@@ -161,14 +165,30 @@ classifier = Classifier(modelSerializationFile, 'SVM', trainFeaturesExtractor.fe
 
 
 # Train
+print("traaain")
 classifier.Train()
-
+print("ended training")
 # Test
 labels, acc, val = classifier.Test()
-
+print(str(len(testFeaturesExtractor.features))+"+"+str(len(val)))
+i = 0 
+while i<len(testFeaturesExtractor.labels):
+	print("val = "+str(val[i])+" label="+str(testFeaturesExtractor.labels[i])+" Predicted="+str(labels[i]))
+	i+=1
+print(type(val))
 # Build the confusion matrix
 mConfusionMatrix, mNormalConfusionMatrix, vNumTrainExamplesPerClass, vAccuracyPerClass, nOverallAccuracy = classifier.BuildConfusionMatrix(testFeaturesExtractor.labels, labels)
 print("nOverallAccuracy")
 print(nOverallAccuracy)
 print(mConfusionMatrix)
+maxxxx = 0
+# for key in trainFeaturesExtractor.featuresNamesMap:
+# 	print ("______")
+# # 	print (key.encode())
+# 	print (trainFeaturesExtractor.featuresNamesMap[key])
+# 	if trainFeaturesExtractor.featuresNamesMap[key] > maxxxx:
+# 		maxxxx = trainFeaturesExtractor.featuresNamesMap[key]
 
+# print(len(trainFeaturesExtractor.featuresNamesMap))
+# print(maxxxx)
+# print(type(trainFeaturesExtractor.features))

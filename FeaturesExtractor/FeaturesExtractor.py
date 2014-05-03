@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 import urllib.request
 
 
-
 DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST = False
 class FeaturesExtractor(object):
     '''
@@ -499,7 +498,52 @@ class FeaturesExtractor(object):
         for label in self.labelsNamesMap:
             print(label + '  ' + str(self.labelsNamesMap[label]))
 
-        
+    def initiatePCAObject(self,n_components, pcaType = "PCA"):
+        from sklearn import decomposition
+        import numpy as np
+        featureVector_ArrayLike = []
+        for x in self.features:
+            cop = []
+            for y in x:
+                cop.append(float(x[y]))
+            featureVector_ArrayLike.append(cop)
+            
+        if pcaType == "KernelPCA":
+            pca = decomposition.KernelPCA(n_components=n_components)
+        elif pcaType == "SparsePCA":
+            pca = decomposition.SparsePCA(n_components=n_components)
+        elif pcaType == "PCA":
+            pca = decomposition.PCA(n_components=n_components)
+        print("starting: InitiatingPCA")
+        pca.fit(np.array(featureVector_ArrayLike))
+        print("ended: InitiatingPCA")
+        return pca
+    
+    def applyPCA(self,pca_object):
+        import numpy as np
+ 
+        featureVector_ArrayLike = []
+        for x in self.features:
+            cop = []
+            for y in x:
+                cop.append(float(x[y]))
+            featureVector_ArrayLike.append(cop)
+ 
+        print("Starting PCA")
+        X_transformed = pca_object.transform(np.array(featureVector_ArrayLike))
+        print("PCA Finished")
+       
+        self.features = []
+        for x in X_transformed:
+            y = {}
+            i = 1
+            for elem in x:
+                y[i] = elem
+                i+=1
+    
+            self.features.append(y)
+ 
+               
         
     def DumpFeaturesToTxt(self, exportFileName):
         # Open the file
