@@ -3,6 +3,7 @@ Created on Nov 7, 2013
 
 @author: ASALLAB
 '''
+
 from xml.dom import minidom
 from LanguageModel.LanguageModel import *
 import pickle
@@ -11,6 +12,15 @@ import math
 import re
 from bs4 import BeautifulSoup
 import urllib.request
+from lib2to3.fixer_util import String
+import os
+from nltk.parse import stanford
+import re
+import codecs
+
+os.environ['STANFORD_PARSER'] = 'E:/stanford-parser/stanford-parser.jar'
+os.environ['STANFORD_MODELS'] = 'E:/stanford-parser/stanford-parser-3.3.1-models.jar'
+
 
 
 
@@ -33,7 +43,13 @@ class FeaturesExtractor(object):
         self.languageModel = languageModel
         
         self.linksDB = {}
-        
+        #Load Arabic parser
+        self.parser = stanford.StanfordParser(model_path="edu/stanford/nlp/models/lexparser/arabicFactored.ser.gz")
+        #parser Query 
+
+        self.query =['تاسي' , 'مؤشر']
+
+
         # Parse the configurations file
         self.ParseConfigFile(configFileName)
         
@@ -70,6 +86,10 @@ class FeaturesExtractor(object):
                 featureIdx += 1
                 self.featuresNamesMap['isLinkRelevant'] = featureIdx
                 featureIdx += 1
+            if(self.parserMode == "true"):
+                self.featuresNamesMap['parser'] = featureIdx
+                featureIdx += 1    
+          
         # Store the dataset
         self.dataSet = dataSet
         
@@ -87,6 +107,7 @@ class FeaturesExtractor(object):
         
         # Loop on the dataset items
         irrelevantNum = 0
+        
         for item in self.dataSet:
             if(not (item['text'] is None) and not(item['label'] is None)):
                 # Initialize the items dictionary. It's sparse dictionary, with only words in the language model that exist in the item.
@@ -111,9 +132,16 @@ class FeaturesExtractor(object):
                             linkText = self.languageModel.ExtractLinkText(url)
                             if(linkText != ''):
                                 text += linkText
-                    
+
+                                        
                 # Form the list of language model terms
                 terms = self.languageModel.SplitIntoTerms(text)
+                
+                #parse the text
+                if self.parserMode == "true":
+                    tweet = self.clean(item['text'])
+                    parsed = self.parser.raw_parse(tweet,True)
+                
                 
                 # Extract features for the item based on its terms
                 for term in terms:
@@ -162,6 +190,14 @@ class FeaturesExtractor(object):
                                         itemFeatures['isLinkRelevant'] = 1
                                     else:
                                         itemFeatures['isLinkRelevant'] = 0
+           
+                #use the parser feature                             
+                if(self.parser == "true"):
+                    if(self.libSVMFormat == 'true'):
+                        itemFeatures[self.featuresNamesMap['parser']] = parseTree(str(parsed[0]))
+                    else:
+                        itemFeatures[self.featuresNamesMap['parser']] = parseTree(str(parsed[0]))
+                                        
                            
                 if(itemFeatures.__len__() != 0) :   
                     # Normalize the feature
@@ -170,6 +206,8 @@ class FeaturesExtractor(object):
                         if self.featureFormat == 'Normal':                            
                             if maxValue != 0:
                                 itemFeatures[term] /= maxValue
+                    
+                        
                     # Add to the global features list
                     self.features.append(itemFeatures)
                     
@@ -235,12 +273,18 @@ class FeaturesExtractor(object):
                     if len(url) > 0:
                         if(self.parseLinkBody == "true"):
                             text += self.languageModel.ExtractLinkText(url)
-
+                
+              
+                
                 if (self.removeLeadTrailTags):
                     text = " ".join(self.languageModel.TrimLeadTrailTags(text.split()))    
                 # Form the list of language model terms
                 terms = self.languageModel.SplitIntoTerms(text)
-                
+              
+                if self.parserMode == "true":
+                    tweet = self.clean(item['text'])
+                    parsed = self.parser.raw_parse(tweet,True)
+                  
                 # Calculate TF
                 for term in terms:
                     
@@ -313,8 +357,12 @@ class FeaturesExtractor(object):
                                         else:
                                             itemFeatures['isLinkRelevant'] = 0
                         
-
-    
+                    if(self.parser == "true"):
+                        if(self.libSVMFormat == 'true'):
+                            itemFeatures[self.featuresNamesMap['parser']] = parseTree(str(parsed[0]))
+                        else:
+                            itemFeatures[self.featuresNamesMap['parser']] = parseTree(str(parsed[0]))                            
+            
                     # Add to the global features list
                     self.features.append(itemFeatures)
                     
@@ -384,6 +432,12 @@ class FeaturesExtractor(object):
                 # Form the list of language model terms
                 terms = self.languageModel.SplitIntoTerms(text)
                 
+                #parse the text
+                if self.parserMode == "true":
+                    tweet = self.clean(item['text'])
+                    parsed = self.parser.raw_parse(tweet,True)
+            
+                
                 # Calculate TF
                 for term in terms:
                     
@@ -449,6 +503,12 @@ class FeaturesExtractor(object):
                                         itemFeatures['isLinkRelevant'] = 1
                                     else:
                                         itemFeatures['isLinkRelevant'] = 0
+
+                if(self.parser == "true"):
+                    if(self.libSVMFormat == 'true'):
+                        itemFeatures[self.featuresNamesMap['parser']] = parseTree(str(parsed[0]))
+                    else:
+                        itemFeatures[self.featuresNamesMap['parser']] = parseTree(str(parsed[0]))
 
                 if(itemFeatures.__len__() != 0) :
                     '''
@@ -564,6 +624,8 @@ class FeaturesExtractor(object):
         # Get the ExportMode
         self.featureFormat = xmldoc.getElementsByTagName('FeatureFormat')[0].attributes['featureFormat'].value
         
+        #Get the parse mode
+        self.parserMode  = xmldoc.getElementsByTagName('parserMode')[0].attributes['parserMode'].value
         # Get the Label
         labelIdx = 1
         if(self.libSVMFormat == 'true'):
@@ -615,3 +677,35 @@ class FeaturesExtractor(object):
                 tmp = line.split(' ')
                 self.linksDB[tmp[0]] = tmp[1]
             infile.close()
+    
+    def clean(self,data):
+        punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
+        # remove punctuations from the string
+        noPunct = ""
+        for char in data:
+           if char not in punctuations:
+               noPunct = noPunct + char
+        return noPunct
+
+    def parseTree(self,tree):
+        text = str.split(tree)
+        phrase = ''
+        i = 0
+        for t in text:
+            if 'NP' in t:
+                phrase = 'NP'
+            elif 'VP' in t:
+                phrase = 'VP'
+            elif 'PP' in t:
+                phrase = 'VP'
+            else:
+                for q in query:
+                    if q in t:
+                        if (phrase == 'VP') or (phrase == 'NP'):
+                            if 'NN' in text[i]:
+                                return 1
+                            else:
+                                return 0
+                        else:
+                            return 0
+            i += 1

@@ -131,16 +131,16 @@ trainExportFileName = ".\\FeaturesExtractor\\Output\\train_data.txt"
 #-----------------------------    
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
-trainFeaturesExtractor.ExtractTFFeatures()
-#trainFeaturesExtractor.ExtractTFIDFFeatures()
+#trainFeaturesExtractor.ExtractTFFeatures()
+trainFeaturesExtractor.ExtractTFIDFFeatures()
 #trainFeaturesExtractor.ExtractKLFeatures()
 #trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
 trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
 
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
-testFeaturesExtractor.ExtractTFFeatures()
-#testFeaturesExtractor.ExtractTFIDFFeatures()
+#testFeaturesExtractor.ExtractTFFeatures()
+testFeaturesExtractor.ExtractTFIDFFeatures()
 #testFeaturesExtractor.ExtractKLFeatures()
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
