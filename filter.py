@@ -132,8 +132,8 @@ trainExportFileName = ".\\FeaturesExtractor\\Output\\train_data.txt"
 # Initialize the FeaturesExtractor
 trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
 #trainFeaturesExtractor.ExtractTFFeatures()
-trainFeaturesExtractor.ExtractNumTfFeatures()
-#trainFeaturesExtractor.ExtractTFIDFFeatures()
+#trainFeaturesExtractor.ExtractNumTfFeatures()
+trainFeaturesExtractor.ExtractTFIDFFeatures()
 #trainFeaturesExtractor.ExtractKLFeatures()
 #trainFeaturesExtractor.SaveFeatures()
 trainFeaturesExtractor.SaveLabels()
@@ -141,20 +141,21 @@ trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
 
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
 #testFeaturesExtractor.ExtractTFFeatures()
-#testFeaturesExtractor.ExtractTFIDFFeatures()
-testFeaturesExtractor.ExtractNumTfFeatures()
+testFeaturesExtractor.ExtractTFIDFFeatures()
+#ktestFeaturesExtractor.ExtractNumTfFeatures()
 #testFeaturesExtractor.ExtractKLFeatures()
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
 testFeaturesExtractor.DumpFeaturesToTxt(testExportFileName)
 
 # The serialization file to save the features
+configFileClassifier = ".\\Classifier\\Configurations\\Configurations.xml"
 modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
 
 # Start the Classifier:
 #---------------------
 
-classifier = Classifier(modelSerializationFile, 'SVM', trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
+classifier = Classifier(configFileClassifier, modelSerializationFile,  trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
 
 
 # Train
