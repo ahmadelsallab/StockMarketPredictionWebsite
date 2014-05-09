@@ -49,8 +49,7 @@ class Classifier(object):
                 i+=1
 
             self.naiveBayesClassifier = nltk.NaiveBayesClassifier.train(nbtrainData)
-    
-
+            
     # Method to test the classifier    
     def Test(self):        
         # Check classifier type
