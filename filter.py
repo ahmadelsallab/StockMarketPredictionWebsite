@@ -11,7 +11,7 @@ from Classifier.Classifier import Classifier
 import pickle
 from collections import OrderedDict
 from builtins import len
-#test commit 
+
 # Start the DatasetBuilder
 #-------------------------
 # Configurations file xml of the dataset builder
@@ -142,7 +142,7 @@ trainFeaturesExtractor.SaveLabels()
 trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
 # 	"KernelPCA"   "SparsePCA"  "PCA" 
 pca_object = trainFeaturesExtractor.initiatePCAObject(pca_n_components,pcaType="PCA")
-trainFeaturesExtractor.applyPCA(pca_object)
+# trainFeaturesExtractor.applyPCA(pca_object)
 testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
 # testFeaturesExtractor.ExtractTFFeatures()
 testFeaturesExtractor.ExtractTFIDFFeatures()
@@ -152,7 +152,7 @@ testFeaturesExtractor.ExtractTFIDFFeatures()
 testFeaturesExtractor.SaveFeatures()
 testFeaturesExtractor.SaveLabels()
 testFeaturesExtractor.DumpFeaturesToTxt(testExportFileName)
-testFeaturesExtractor.applyPCA(pca_object)
+# testFeaturesExtractor.applyPCA(pca_object)
 
 # The serialization file to save the features
 modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
@@ -160,22 +160,22 @@ modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
 # Start the Classifier:
 #---------------------
 
-# classifier types 'naive bayesian classifier' 'SVM'
-classifier = Classifier(modelSerializationFile, 'SVM', trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
-
+# classifier types 'naive bayesian classifier' 'SVM' 'BM25'
+classifier = Classifier(modelSerializationFile, 'BM25', trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
+#to be able to classify using BM25 you should extract the TFIDF values first. 
 
 # Train
 print("traaain")
 classifier.Train()
 print("ended training")
 # Test
-labels, acc, val = classifier.Test()
-print(str(len(testFeaturesExtractor.features))+"+"+str(len(val)))
-i = 0 
-while i<len(testFeaturesExtractor.labels):
-	print("val = "+str(val[i])+" label="+str(testFeaturesExtractor.labels[i])+" Predicted="+str(labels[i]))
-	i+=1
-print(type(val))
+labels, acc, val = classifier.Test(languageModel)
+# print(str(len(testFeaturesExtractor.features))+"+"+str(len(val)))
+# i = 0 
+# while i<len(testFeaturesExtractor.labels):
+# 	print("val = "+str(val[i])+" label="+str(testFeaturesExtractor.labels[i])+" Predicted="+str(labels[i]))
+# 	i+=1
+# print(type(val))
 # Build the confusion matrix
 mConfusionMatrix, mNormalConfusionMatrix, vNumTrainExamplesPerClass, vAccuracyPerClass, nOverallAccuracy = classifier.BuildConfusionMatrix(testFeaturesExtractor.labels, labels)
 print("nOverallAccuracy")

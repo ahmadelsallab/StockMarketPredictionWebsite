@@ -50,8 +50,8 @@ class Classifier(object):
 
             self.naiveBayesClassifier = nltk.NaiveBayesClassifier.train(nbtrainData)
             
-    # Method to test the classifier    
-    def Test(self):        
+     # Method to test the classifier    
+    def Test(self, languageModel = None):        
         # Check classifier type
         if(self.classifierType == "SVM"):
             
@@ -84,7 +84,67 @@ class Classifier(object):
                 
             acc = nGood/(nGood+nBad)
             return label, acc, val
+        
+        if (self.classifierType == "BM25"):
+            labels = []
+            #BM25 Configration 
+            k1 = 1.0
+            b = 1.0
+ 
+            tfM = {}
+            i = 1
+     
+            for term in self.trainFeatures[0]:
+                cnt = [0,0] #to be scalled to unnknown number of labels
+
+                j = 0
+                while j<len(self.trainFeatures):
+ 
+                    if self.trainFeatures[j][i] != 0:  #tfidf values have garbage values 
+                        labelID = self.trainTargets[j]
+                        cnt[labelID - 1] += 1
+ 
+                    j+=1
+     
+                tfM[term] = cnt
                 
+                i+=1;
+             
+            for tweetRow in self.testFeatures: 
+                tf = {}
+                for term in tweetRow:
+                    if term in tf:
+                        tf[term] = tf[term] + 1
+                    else:
+                        tf[term] = 1
+ 
+                BM_R = 0
+                BM_IR = 0
+                for term in tweetRow:
+                    tfidf = tweetRow[term]  #because the features wights are calculated using TFIDF
+                    idf = tfidf/tf[term]
+                    i = 1  
+                    tfR = tfM[term][0]
+                    tfIR = tfM[term][1]
+ 
+                    BM_term_R = ( idf * tfR* (k1 + 1) ) / (tfR + k1*(1-b+b*(len(tweetRow))) )
+                    BM_term_IR = ( idf * tfIR* (k1 + 1) ) / (tfIR + k1*(1-b+b*(len(tweetRow))) )
+                    
+                    BM_R += BM_term_R
+                    BM_IR += BM_term_IR
+#                 print("BM "+str(BM_R)+" "+str(BM_IR))
+                if BM_R > BM_IR:
+                    labels.append(1)
+                else:
+                    labels.append(2)
+                    
+        for x in tf:
+           
+            print(str(x) +" " + str(tfM[x][0])+ " "+ str(tfM[x][1]))
+        acc = 0.0
+        val = 0.0
+        return labels,acc,val
+    
     # For cross validation accuracy
     # nFoldsParam = 10
     # crossValidationAccuracy = train(featuresExtractor.labels, featuresExtractor.features, '-c' + str(cParam) + '-v' + str(nFoldsParam))
