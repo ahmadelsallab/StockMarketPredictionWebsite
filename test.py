@@ -59,6 +59,8 @@ d['irrel'] = 1
 d['rel'] = 2
 print(d['rel'])
 '''
+
+'''
 reqNumRel = 2
 reqNumIrrel = 2
 
@@ -107,3 +109,7 @@ if(x in a):
 #irrel['word_7']['w'] = 5
 
 print(abs(-5))
+
+'''
+for i in range(0,10):
+    print(i)

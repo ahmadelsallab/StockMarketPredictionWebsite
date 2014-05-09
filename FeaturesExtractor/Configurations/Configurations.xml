@@ -9,13 +9,14 @@
   <FeatureFormat featureFormat="Normal"></FeatureFormat> 
    <!--Set to true if a database of relevant/irrelevant links in tweets is considered-->
   <ConsiderLinksDB considerLinksDB="false"></ConsiderLinksDB>
+   <!--Set to true if numbers features in tweets is considered-->
+  <ConsiderNumbersFeatures considerNumbersFeatures="true"></ConsiderNumbersFeatures>  
   <!--Set to true if the contents of the link is needed to update the features vector-->
   <ParseLinkBody parseLinkBody="false"></ParseLinkBody>
    <!--Set to true to remove trailing and leading #tags-->
   <RemoveLeadTrailTags removeLeadTrailTags="false"></RemoveLeadTrailTags>
-     <!--Set to true to remove trailing and leading #tags-->
-  <parserMode parserMode="false"></parserMode>
   <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->
   <Label label="relevant"></Label>
-  <Label label="irrelevant"></Label>
+  <Label label="irrelevant"></Label>>
+  <Range NumberLimitFrom="6000.00" NumberLimitTo="12,500.00"></Range>
 </Configurations>

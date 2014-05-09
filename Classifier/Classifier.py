@@ -39,13 +39,13 @@ class Classifier(object):
             from liblinearutil import train            
             self.cParam = 32# Best cross validation accuracy
             self.nFoldsParam = 10
-            self.classifierModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
+            self.svmModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
             train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam) + ' -v ' + str(self.nFoldsParam))
             '''
             from svmutil import svm_train
-            self.classifierModel = svm_train(self.trainTargets, self.trainFeatures, '-c 4 -s 2 -t 2')
+            self.svmModel = svm_train(self.trainTargets, self.trainFeatures, '-c 4 -s 2 -t 2')
             '''
-        else:
+        elif(self.classifierType == "DecisionTree"):
             train_set = []
             i = 0;
             weights = [];
@@ -56,9 +56,9 @@ class Classifier(object):
                
                 i +=1
             if(self.classifierType == "DecisionTree"):
-                self.classifierModel = nltk.DecisionTreeClassifier.train(train_set,entropy_cutoff=.01,depth_cutoff=300,binary=True,verbose=True)
-                sorted(self.classifierModel.labels())
-                print(self.classifierModel)
+                self.svmModel = nltk.DecisionTreeClassifier.train(train_set,entropy_cutoff=.01,depth_cutoff=300,binary=True,verbose=True)
+                sorted(self.svmModel.labels())
+                print(self.svmModel)
             
 
     # Method to test the classifier    
@@ -67,23 +67,23 @@ class Classifier(object):
         if(self.classifierType == "SVM"):
             
             from liblinearutil import predict
-            label, acc, val = predict(self.testTargets, self.testFeatures, self.classifierModel)
+            label, acc, val = predict(self.testTargets, self.testFeatures, self.svmModel)
             return label, acc, val
             
             
             '''
             from svmutil import svm_predict
-            label, acc, val = svm_predict(self.testTargets, self.testFeatures, self.classifierModel)
+            label, acc, val = svm_predict(self.testTargets, self.testFeatures, self.svmModel)
             return label, acc, val
             '''
-        else:
+        elif(self.classifierType == "DecisionTree"):
             label = []
             acc  = 0
             rel = 0
             irrel = 0;
             i = 0;
             for test in self.testFeatures:
-                res = self.classifierModel.classify(test)
+                res = self.svmModel.classify(test)
                 label.append(res)
                 if self.testTargets[i] == res:
                     acc += 1
@@ -111,7 +111,7 @@ class Classifier(object):
         # To save to serialzation file
     def SaveModel(self):
         from liblinearutil import save_model
-        save_model(self.featuresSerializationFileName, self.classifierModel)
+        save_model(self.featuresSerializationFileName, self.svmModel)
         '''
         # You must close and open to append to the binary file
         # Open the serialization file
@@ -130,7 +130,7 @@ class Classifier(object):
     # To load saved model
     def LoadModel(self):
         from liblinearutil import load_model
-        self.classifierModel = load_model(self.featuresSerializationFileName)
+        self.svmModel = load_model(self.featuresSerializationFileName)
         '''
         # Load the model
         serializatoinDatasetFile = open(self.featuresSerializationFileName, 'rb')
@@ -142,7 +142,7 @@ class Classifier(object):
         # Check classifier type
         if(self.classifierType == "SVM"):            
             from liblinearutil import train            
-            self.classifierModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
+            self.svmModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
         '''
         
         
