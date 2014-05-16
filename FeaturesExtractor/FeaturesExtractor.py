@@ -14,9 +14,6 @@ from bs4 import BeautifulSoup
 import urllib.request
 import locale
 import os
-import nltk
-from nltk.corpus import cess_cat
-from nltk.tag import stanford
 
 locale.setlocale(locale.LC_NUMERIC, 'English_USA.1252')
 DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST = False
@@ -34,12 +31,7 @@ class FeaturesExtractor(object):
         '''
         Constructor
         '''
-        
-        #POS
-        path_to_model = "E:/stanford-postagger/models/arabic.tagger"
-        path_to_jar = "E:/stanford-postagger/stanford-postagger.jar"
-        self.tagger = nltk.tag.stanford.POSTagger(path_to_model, path_to_jar)
-        # Store the language model. 
+        # Store the language model.
         self.languageModel = languageModel
         
         self.linksDB = {}
@@ -88,9 +80,6 @@ class FeaturesExtractor(object):
                 for i in range(0,self.numOfRanges+1):
                     self.featuresNamesMap['numFeature'+str(i)] = featureIdx
                     featureIdx += 1
-            # if 1:
-            #     self.featuresNamesMap['pos'] = featureIdx
-            #     featureIdx += 1
 
         # Store the dataset
         self.dataSet = dataSet
@@ -258,12 +247,6 @@ class FeaturesExtractor(object):
                 
                 # Get the text of the item body
                 text = item['text']
-                #parse the text
-                #if self.parserMode == "true":
-                tweet = item['text']
-                tokens = nltk.tokenize.wordpunct_tokenize(tweet)
-                posTweet = self.tagger.tag(tokens)
-
                 # Parse the link pattern
                 urls = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
                 
@@ -364,28 +347,6 @@ class FeaturesExtractor(object):
                                     linkText = self.languageModel.ExtractLinkText(url)
                                     if(linkText != ''):
                                         text += linkText                                    
-                # Extract features for the item based on its terms
-                itr = 0
-                for term in terms:
-
-                    # If the term exist in the language model
-                    if term in self.languageModel.languageModel:
-
-                        # Add the feature if not exists or increment it if exists
-                        if(self.libSVMFormat == 'true'):
-                            if self.featuresNamesMap[term] in itemFeatures:
-                                if self.featureFormat != 'Binary':
-                                    itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                            else:
-                                itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                        else:
-                            if term in itemFeatures:
-                                if self.featureFormat != 'Binary':
-                                    itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                            else:
-
-                                itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                    itr +=1
 
 
                 #use the parser feature
@@ -514,9 +475,6 @@ class FeaturesExtractor(object):
                 # Get the text of the item body
                 text = item['text']
 
-                tweet = item['text']
-                tokens = nltk.tokenize.wordpunct_tokenize(tweet)
-                posTweet = self.tagger.tag(tokens)
                 # Parse the link pattern
                 urls = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
 
@@ -611,31 +569,7 @@ class FeaturesExtractor(object):
                                         if(linkText != ''):
                                             text += linkText
 
-                # Extract features for the item based on its terms
-                itr = 0
-                for term in terms:
-
-                    # If the term exist in the language model
-                    if term in self.languageModel.languageModel:
-
-                        # Add the feature if not exists or increment it if exists
-                        if(self.libSVMFormat == 'true'):
-                            if self.featuresNamesMap[term] in itemFeatures:
-                                if self.featureFormat != 'Binary':
-                                    itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                            else:
-                                itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                        else:
-                            if term in itemFeatures:
-                                if self.featureFormat != 'Binary':
-                                    itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                            else:
-
-                                itemFeatures[term+str(itr)] = self.calcFet(posTweet[itr])
-                    itr +=1
-
-
-    
+          
                     # Add to the global features list
                     self.features.append(itemFeatures)
                     
