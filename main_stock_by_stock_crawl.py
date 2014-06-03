@@ -14,7 +14,7 @@ DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST = False
 # Flags to decide which action is required
 #------------------------------------------
 # Set if a crawler is required to run
-CRAWLER = False
+CRAWLER = True
 
 # Set if each stock to be crawled separately
 CRAWLER_STOCK_BY_STOCK = True
