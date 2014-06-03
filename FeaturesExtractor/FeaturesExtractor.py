@@ -4,7 +4,6 @@ Created on Nov 7, 2013
 @author: ASALLAB
 '''
 from xml.dom import minidom
-from oauthlib.oauth2.rfc6749 import tokens
 from LanguageModel.LanguageModel import *
 import pickle
 import numpy
@@ -13,7 +12,6 @@ import re
 from bs4 import BeautifulSoup
 import urllib.request
 import locale
-import os
 
 locale.setlocale(locale.LC_NUMERIC, 'English_USA.1252')
 DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST = False
@@ -31,7 +29,7 @@ class FeaturesExtractor(object):
         '''
         Constructor
         '''
-        # Store the language model.
+        # Store the language model. 
         self.languageModel = languageModel
         
         self.linksDB = {}
@@ -79,8 +77,7 @@ class FeaturesExtractor(object):
             if(self.considerNumbersFeatures == "true"):
                 for i in range(0,self.numOfRanges+1):
                     self.featuresNamesMap['numFeature'+str(i)] = featureIdx
-                    featureIdx += 1
-
+                    featureIdx += 1                                              
         # Store the dataset
         self.dataSet = dataSet
         
@@ -231,7 +228,6 @@ class FeaturesExtractor(object):
     def ExtractNumTfFeatures(self):
         
         # Loop on the dataset items
-        i = 0
         irrelevantNum = 0
         for item in self.dataSet:
             if(not (item['text'] is None) and not(item['label'] is None)):
@@ -247,6 +243,7 @@ class FeaturesExtractor(object):
                 
                 # Get the text of the item body
                 text = item['text']
+                
                 # Parse the link pattern
                 urls = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
                 
@@ -259,10 +256,10 @@ class FeaturesExtractor(object):
                     
                 # Form the list of language model terms
                 terms = self.languageModel.SplitIntoTerms(text)
-
+                
                 # Extract features for the item based on its terms
                 for term in terms:
-
+                    
                     # If the term exist in the language model
                     if term in self.languageModel.languageModel:
                         
@@ -279,8 +276,7 @@ class FeaturesExtractor(object):
                                     itemFeatures[self.featuresNamesMap[term]] += 1
                             else:
                                 itemFeatures[term] = 1
-
-
+                                
                                                       
                 nums = re.findall(u'([\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]*[066B|066C|060C|,|\.]*?[\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]+)+', text)
                 numFeaturesInfo = [0] * (self.numOfRanges+1) #Create List to set the output of each row
@@ -347,16 +343,7 @@ class FeaturesExtractor(object):
                                     linkText = self.languageModel.ExtractLinkText(url)
                                     if(linkText != ''):
                                         text += linkText                                    
-
-
-                #use the parser feature
-                #if(self.parser == "true"):
-                # strPos = 'تاسي'
-                # for tag in posTweet:
-                #     if str(strPos) in str(tag):
-                #         itemFeatures[self.featuresNamesMap['pos']] = self.calcFet(tag)
-
-
+                                                   
                 if(itemFeatures.__len__() != 0) :
                     # Calculate TF-IDF
                     maxTF = max(self.languageModel.languageModel.values())
@@ -474,7 +461,7 @@ class FeaturesExtractor(object):
                         itemFeatures[term] = 0
                 # Get the text of the item body
                 text = item['text']
-
+                
                 # Parse the link pattern
                 urls = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
 
@@ -567,9 +554,10 @@ class FeaturesExtractor(object):
                                     else:
                                         linkText = self.languageModel.ExtractLinkText(url)
                                         if(linkText != ''):
-                                            text += linkText
+                                            text += linkText        
+                        
 
-          
+    
                     # Add to the global features list
                     self.features.append(itemFeatures)
                     
@@ -884,24 +872,3 @@ class FeaturesExtractor(object):
                 tmp = line.split(' ')
                 self.linksDB[tmp[0]] = tmp[1]
             infile.close()
-
-    def calcFet(self,pos):
-        if 'NN' in str(pos):
-            return 1
-        elif 'VB' in str(pos):
-            return 2
-        elif 'JJ' in str(pos):
-            return 3
-        elif 'FW' in str(pos):
-            return 4
-        else:
-            return 0
-
-    def clean(self,data):
-        punctuations = '''\t!()-+[]{};.:'ـ",<>.?@#$%^&*_~/'''
-        # remove punctuations from the string
-        noPunct = ""
-        for char in data:
-           if char not in punctuations:
-               noPunct = noPunct + char
-        return noPunct
