@@ -6,7 +6,7 @@ Created on Nov 14, 2013
 import pickle
 from xml.dom import minidom
 import nltk, nltk.classify.util, nltk.metrics
-from nltk.classify import MaxentClassifier
+from nltk.classify import MaxentClassifier, weka
 from encodings.utf_8 import encode
 
 class Classifier(object):
@@ -56,10 +56,16 @@ class Classifier(object):
                
                 i +=1
             if(self.classifierType == "DecisionTree"):
-                self.svmModel = nltk.DecisionTreeClassifier.train(train_set,entropy_cutoff=.01,depth_cutoff=300,binary=True,verbose=True)
+                DT = nltk.DecisionTreeClassifier()
+                self.svmModel = DT.train(train_set,entropy_cutoff=.01,depth_cutoff=300,binary=True,verbose=True)
+                s = DT.pp()
+                print(s)
+                t = DT.pseudocode()
                 sorted(self.svmModel.labels())
                 print(self.svmModel)
-            
+
+
+
 
     # Method to test the classifier    
     def Test(self):        
@@ -83,7 +89,7 @@ class Classifier(object):
             irrel = 0;
             i = 0;
             for test in self.testFeatures:
-                res = self.svmModel.classify(test)
+                res = self.svmModel.prob(test)
                 label.append(res)
                 if self.testTargets[i] == res:
                     acc += 1
@@ -98,7 +104,61 @@ class Classifier(object):
             print("Acc = " + str(acc) + " %")
             return label,acc, val
                     
-                
+    def Test2Classifiers(self):
+        from liblinearutil import train
+
+        self.cParam = 32  # Best cross validation accuracy
+        self.nFoldsParam = 10
+        self.svmModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
+        train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam) + ' -v ' + str(self.nFoldsParam))
+
+        from liblinearutil import predict
+
+        label, acc, val = predict(self.testTargets, self.testFeatures, self.svmModel)
+
+
+    ###########DT
+        train_set = []
+        i = 0;
+        weights = [];
+        encoding = []
+        for fet in self.trainFeatures:
+            train_set.append((self.trainFeatures[i], self.trainTargets[i]))
+            weights.append(i * 0.5)
+
+            i += 1
+
+        self.dtModel = nltk.DecisionTreeClassifier.train(train_set, entropy_cutoff=.01, depth_cutoff=300,
+                                                              binary=True, verbose=True)
+
+        sorted(self.dtModel.labels())
+        print(self.dtModel)
+
+        label2 = []
+        acc2 = 0
+        rel = 0
+        irrel = 0;
+        i = 0;
+        for test in self.testFeatures:
+            res = self.dtModel.classify(test)
+            label2.append(res)
+            if self.testTargets[i] == res:
+                acc2 += 1
+            if res == 1.0:
+                rel += 1
+            else:
+                irrel += 1
+            i += 1
+        val2 = [rel / len(self.testFeatures), irrel / len(self.testFeatures)]
+        acc2 = acc2 / len(self.testFeatures) * 100
+        print("Count " + str(rel + irrel))
+        print("Acc = " + str(acc) + " %")
+        f = open('SoftInput.txt','w')
+        j = 0
+        for v in val:
+            f.write(str(val[j]) + "\t" + str(label2[j]) + "\t" + str(self.testTargets[j]) + "\n")
+            j +=1
+
               
             
            
@@ -144,7 +204,7 @@ class Classifier(object):
             from liblinearutil import train            
             self.svmModel = train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam))
         '''
-        
+
         
     def BuildConfusionMatrix(self, vDesiredTargets, vObtainedTargets):
         import  numpy
