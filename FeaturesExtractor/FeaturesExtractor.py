@@ -127,23 +127,23 @@ class FeaturesExtractor(object):
                     if term in terms:
                         if(self.libSVMFormat == 'true'):                            
                             if self.featureFormat != 'Binary':
-                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['exist_weight']
+                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['existWeight']
                             else:
                                 itemFeatures[self.featuresNamesMap[term]] = 1
                         else:
                             if self.featureFormat != 'Binary':
-                                itemFeatures[term] = self.languageModel.languageModel[term]['exist_weight']
+                                itemFeatures[term] = self.languageModel.languageModel[term]['existWeight']
                             else:
                                 itemFeatures[term] = 1
                     else:
                         if(self.libSVMFormat == 'true'):                            
                             if self.featureFormat != 'Binary':
-                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['exist_weight']
+                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['existWeight']
                             else:
                                 itemFeatures[self.featuresNamesMap[term]] = 1
                         else:
                             if self.featureFormat != 'Binary':
-                                itemFeatures[term] = -1*self.languageModel.languageModel[term]['non_exist_weight']
+                                itemFeatures[term] = -1*self.languageModel.languageModel[term]['nonExistWeight']
                             else:
                                 itemFeatures[term] = -1                                
                                                       

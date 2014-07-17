@@ -342,8 +342,8 @@ class LanguageModel(object):
                     # The language model contains no frequency, assume 1 for each term
                     self.languageModel[item] = 1
             elif (self.type == 'lexicon'):
-                self.languageModel[item]['exist_weight'] = int(lineItems[1])
-                self.languageModel[item]['non_exist_weight'] = int(lineItems[2])
+                self.languageModel[item]['existWeight'] = int(lineItems[1])
+                self.languageModel[item]['nonExistWeight'] = int(lineItems[2])
             
         # Close the file
         fin.close()
