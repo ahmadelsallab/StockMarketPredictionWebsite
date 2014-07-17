@@ -89,7 +89,127 @@ class FeaturesExtractor(object):
         self.features = []
         self.labels = []
         
+    def ExtractLexiconFeatures(self):
+        
+        # Loop on the dataset items
+        for item in self.dataSet:
+            if(not (item['text'] is None) and not(item['label'] is None)):
+                # Initialize the items dictionary. It's sparse dictionary, with only words in the language model that exist in the item.
+                itemFeatures = {}
+                
+                # Initialize the features vector                
+                for term in self.languageModel.languageModel:
+                    if(self.libSVMFormat == 'true'):
+                        itemFeatures[self.featuresNamesMap[term]] = 0
+                    else:
+                        itemFeatures[term] = 0
+                
+                # Get the text of the item body
+                text = item['text']
+                
+                # Parse the link pattern
+                urls = re.findall(r'(https?:[//]?[^\s]+)', item['text'])
+                
+                for url in urls:
+                    if len(url) > 0:
+                        if(self.parseLinkBody == "true"):
+                            linkText = self.languageModel.ExtractLinkText(url)
+                            if(linkText != ''):
+                                text += linkText
+                    
+                # Form the list of language model terms
+                terms = self.languageModel.SplitIntoTerms(text)
+                
+                # Extract lexicon terms from text
+                # Special case for lexicon is to traverse the language model and not the terms, because if the term of the 
+                # lexicon is not mentioned at all, then we set its non-exist weight
+                for term in self.languageModel.languageModel:
+                    if term in terms:
+                        if(self.libSVMFormat == 'true'):                            
+                            if self.featureFormat != 'Binary':
+                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['exist_weight']
+                            else:
+                                itemFeatures[self.featuresNamesMap[term]] = 1
+                        else:
+                            if self.featureFormat != 'Binary':
+                                itemFeatures[term] = self.languageModel.languageModel[term]['exist_weight']
+                            else:
+                                itemFeatures[term] = 1
+                    else:
+                        if(self.libSVMFormat == 'true'):                            
+                            if self.featureFormat != 'Binary':
+                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['exist_weight']
+                            else:
+                                itemFeatures[self.featuresNamesMap[term]] = 1
+                        else:
+                            if self.featureFormat != 'Binary':
+                                itemFeatures[term] = -1*self.languageModel.languageModel[term]['non_exist_weight']
+                            else:
+                                itemFeatures[term] = -1                                
+                                                      
+                # if at least one relevant link exists, then set the corresponding places in the vector
+                if(self.considerLinksDB == "true"):
+                    for url in urls:
+                        if len(url) < 0:
+                            # No link
+                            if(self.libSVMFormat == 'true'):
+                                itemFeatures[self.featuresNamesMap['isLink']] = 0
+                                itemFeatures[self.featuresNamesMap['isLinkRelevant']] = 0
+    
+                            else:
+                                itemFeatures['isLink'] = 0
+                                itemFeatures['isLinkRelevant'] = 0
+                        else:
+                            if(self.libSVMFormat == 'true'):
+                                itemFeatures[self.featuresNamesMap['isLink']] = 1
+                                if url in self.linksDB:
+                                    if(self.linksDB[url] == 'relevant'):
+                                        itemFeatures[self.featuresNamesMap['isLinkRelevant']] = 1
+                                    else:
+                                        itemFeatures[self.featuresNamesMap['isLinkRelevant']] = 0
+                                else:
+                                    linkText = self.languageModel.ExtractLinkText(url)
+                                    if(linkText != ''):
+                                        text += linkText
+                                           
+                            else:
+                                itemFeatures['isLink'] = 1
+                                if url in self.linksDB:
+                                    if(self.linksDB[url] == 'relevant'):
+                                        itemFeatures['isLinkRelevant'] = 1
+                                    else:
+                                        itemFeatures['isLinkRelevant'] = 0
+                                else:
+                                    linkText = self.languageModel.ExtractLinkText(url)
+                                    if(linkText != ''):
+                                        text += linkText
+                             
+                # Add to global features list                                      
+                if(itemFeatures.__len__() != 0) :   
+                    # Normalize the feature
+                    maxValue = max(itemFeatures.values())
+                    for term in itemFeatures:
+                        if self.featureFormat == 'Normal':                            
+                            if maxValue != 0:
+                                itemFeatures[term] /= maxValue
 
+                    # Add to the global features list
+                    self.features.append(itemFeatures)
+                    
+                    if(self.libSVMFormat == 'true'):
+                        if not item['label'] in self.labelsNamesMap:
+                            print('Incorrect label ' + item['label']) 
+                        if item['label'] == 'irirrelevant':
+                            item['label'] = 'irrelevant'
+                            print('Incorrect label ' + item['label'])
+                        try:
+                            self.labels.append(self.labelsNamesMap[item['label']])
+                        except KeyError:
+                            print('Incorrect label ' + item['label'])
+                    else:
+                        self.labels.append(item['label'])
+                    
+    
     def ExtractTFFeatures(self):
         
         # Loop on the dataset items
@@ -138,7 +258,7 @@ class FeaturesExtractor(object):
                         else:
                             if term in itemFeatures:
                                 if self.featureFormat != 'Binary':
-                                    itemFeatures[self.featuresNamesMap[term]] += 1
+                                    itemFeatures[term] += 1
                             else:
                                 itemFeatures[term] = 1
                                                       
@@ -273,7 +393,7 @@ class FeaturesExtractor(object):
                         else:
                             if term in itemFeatures:
                                 if self.featureFormat != 'Binary':
-                                    itemFeatures[self.featuresNamesMap[term]] += 1
+                                    itemFeatures[term] += 1
                             else:
                                 itemFeatures[term] = 1
                                 
@@ -491,7 +611,7 @@ class FeaturesExtractor(object):
                         else:
                             if term in itemFeatures:
                                 if self.featureFormat != 'Binary':
-                                    itemFeatures[self.featuresNamesMap[term]] += 1
+                                    itemFeatures[term] += 1
                             else:
                                 itemFeatures[term] = 1
                                                       

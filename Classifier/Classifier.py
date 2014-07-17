@@ -15,7 +15,9 @@ class Classifier(object):
     '''
     classdocs
     '''    
-
+    # Initialize the labels names map. Used for Lexicon classifier
+    labelsNamesMap = {}
+    
     def __init__(self,configDocName ,featuresSerializationFileName,  trainFeatures, trainTargets, testFeatures, testTargets):
         '''
         Constructor
@@ -27,7 +29,7 @@ class Classifier(object):
         self.trainTargets = trainTargets
         self.testFeatures = testFeatures
         self.testTargets = testTargets
-        
+                
         # Store the serialization file
         self.featuresSerializationFileName = featuresSerializationFileName 
       
@@ -159,7 +161,7 @@ class Classifier(object):
                 acc = acc / len(self.testFeatures) *100 
                 print("Count " + str(rel+irrel))
                 print("Acc = " + str(acc) + " %")
-                return label,acc, val
+                return label, acc, val
                     
         elif(self.classifierType == "AdaBoost"):                
             if(self.packageType == "sklearn"):
@@ -188,9 +190,49 @@ class Classifier(object):
                     print("Only DecisionTree is supported as base classifier")
             else:
                 print("Only sklearn is supported for AdaBoost")
+        elif(self.classifierType == "Lexicon"):
+            acc = 0
+            i = 0
+            labels = []
+            for caseFeatures in self.testFeatures:
+                # Predict case by case
+                label = self.LexiconPredict(caseFeatures)
+                
+                labels.append(label)
+                if(label == self.testTargets[i]):
+                    acc += 1
+                i += 1
+            
+            # Return accuracy as percentage
+            acc = acc / len(self.testTargets) * 100
+            
+            return labels, acc, 1
+            
         else:
             print("Not supported classifier type")
-           
+          
+    # Predict funciton for lexicon classifier
+    def LexiconPredict(self, caseFeatures):
+        
+        # Get the score of the features
+        score = 0
+        for feature in caseFeatures.values():
+            score += feature
+        
+        # Return the label based on the comparison to threshold set in configurations 
+       
+        if(score >= self.lexiconThreshold):
+            if(self.libSVMFormat == 'true'):
+                return self.labelsNamesMap[self.labels[0]]
+            else:
+                return self.labels[0]
+        else:
+            if(self.libSVMFormat == 'true'):
+                return self.labelsNamesMap[self.labels[1]]
+            else:
+                return self.labels[0]        
+         
+
     # For cross validation accuracy
     # nFoldsParam = 10
     # crossValidationAccuracy = train(featuresExtractor.labels, featuresExtractor.features, '-c' + str(cParam) + '-v' + str(nFoldsParam))
@@ -245,14 +287,30 @@ class Classifier(object):
     def BuildConfusionMatrix(self, vDesiredTargets, vObtainedTargets):
         import  numpy
         # Size of matrix is the maximum ID of classes
-        nSizeOfMatrix = max(vDesiredTargets)
+        #nSizeOfMatrix = max(vDesiredTargets)
+        if(self.libSVMFormat == "true"):
+            nSizeOfMatrix = max(vDesiredTargets)            
+        else:
+            nSizeOfMatrix = len(self.labels)
+            labelIdx = 1
+            labelsNamesMap = {}
+            for label in self.labels:
+                if not label in labelsNamesMap:
+                    labelsNamesMap[label] = labelIdx
+                    labelIdx += 1
+            
         mConfusionMatrix = numpy.zeros(nSizeOfMatrix * nSizeOfMatrix).reshape(nSizeOfMatrix, nSizeOfMatrix)
         mNormalConfusionMatrix = numpy.zeros(nSizeOfMatrix * nSizeOfMatrix).reshape(nSizeOfMatrix, nSizeOfMatrix)
         vNumTrainExamplesPerClass = numpy.zeros(nSizeOfMatrix)
         
         for i in range(vDesiredTargets.__len__()):
-            vNumTrainExamplesPerClass[vDesiredTargets[i] - 1] += 1
-            mConfusionMatrix[vDesiredTargets[i] - 1, vObtainedTargets[i] - 1] += 1        
+            if(self.libSVMFormat == "true"):
+                vNumTrainExamplesPerClass[vDesiredTargets[i] - 1] += 1
+                mConfusionMatrix[vDesiredTargets[i] - 1, vObtainedTargets[i] - 1] += 1
+            else:
+                vNumTrainExamplesPerClass[labelsNamesMap[vDesiredTargets[i]] - 1] += 1
+                mConfusionMatrix[labelsNamesMap[vDesiredTargets[i]] - 1, labelsNamesMap[vObtainedTargets[i]] - 1] += 1
+                            
         
     
         for m in range(nSizeOfMatrix):
@@ -278,4 +336,22 @@ class Classifier(object):
         
         # Get the base classifier type
         self.baseClassifierType = xmldoc.getElementsByTagName('BaseClassifierType')[0].attributes['baseClassifierType'].value
+
+        # Get the lexicon threshold
+        self.lexiconThreshold = int(xmldoc.getElementsByTagName('LexiconThreshold')[0].attributes['lexiconThreshold'].value)            
+          
+        # LibSVMFormat,  Label configurations are only needed in case of Lexicon classifie
+        # Get the libSVMFormat flag
+        self.libSVMFormat = xmldoc.getElementsByTagName('LibSVMFormat')[0].attributes['libSVMFormat'].value 
+              
+        # Get the Label
         
+        labelIdx = 1
+        self.labels = []
+        labels = xmldoc.getElementsByTagName('Label')
+        for label in labels:
+            self.labels.append(label.attributes['label'].value)
+            if(self.libSVMFormat == 'true'):
+                if not label.attributes['label'].value in self.labelsNamesMap:
+                    self.labelsNamesMap[label.attributes['label'].value] = labelIdx
+                    labelIdx += 1
