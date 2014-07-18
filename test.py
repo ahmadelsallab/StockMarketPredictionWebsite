@@ -163,6 +163,7 @@ bdt = AdaBoostClassifier(DecisionTreeClassifier(1),
                          algorithm="SAMME",
                          n_estimators=200)
 '''
+'''
 bdt.fit(X, y)
 
 plot_colors = "br"
@@ -214,3 +215,35 @@ pl.xlabel('Decision Scores')
 pl.subplots_adjust(wspace=0.25)
 pl.show()
 pl.savefig("plt.png")
+'''
+
+
+
+#-----------------------------------------------------------------------
+# twitter-stream:
+#  - ultra-real-time stream of twitter's public timeline
+#    prints live results containing a URL link and the #OWS tag
+#-----------------------------------------------------------------------
+
+from twitter import *
+
+# these tokens are necessary for user authentication
+
+# create twitter API object
+auth = OAuth("1846277677-Sw5vuDcBqQdXOKZ5Pw1zLlDj8gFOfcD1L3VXx8F", "wfeTXOlxNJLXBjKBJqR6WvcD9duIjy8CrvJcsgxoqc",
+                     "xNRGvHoz9L4xKGP28m7qbg", "oFv4dhBekboNg7pKa2BS0zztHqusr91SIdmKErDaycI")
+stream = TwitterStream(auth = auth, secure = True)
+
+# iterate over tweets matching this filter text
+# IMPORTANT! this is not quite the same as a standard twitter search
+#  - see https://dev.twitter.com/docs/streaming-api
+#tweet_iter = stream.statuses.filter(track = "social")
+tweet_iter = stream.statuses.sample()
+
+for tweet in tweet_iter:
+    # check whether this is a valid tweet
+    if tweet.get('text'):
+        # yes it is! print out the contents, and any URLs found inside
+        print("(%s) @%s %s" % (tweet["created_at"], tweet["user"]["screen_name"], tweet["text"]))
+        for url in tweet["entities"]["urls"]:
+            print(" - found URL: %s" % url["expanded_url"])
