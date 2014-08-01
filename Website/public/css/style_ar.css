@@ -1,0 +1,30 @@
+body{
+	direction:rtl;
+}
+.navbar-header{
+	float:right;
+}
+.header-nav{
+	margin-right: 120px;
+	float:right;
+}
+.sidebar{
+	right:0;
+}
+.nav-sidebar{
+	margin-right:-60px;
+}
+.main{
+	margin-left:0;
+}
+.language-bar{
+	float: left;
+}
+.navbar-nav>li{
+	float: right;
+}
+.twitter-prof-pic{
+	float: right;
+border: 2px solid whitesmoke;
+margin-left: 10px!important;
+}
