@@ -9,6 +9,8 @@ import datetime
 import time
 from random import randrange
 import pickle
+import re
+import hashlib
 
 class TwitterCrawler(object):
     '''
@@ -64,6 +66,9 @@ class TwitterCrawler(object):
         
         # Each time search returns no new tweets this counter is incremented. After it cross LIMIT_NO_OLDER_TWEETS start searching for more recent instead of older
         self.numberOfNoOlderTweets = 0
+        self.IDset= set()
+        self.hashset=set()
+        self.removeSet= set()        
     # The main crawler    
     def Crawl(self, quiet):
         # Start updates
@@ -92,6 +97,11 @@ class TwitterCrawler(object):
                 resultsCrawl = self.SearchRecent(since_id=sinceId)
                 
             if (self.inhibitSavingToLocalStruct != "true"):
+                ###################Remove Duplicate Tweets############################
+                self.findTweetCopiesByID(resultsCrawl)
+                self.findTweetCopiesByHashing(resultsCrawl)
+                resultsCrawl=self.removeTweetCopies(resultsCrawl)
+                ######################################################################                
                 # Append the results
                 self.results.extend(resultsCrawl)
                 
@@ -439,3 +449,25 @@ class TwitterCrawler(object):
             if wrap or isinstance(d, dict):
                 xml = xml + '</' + root + '>\n'
         return xml        
+
+    def findTweetCopiesByHashing(self,resultsCrawl):
+        for tweet in resultsCrawl:
+            links = re.findall(r'(https?:[//]?[^\s]+)', tweet['text'])
+            for link in links:
+                tweet['text']=tweet['text'].replace(link,'')
+            hash = hashlib.sha256(tweet['text'].encode()).hexdigest()
+            if not (hash in self.hashset):     
+                self.hashset.add(hash)
+            else:
+                self.removeSet.add(tweet['id']) 
+    
+    def findTweetCopiesByID(self,resultsCrawl):
+        for tweet in resultsCrawl:
+            if not (tweet['id'] in self.IDset):     
+                self.IDset.add(tweet['id'])
+            else:
+                self.removeSet.add(tweet['id'])               
+                
+    def removeTweetCopies(self,resultsCrawl):
+        newResultsCrawl = [t for t in resultsCrawl if not(t['id'] in self.removeSet)]   
+        return newResultsCrawl     

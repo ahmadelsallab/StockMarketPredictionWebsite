@@ -334,11 +334,16 @@ class LanguageModel(object):
                 item = self.stemmer.stem(word)
             else:
                 item = word
-            try:
-                self.languageModel[item] = lineItems[1]
-            except:
-                # The language model contains no frequency, assume 1 for each term
-                self.languageModel[item] = 1
+            self.languageModel[item] = {}
+            if(self.type == 'frequencyModel'):
+                try:
+                    self.languageModel[item] = int(lineItems[1])
+                except:
+                    # The language model contains no frequency, assume 1 for each term
+                    self.languageModel[item] = 1
+            elif (self.type == 'lexicon'):
+                self.languageModel[item]['existWeight'] = int(lineItems[1])
+                self.languageModel[item]['nonExistWeight'] = int(lineItems[2])
             
         # Close the file
         fin.close()
@@ -365,6 +370,10 @@ class LanguageModel(object):
 
         # Get the removeLeadTrailTags flag
         self.removeLeadTrailTags = xmldoc.getElementsByTagName('RemoveLeadTrailTags')[0].attributes['removeLeadTrailTags'].value        
+        
+        # Get the removeLeadTrailTags flag
+        self.type = xmldoc.getElementsByTagName('Type')[0].attributes['type'].value        
+        
         
         # Get the list of labels
         labels = xmldoc.getElementsByTagName('Label')

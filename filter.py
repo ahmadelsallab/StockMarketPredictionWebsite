@@ -53,6 +53,7 @@ datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileNam
 # Set the dataset to the train set so that the language model is built from train tweets only
 datasetBuilder.dataSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
 datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
+datasetBuilder.SaveDataset()
 #datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
 #datasetBuilder.trainSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
 
@@ -71,6 +72,7 @@ languageModelSerializationFile = ".\\LanguageModel\\Output\\language_model.bin"
 # Initialize the LanguageModel
 languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
 languageModel.BuildLanguageModel()
+languageModel.SaveModel()
 '''
 # Extract relevant tweets only
 relevantDataSet = []
@@ -149,21 +151,21 @@ testFeaturesExtractor.SaveLabels()
 testFeaturesExtractor.DumpFeaturesToTxt(testExportFileName)
 
 # The serialization file to save the features
+configFileClassifier = ".\\Classifier\\Configurations\\Configurations.xml"
 modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
 
 # Start the Classifier:
 #---------------------
 
-classifier = Classifier(modelSerializationFile, 'SVM', trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
+classifier = Classifier(configFileClassifier, modelSerializationFile,  trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
 
 
 # Train
 classifier.Train()
-
+classifier.SaveModel()
 # Test
 labels, acc, val = classifier.Test()
 
 # Build the confusion matrix
 mConfusionMatrix, mNormalConfusionMatrix, vNumTrainExamplesPerClass, vAccuracyPerClass, nOverallAccuracy = classifier.BuildConfusionMatrix(testFeaturesExtractor.labels, labels)
 print(mConfusionMatrix)
-

@@ -1,6 +1,8 @@
 <Configurations>
   <!--The language model to buid-->
   <NGram NGram="1"></NGram>
+  <!--Type of language model: frequencyModel, lexicon-->
+  <Type type="lexicon"></Type>
   <!--Consider the stop words-->
   <ConsiderStopWords considerStopWords="false"></ConsiderStopWords>  
   <!--Set to true if the language model enables stemming-->
