@@ -250,11 +250,12 @@ for tweet in tweet_iter:
             print(" - found URL: %s" % url["expanded_url"])
 '''
 
-from filter_api import filter_api
+from filter import filter
 
 
-filt = filter_api()
+filt = filter()
 TweetText = {}
 TweetText['text']= "صعود المؤشر في بداية السوق لأن تبقى لديه موجة صعود وبعدها نزول أنتبهوا "
 TweetText['label']= []
-filt.filter(TweetText)            
+label =filt.filter(TweetText)
+print(label)            

@@ -108,7 +108,7 @@ class Classifier(object):
         else:
             print("Not supported classifier type")
     # Method to test the classifier    
-    def Test(self):        
+    def Test(self):       
         # Check classifier type
         if(self.classifierType == "SVM"):
             if(self.packageType == "liblinear"):
