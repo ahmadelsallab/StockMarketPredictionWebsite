@@ -85,7 +85,7 @@ class Filter(object):
         testFeaturesExtractor.ExtractNumTfFeatures()
         
         self.classifier.testFeatures = testFeaturesExtractor.features
-        self.classifier.testTargets = []
+        self.classifier.testTargets = [1]
         
         
         label, acc, val = self.classifier.Test()
