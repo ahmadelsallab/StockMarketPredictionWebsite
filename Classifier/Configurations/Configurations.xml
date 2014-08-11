@@ -1,16 +1,15 @@
 <Configurations>
   <!--The classifier type. Examples: SVM, DecisionTree, AdaBoost, Lexicon. For AdaBoost, only DecisionTree is supported as the base classifier-->
-  <ClassifierType classifierType="Lexicon"></ClassifierType>
+  <ClassifierType classifierType="DecisionTree"></ClassifierType>
   <!--The base classifier used for boosting. Valid only for ClassifierType = AdaBoost. Only DecisionTrees are supported for now-->
   <BaseClassifierType baseClassifierType="DecisionTree"></BaseClassifierType>
   <!--PackageType defines which python package is used. Example: If ClassifierType = SVM, then PackageType could be either libsvm or liblinear. Example: If ClassifierType = DecisionTree, then PackageType could be either sklearn or nltk-->
   <PackageType packageType="nltk"></PackageType> 
   <!--The threshold to compare to in case of 'Lexicon' classifierType-->
-  <LexiconThreshold lexiconThreshold="0"></LexiconThreshold>
-  
+  <LexiconThreshold lexiconThreshold="0"></LexiconThreshold> 
   <!--LibSVMFormat,  Label configurations are only needed in case of Lexicon classifier-->
   <!--Set to true if the used package is LibSVM-->
-  <LibSVMFormat libSVMFormat="false"></LibSVMFormat>
+  <LibSVMFormat libSVMFormat="true"></LibSVMFormat>
   <!--Indices are 1 based so 0 is not permitted. The positive class shall be mentioned first-->
   <Label label="relevant"></Label>
   <Label label="irrelevant"></Label>
