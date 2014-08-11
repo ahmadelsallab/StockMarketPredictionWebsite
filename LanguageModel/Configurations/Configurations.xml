@@ -1,10 +1,18 @@
 <Configurations>
   <!--The language model to buid-->
   <NGram NGram="1"></NGram>
+  <!--Type of language model: frequencyModel, lexicon-->
+  <Type type="lexicon"></Type>
   <!--Consider the stop words-->
   <ConsiderStopWords considerStopWords="false"></ConsiderStopWords>  
   <!--Set to true if the language model enables stemming-->
   <EnableStemming enableStemming="false"></EnableStemming>
+  <!--Set to true if a database of relevant/irrelevant links in tweets is needed-->
+  <BuildLinksDB buildLinksDB="false"></BuildLinksDB>
+  <!--Set to true if the contents of the link is needed to update the model-->
+  <ParseLinkBody parseLinkBody="false"></ParseLinkBody>
+  <!--Set to true to remove trailing and leading #tags-->
+  <RemoveLeadTrailTags removeLeadTrailTags="false"></RemoveLeadTrailTags>
   <!--Mapping of labels to indices for libsvm format. Indices are 1 based so 0 is not permitted-->
   <Label label="relevant"></Label>
   <Label label="irrelevant"></Label>
