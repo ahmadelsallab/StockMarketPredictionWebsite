@@ -207,7 +207,6 @@ class Classifier(object):
             acc = acc / len(self.testTargets) * 100
             
             return labels, acc, 1
-            
         else:
             print("Not supported classifier type")
           
@@ -252,7 +251,7 @@ class Classifier(object):
             pickle.dump(self.classifierModel, serializationFile)
             
             # Close the serialization file
-            serializationFile.close()            
+            serializationFile.close()
         else:
             print("Only SVM with liblinear is supported to SaveModel")
         '''
@@ -281,7 +280,7 @@ class Classifier(object):
             
             self.classifierModel = pickle.load(serializationFile)
             
-            serializationFile.close()            
+            serializationFile.close()
         else:
             print("Only SVM with liblinear is supported to LoadModel")
         
