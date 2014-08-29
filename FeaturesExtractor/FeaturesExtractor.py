@@ -75,6 +75,8 @@ class FeaturesExtractor(object):
                 self.featuresNamesMap['isLinkRelevant'] = featureIdx
                 featureIdx += 1
             if(self.considerNumbersFeatures == "true"):
+                self.featuresNamesMap['isNumberExists'] = featureIdx
+                featureIdx += 1
                 for i in range(0,self.numOfRanges+1):
                     self.featuresNamesMap['numFeature'+str(i)] = featureIdx
                     featureIdx += 1                                              
@@ -123,30 +125,72 @@ class FeaturesExtractor(object):
                 # Extract lexicon terms from text
                 # Special case for lexicon is to traverse the language model and not the terms, because if the term of the 
                 # lexicon is not mentioned at all, then we set its non-exist weight
-                for term in self.languageModel.languageModel:
-                    if term in terms:
-                        if(self.libSVMFormat == 'true'):                            
-                            if self.featureFormat != 'Binary':
-                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['existWeight']
+                for languageModelTerm in self.languageModel.languageModel:
+                    # Check if the language model term is composed of many synonyms, then search for ANY (OR) of them, not all
+                    termsSynonyms = languageModelTerm.split()#term.split(sep=None, maxsplit=_1)--> split with whitespaces
+                    for term in termsSynonyms:
+                        if term in terms:
+                            if(self.libSVMFormat == 'true'):                            
+                                if self.featureFormat != 'Binary':
+                                    itemFeatures[self.featuresNamesMap[languageModelTerm]] = self.languageModel.languageModel[languageModelTerm]['existWeight']
+                                else:
+                                    itemFeatures[self.featuresNamesMap[languageModelTerm]] = 1
                             else:
-                                itemFeatures[self.featuresNamesMap[term]] = 1
+                                if self.featureFormat != 'Binary':
+                                    itemFeatures[languageModelTerm] = self.languageModel.languageModel[languageModelTerm]['existWeight']
+                                else:
+                                    itemFeatures[languageModelTerm] = 1
+                            break
                         else:
-                            if self.featureFormat != 'Binary':
-                                itemFeatures[term] = self.languageModel.languageModel[term]['existWeight']
+                            if(self.libSVMFormat == 'true'):                            
+                                if self.featureFormat != 'Binary':
+                                    itemFeatures[self.featuresNamesMap[languageModelTerm]] = self.languageModel.languageModel[languageModelTerm]['nonExistWeight']
+                                else:
+                                    itemFeatures[self.featuresNamesMap[languageModelTerm]] = 1
                             else:
-                                itemFeatures[term] = 1
-                    else:
-                        if(self.libSVMFormat == 'true'):                            
-                            if self.featureFormat != 'Binary':
-                                itemFeatures[self.featuresNamesMap[term]] = self.languageModel.languageModel[term]['existWeight']
+                                if self.featureFormat != 'Binary':
+                                    itemFeatures[languageModelTerm] = -1*self.languageModel.languageModel[languageModelTerm]['nonExistWeight']
+                                else:
+                                    itemFeatures[languageModelTerm] = -1                                
+                                                 
+
+          
+                #Extract Numbers features
+                if(self.considerNumbersFeatures == "true"):
+                    isNumberExists, numFeaturesInfo =  self.ExtractNumFeatures(text, self.ranges, self.numOfRanges)
+                    
+                    # Make sure a weight exists for isNumberExists in the language model
+                    if('isNumberExists' in self.languageModel.languageModel):
+                        # Update isNumberExists feature
+                        if not isNumberExists:                                        
+                            # No Number
+                            if(self.libSVMFormat == 'true'):
+                                itemFeatures[self.featuresNamesMap['isNumberExists']] = self.languageModel.languageModel['isNumberExists']['nonExistWeight']                        
                             else:
-                                itemFeatures[self.featuresNamesMap[term]] = 1
+                                itemFeatures['isNumberExists'] = self.languageModel.languageModel['isNumberExists']['nonExistWeight']
                         else:
-                            if self.featureFormat != 'Binary':
-                                itemFeatures[term] = -1*self.languageModel.languageModel[term]['nonExistWeight']
+                            if(self.libSVMFormat == 'true'):
+                                itemFeatures[self.featuresNamesMap['isNumberExists']] = self.languageModel.languageModel['isNumberExists']['existWeight']
+                              
                             else:
-                                itemFeatures[term] = -1                                
+                                itemFeatures['isNumberExists'] = self.languageModel.languageModel['isNumberExists']['existWeight']
+                    
+                    # Update isNumberInRange feature(s)
+                    # Make sure a weight exists for isNumberInRange in the language model
+                    if('isNumberInRange' in self.languageModel.languageModel):
+                        for i in range(0, self.numOfRanges):
+                            if numFeaturesInfo[i] != 0:
+                                if(self.libSVMFormat == 'true'):
+                                    itemFeatures[self.featuresNamesMap['numFeature'+str(i)]] = numFeaturesInfo[i] * self.languageModel.languageModel['isNumberInRange']['existWeight']
+                                else:
+                                    itemFeatures['numFeature'+str(i)] = numFeaturesInfo[i] * self.languageModel.languageModel['isNumberInRange']['existWeight']
+                            else:
+                                if(self.libSVMFormat == 'true'):
+                                    itemFeatures[self.featuresNamesMap['numFeature'+str(i)]] = numFeaturesInfo[i] * self.languageModel.languageModel['isNumberInRange']['nonExistWeight']
+                                else:
+                                    itemFeatures['numFeature'+str(i)] = numFeaturesInfo[i] * self.languageModel.languageModel['isNumberInRange']['nonExistWeight']
                                                       
+                            
                 # if at least one relevant link exists, then set the corresponding places in the vector
                 if(self.considerLinksDB == "true"):
                     for url in urls:
@@ -208,8 +252,40 @@ class FeaturesExtractor(object):
                             print('Incorrect label ' + item['label'])
                     else:
                         self.labels.append(item['label'])
-                    
     
+    # This function searches for any number in the format xx.yy OR xx,yy Engilsh or Arabic, excluding dates.
+    # It also identifies the numbers in a given array of ranges, with each two consecutive entries are the upper and lower bounds of the ranges. Hence it takes the number of ranges. 
+    # It takes as input:
+    # 1. The text
+    # 2. The ranges
+    # 3. The number of ranges
+    # It returns:
+    # 1. Is there any number in this format or not
+    # 2. The number of occurences of each range      
+    def ExtractNumFeatures(self, text, ranges, numOfRanges):
+                
+        nums = re.findall(u'([\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]*[066B|066C|060C|,|\.]*?[\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]+)+', text)
+        numFeaturesInfo = [0] * (numOfRanges) #Create List to set the output of each row, previously this was numFeaturesInfo = [0] * (numOfRanges) because numFeaturesInfo[0]is isNumberExist
+        
+        # Initialize the return if any instance of the numbers exists. It is not set once the pattern is found, because it could be a date.
+        isNumberExist = False
+        
+        for num in nums:
+            if self.isDateLink(text, num) == 1: #If Date or Link Do Not Proceed
+                
+                # At least one number is not a date, now set isNumberExist to True 
+                isNumberExist = True
+                
+                #numFeaturesInfo[0] += 1 # previously numFeaturesInfo[0]is isNumberExist
+                v = 0
+                for k in range(0, numOfRanges): #check ranges
+                    if(self.isNumber(num)): #Make sure Regex output is Correct
+                        if( ranges[v] <= locale.atof(num) <= ranges[v+1] ):
+                            numFeaturesInfo[k] +=1
+                        v+=2        
+        
+        return isNumberExist, numFeaturesInfo
+                                
     def ExtractTFFeatures(self):
         
         # Loop on the dataset items

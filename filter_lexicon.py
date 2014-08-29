@@ -30,7 +30,7 @@ trainTestSerializationFile = ".\\DatasetBuilder\\Output\\train_test_dataset.bin"
 
 # The XLSX file name for train set
 xlsxTrainFileName = ".\\DatasetBuilder\\Input\\train"
-xlsxTestFileName = ".\\DatasetBuilder\\Input\\test"
+xlsxTestFileName = ".\\DatasetBuilder\\Input\\test_1"
 
 
 # Initialize the DatasetBuilder from serialization file
@@ -48,7 +48,7 @@ datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName
 # Configurations file xml of the language model
 configFileLanguageModel = ".\\LanguageModel\\Configurations\\Configurations.xml"
 langModelLogFile = ".\\LanguageModel\\Output\\language_model.txt"
-langModelTxtLoadFile = ".\\LanguageModel\\Input\\language_model_lexicon.txt"
+langModelTxtLoadFile = ".\\LanguageModel\\Input\\language_model_lexicon_synonyms.txt"
 stopWordsFileName = ".\\LanguageModel\\Input\\stop_words.txt"
 linksDBFile = ".\\LanguageModel\\Output\\links_database.txt"
 # The serialization file to save the model

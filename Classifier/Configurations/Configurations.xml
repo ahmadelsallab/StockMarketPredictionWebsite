@@ -1,6 +1,6 @@
 <Configurations>
   <!--The classifier type. Examples: SVM, DecisionTree, AdaBoost, Lexicon. For AdaBoost, only DecisionTree is supported as the base classifier-->
-  <ClassifierType classifierType="DecisionTree"></ClassifierType>
+  <ClassifierType classifierType="Lexicon"></ClassifierType>
   <!--The base classifier used for boosting. Valid only for ClassifierType = AdaBoost. Only DecisionTrees are supported for now-->
   <BaseClassifierType baseClassifierType="DecisionTree"></BaseClassifierType>
   <!--PackageType defines which python package is used. Example: If ClassifierType = SVM, then PackageType could be either libsvm or liblinear. Example: If ClassifierType = DecisionTree, then PackageType could be either sklearn or nltk-->

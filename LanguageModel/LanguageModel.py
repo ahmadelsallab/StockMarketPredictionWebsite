@@ -326,8 +326,20 @@ class LanguageModel(object):
         # Read the file line by line
         for line in fin:
             
-            lineItems = line.split()
-            word = lineItems[0]
+            
+            if(self.type == 'frequencyModel'):
+                lineItems = line.split()
+                word = lineItems[0].strip()
+            else:
+                # Note, groups don't work in case of stemming, because stemming does the function of grouping
+                
+                # First get the synonyms
+                lineGroups = line.split('|')
+                word = lineGroups[0].strip()
+                
+                # Now get the weights
+                lineItems = lineGroups[1].strip().split()
+                
             
             # Stem the word if enabled
             if(self.enableStemming == "true"):
@@ -337,13 +349,13 @@ class LanguageModel(object):
             self.languageModel[item] = {}
             if(self.type == 'frequencyModel'):
                 try:
-                    self.languageModel[item] = int(lineItems[1])
+                    self.languageModel[item] = float(lineItems[1])
                 except:
                     # The language model contains no frequency, assume 1 for each term
                     self.languageModel[item] = 1
             elif (self.type == 'lexicon'):
-                self.languageModel[item]['existWeight'] = int(lineItems[1])
-                self.languageModel[item]['nonExistWeight'] = int(lineItems[2])
+                self.languageModel[item]['existWeight'] = float(lineItems[0])
+                self.languageModel[item]['nonExistWeight'] = float(lineItems[1])
             
         # Close the file
         fin.close()

@@ -385,7 +385,7 @@ class DatasetBuilder(object):
             wb = load_workbook(filename = fileName + ".xlsx")
             sheet_ranges = wb.get_sheet_by_name(name = 'ManualLabels_1')
                       
-            row_count = sheet_ranges.get_highest_row() - 1
+            row_count = sheet_ranges.get_highest_row()
             # Read the label from each row            
             #for row in range(self.numberTweetsPerCsvFile + 2): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped
             for row in range(row_count): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped                if(row >= 2):
