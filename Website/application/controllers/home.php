@@ -36,7 +36,9 @@ class Home_Controller extends Base_Controller {
 	public function action_index(){
 		$repositories=Repository::all();
 		// dd($repositories);
-		return View::make('home.index')->with('repositories',$repositories);
+		return View::make('home.index')
+		->with('repositories',$repositories)
+		->with("return_tweets",null);
 	}
 	public function action_search(){
 		$search_query=Input::get('search_query');

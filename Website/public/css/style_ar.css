@@ -28,3 +28,20 @@ body{
 border: 2px solid whitesmoke;
 margin-left: 10px!important;
 }
+.sidebar ul{
+	direction: ltr!important;
+	margin-right: -17px!important;
+	padding: 0px!important;
+}
+.sidebar ul li a{
+	text-align: right!important;
+}
+.tweets-container{
+	padding: 20px;
+	overflow-y:auto;
+	overflow-x:hidden;
+	height: 510px;
+	direction: ltr;
+	text-align: right;
+	/*padding-left: 20px;*/
+}

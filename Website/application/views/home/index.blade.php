@@ -8,7 +8,7 @@
     <meta name="author" content="">
     <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
 
-    <title>KALAMAKOM</title>
+    <title>KALAMACOM</title>
 
     <!-- Bootstrap core CSS -->
     {{ HTML::style('css/bootstrap.min.css')}}
@@ -42,7 +42,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">{{__('main_components.kalamakom')->get()}}</a>
+          <a class="navbar-brand" href="#">{{__('main_components.kalamacom')->get()}}</a>
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav header-nav">
@@ -72,18 +72,23 @@
 		        </form>
           <ul class="nav nav-sidebar" id="repositories">
             @foreach ($repositories as $key => $rep)
-              <li><a href="#">{{$rep->title}}</a></li>
+              <li><a href="{{URL::to('twitter_mining/mine/gettweets/'.$rep->title_en)}}">{{$rep->title}}</a></li>
             @endforeach
           </ul>
           
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">{{__('main_components.tweets')->get()}}</h1>
-          <div class="tweets-container"></div>
+          <div class="tweets-container">
+            
           {{Form::open()}}
-           <!--  <a href="../../twitteroauth/twitter.php">test</a>
-            <a id="tst" href="#">test ajax tweets</div> -->
+              @if($return_tweets!=null)
+                @foreach ($return_tweets as $key => $tweet) 
+                  {{$tweet->content}}
+                @endforeach
+              @endif
           {{Form::close()}}
+          </div>
         </div>
       </div>
     </div>
@@ -92,68 +97,63 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script>
+  var allTime=10;
     $(document).ready(function(){
     	$("#search_query").keyup(function(e){
     		$search_query=$("#search_query").val();
-		  // $.ajax({url:"demo_test.txt",success:function(result){
-		    // $("#div1").html(result);
-		  // }});
 		  	$.ajax({
 					  url: '{{URL::to("home/search")}}',
 					  type: 'POST',
 					  data: {search_query:$search_query}
 					}).done(function($repositories) {
-					  $('#repositories').html($repositories);
+					  // $('#repositories').html($repositories);
+            console.log($repositories);
 					  
 					})
 					e.preventDefault()
 					return false;
-		});
+		  });
       $('#repositories li a').click(function(e){
       $('.active').removeClass('active');
       $(this).parent().addClass('active');
           $search_query=$(this).text();
-          // console.log($search_query);
-          // console.log("ssss");
           $.ajax({
-              // url: '{{URL::to("home/search")}}',
-              // url: '../../twitteroauth/twitter.php',
               url: '{{URL::to("twitter_mining/mine/gettweets")}}',
               type: 'POST',
               data: {search_query:$search_query}
             }).done(function($result) {
               $('.tweets-container').html($result);
-              
             })
             e.preventDefault()
             return false;
-    });
-		$("#tst").click(function(e){
-        // $search_query=$("#search_query").val();
-        // console.log("SSSS");
-        $search_query="sad";
-      // $.ajax({url:"demo_test.txt",success:function(result){
-        // $("#div1").html(result);
-      // }});
-        $.ajax({
-            // url: '{{URL::to("home/search")}}',
-            url: '../../twitteroauth/twitter.php',
-            type: 'POST',
-            data: {search_query:$search_query}
-          }).done(function($result) {
-            $('.main').html($result);
-            
-          })
-          e.preventDefault()
-          return false;
-    });
-    
+      });
+      count = 0;
+        var timer = $.timer(
+              function() {
+                  count++;
+                  console.log(count);
+                   if(count==allTime){
+                      count=0;
+                    $.ajax({
+                    url: '{{URL::to("twitter_mining/mine/gettweets")}}',
+                    type: 'POST',
+                    data: {search_query:$search_query}
+                  }).done(function($result) {
+                    $('.tweets-container').html($result);
+                    
+                  });
+                   }
+              },
+                  6000,
+                  true
+                ); 
     });
     	
+
     </script>
+    {{ HTML::script('js/effects.js') }}
     {{ HTML::script('js/bootstrap.min.js') }}
     {{ HTML::script('//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js') }}
     {{ HTML::script('js/jquery.timer.js'); }}
-    {{ HTML::script('js/effects.js') }}
   </body>
 </html>

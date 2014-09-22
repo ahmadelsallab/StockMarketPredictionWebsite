@@ -67,56 +67,15 @@ return array(
 			'prefix'   => '',
 		),
 
-		/*
-		'mysql' => array(
-			'driver'    => 'mysql',
-			'host'      => $_SERVER['RDS_HOSTNAME'],
-			'port'      => $_SERVER['RDS_PORT'],
-			'database'  => $_SERVER['RDS_DB_NAME'],
-			'username'  => $_SERVER['RDS_USERNAME'],
-			'password'  => $_SERVER['RDS_PASSWORD'],
-			'charset'   => 'utf8',
-			'collation' => 'utf8_unicode_ci',
-			'prefix'    => '',
-		),
-		*/
-		
-		/*
 		'mysql' => array(
 			'driver'   => 'mysql',
-			'host'     => '54.164.78.13',
+			'host'     => '127.0.0.1',
 			'database' => 'kalamakom',
-			'username' => 'anonymous',
+			'username' => 'root',
 			'password' => '',	
 			'charset'  => 'utf8',
 			'prefix'   => '',
 		),
-		*/
-		'mysql' => array(
-			'driver'    => 'mysql',
-			'host'      => '127.0.0.1',
-			'port'      => '',
-			'database'  => 'kalamacom',
-			'username'  => 'kalamacom',
-			'password'  => '',
-			'charset'   => 'utf8',
-			'collation' => 'utf8_unicode_ci',
-			'prefix'    => '',
-		),
-		/*
-		'mysql' => array(
-			'driver'    => 'mysql',
-			'host'      => 'gethostname()',
-			'port'      => 'getportname()',
-			'database'  => 'kalamakom',
-			'username'  => 'anonymous',
-			'password'  => '',
-			'charset'   => 'utf8',
-			'collation' => 'utf8_unicode_ci',
-			'prefix'    => '',
-		),
-		*/
-
 
 		'pgsql' => array(
 			'driver'   => 'pgsql',
