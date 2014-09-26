@@ -17,6 +17,7 @@ class Filter(object):
     def __init__(self):
         '''
         Constructor
+        :type self:
         '''
         # Start the DatasetBuilder
         #-------------------------
@@ -37,58 +38,84 @@ class Filter(object):
                 
         
         # Configurations file xml of the language model
-        configFileLanguageModel = ".\\LanguageModel\\Configurations\\Configurations.xml"
+        configFileLanguageModel_lexicon = ".\\LanguageModel\\Configurations\\Configurations-lexicon.xml"
+        configFileLanguageModel_Tasi = ".\\LanguageModel\\Configurations\\Configurations-Tasi.xml"
         stopWordsFileName = ".\\LanguageModel\\Input\\stop_words.txt"
         linksDBFile = ".\\LanguageModel\\Output\\links_database.txt"
         # The serialization file to save the model
         languageModelSerializationFile = ".\\LanguageModel\\Output\\language_model.bin"
+        langModelTxtLoadFile = ".\\LanguageModel\\Input\\language_model_lexicon_synonyms.txt"
         
         # Start the LanguageModel:
         
-        # Initialize the LanguageModel
-        self.languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
-        self.languageModel.BuildLanguageModel()
+        # Initialize the LanguageModel_Lexicon
+        self.languageModel_lexicon = LanguageModel(configFileLanguageModel_lexicon, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
+        self.languageModel_lexicon.BuildLanguageModel()
+        self.languageModel_lexicon.LoadModelFromTxtFile(langModelTxtLoadFile)
+
+         # Initialize the LanguageModel_Tasi
+        self.languageModel_Tasi = LanguageModel(configFileLanguageModel_Tasi, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
+        self.languageModel_Tasi.BuildLanguageModel()
         
         # Configurations file xml of the features extractor
-        configFileFeaturesExtractor = ".\\FeaturesExtractor\\Configurations\\Configurations.xml"
+        configFileFeaturesExtractor_Lexicon = ".\\FeaturesExtractor\\Configurations\\Configurations-lexicon.xml"
+        configFileFeaturesExtractor_Tasi = ".\\FeaturesExtractor\\Configurations\\Configurations-Tasi.xml"
         # The serialization file to save the features
         trainFeaturesSerializationFile = ".\\FeaturesExtractor\\Output\\train_features.bin"
         trainLabelsSerializationFile = ".\\FeaturesExtractor\\Output\\train_labels.bin"
         
         # Start the FeaturesExtractor:
         #-----------------------------    
-        # Initialize the FeaturesExtractor
-        trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, self.languageModel, datasetBuilder.trainSet)
-        trainFeaturesExtractor.ExtractNumTfFeatures()       
-        
+        # Initialize the FeaturesExtractor _ Lexicon
+        trainFeaturesExtractor_Lexicon = FeaturesExtractor(configFileFeaturesExtractor_Lexicon, trainFeaturesSerializationFile, trainLabelsSerializationFile, self.languageModel_lexicon, datasetBuilder.trainSet)
+        trainFeaturesExtractor_Lexicon.ExtractLexiconFeatures()
+
+        # Initialize the FeaturesExtractor _ Tasi
+        trainFeaturesExtractor_Tasi = FeaturesExtractor(configFileFeaturesExtractor_Tasi, trainFeaturesSerializationFile, trainLabelsSerializationFile, self.languageModel_Tasi, datasetBuilder.trainSet)
+        trainFeaturesExtractor_Tasi.ExtractNumTfFeatures()
+
         # The serialization file to save the features
-        configFileClassifier = ".\\Classifier\\Configurations\\Configurations.xml"
+        configFileClassifier_Lexicon = ".\\Classifier\\Configurations\\Configurations-lexicon.xml"
+        configFileClassifier_Tasi = ".\\Classifier\\Configurations\\Configurations-Tasi.xml"
         modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
     
         # Start the Classifier:
         #---------------------
         
-        self.classifier = Classifier(configFileClassifier, modelSerializationFile,  trainFeaturesExtractor.features, trainFeaturesExtractor.labels, [], [])
-        
+        self.classifier_Lexicon = Classifier(configFileClassifier_Lexicon, modelSerializationFile,  trainFeaturesExtractor_Lexicon.features, trainFeaturesExtractor_Lexicon.labels, [], [])
+        self.classifier_Tasi = Classifier(configFileClassifier_Tasi, modelSerializationFile, trainFeaturesExtractor_Tasi.features,
+                        trainFeaturesExtractor_Tasi.labels, [],[])
         
         # Train
-        self.classifier.Train()
+        self.classifier_Lexicon.Train()
+        self.classifier_Tasi.Train()
         
-    def Classify(self, text):
-        
+    def Classify(self, text, stockName):
+    
         testSet = []
-        testSet.append({'label' : '', 'text' : text})
+        for t in text:
+            testSet.append({'label' : '', 'text' : t})
 
-        # Configurations file xml of the features extractor
-        configFileFeaturesExtractor = ".\\FeaturesExtractor\\Configurations\\Configurations.xml"
-        testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel, testSet)
-        testFeaturesExtractor.ExtractNumTfFeatures()
-        
-        self.classifier.testFeatures = testFeaturesExtractor.features
-        self.classifier.testTargets = [1]
-        
-        
-        label, acc, val = self.classifier.Test()
+        if stockName == 'Tasi':
+            # Configurations file xml of the features extractor
+            configFileFeaturesExtractor = ".\\FeaturesExtractor\\Configurations\\Configurations-Tasi.xml"
+            testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel_Tasi, testSet)
+            testFeaturesExtractor.ExtractNumTfFeatures()
+            self.classifier_Tasi.testFeatures = testFeaturesExtractor.features
+            self.classifier_Tasi.testTargets = []
+            for i in range(len(self.classifier_Tasi.testFeatures)):        
+                self.classifier_Tasi.testTargets.append(1)
+            label, acc, val = self.classifier_Tasi.Test()
+        else:
+            configFileFeaturesExtractor = ".\\FeaturesExtractor\\Configurations\\Configurations-lexicon.xml"
+            testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel_lexicon, testSet)
+            testFeaturesExtractor.ExtractLexiconFeatures()
+            self.classifier_Lexicon.testFeatures = testFeaturesExtractor.features
+            self.classifier_Lexicon.testTargets = []
+            for i in range(len(self.classifier_Lexicon.testFeatures)):        
+                self.classifier_Lexicon.testTargets.append(1)
+            label, acc, val = self.classifier_Lexicon.Test()
+
         
         return label
         

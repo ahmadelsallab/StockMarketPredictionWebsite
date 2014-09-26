@@ -124,7 +124,7 @@ for i in range(0,10):
     
     '''
     
-    
+'''    
 #print(__doc__)
 import matplotlib
 #matplotlib.use('Agg')
@@ -156,6 +156,7 @@ y = np.concatenate((y1, - y2 + 1))
 bdt = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1),
                          algorithm="SAMME",
                          n_estimators=200)
+'''                         
 
 '''
 Not working
@@ -224,7 +225,7 @@ pl.savefig("plt.png")
 #  - ultra-real-time stream of twitter's public timeline
 #    prints live results containing a URL link and the #OWS tag
 #-----------------------------------------------------------------------
-
+'''
 from twitter import *
 
 # these tokens are necessary for user authentication
@@ -247,3 +248,8 @@ for tweet in tweet_iter:
         print("(%s) @%s %s" % (tweet["created_at"], tweet["user"]["screen_name"], tweet["text"]))
         for url in tweet["entities"]["urls"]:
             print(" - found URL: %s" % url["expanded_url"])
+'''
+
+import re
+m = re.findall('Hello', 'Hello World')
+print(m[0])

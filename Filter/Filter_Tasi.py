@@ -100,17 +100,17 @@ class Filter(object):
             testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel_Tasi, testSet)
             testFeaturesExtractor.ExtractNumTfFeatures()
             self.classifier_Tasi.testFeatures = testFeaturesExtractor.features
-        	self.classifier_Tasi.testTargets = []
-			for i in range(len(self.classifier_Tasi.testFeatures)):		
+            self.classifier_Tasi.testTargets = []
+            for i in range(len(self.classifier_Tasi.testFeatures)):		
             	self.classifier_Tasi.testTargets[i] = 1
             label, acc, val = self.classifier_Tasi.Test()
         else:
             configFileFeaturesExtractor = ".\\FeaturesExtractor\\Configurations\\Configurations-lexicon.xml"
             testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel_lexicon, testSet)
             self.classifier_Lexicon.testFeatures = testFeaturesExtractor.features
-        	self.classifier_Lexicon.testTargets = []
-			for i in range(len(self.classifier_Lexicon.testFeatures)):		
-            	self.classifier_Lexicon.testTargets[i] = 1
+            self.classifier_Lexicon.testTargets = []
+            for i in range(len(self.classifier_Lexicon.testFeatures)):		
+                self.classifier_Lexicon.testTargets[i] = 1
             label, acc, val = self.classifier_Lexicon.Test()
 
         
