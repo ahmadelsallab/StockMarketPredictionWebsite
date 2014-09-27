@@ -36,7 +36,7 @@ $sql = 'INSERT INTO tweets '.
        '(id,rep_id, content) '.
        'VALUES ( "1", "1", "Test" )';
 
-mysql_select_db('kalamakom');
+mysql_select_db('kalamacom');
 $retval = mysql_query( $sql, $conn );
 if(! $retval )
 {

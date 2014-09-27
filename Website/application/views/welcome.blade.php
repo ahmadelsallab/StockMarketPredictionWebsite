@@ -35,7 +35,7 @@
 
           <div class="masthead clearfix">
             <div class="inner">
-              	<h3 class="masthead-brand">KALAMAKOM</h3>
+              	<h3 class="masthead-brand">KALAMACOM</h3>
               	<ul class="nav masthead-nav">
              	 <!-- <li class="btn btn-lg btn-info">{{HTML::link('exam/playfriendly/tips',"About Us",array('class'=>'fancybox fancybox.iframe'))}}</li> -->
              	</ul>
@@ -66,7 +66,7 @@
           </div>
 
           <div class="inner cover">
-            <h1 class="cover-heading">WELCOME TO KALAMAKOM</h1>
+            <h1 class="cover-heading">WELCOME TO KALAMACOM</h1>
             <p class="lead"></p>
             <p class="lead">
               @if(!Auth::user())
@@ -79,7 +79,6 @@
 
           <div class="mastfoot">
             <div class="inner">
-              <p>Developed by <span style="color: white">Amr Elsehemy</span> ,Designed  by <a href="https://twitter.com/mdo">@mdo</a>.</p>
             </div>
           </div>
 

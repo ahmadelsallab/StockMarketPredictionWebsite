@@ -3,7 +3,7 @@
 		'home'=>'Home',
 		'about'=>'About Us',
 		'contactus'=>'Contact Us',
-		'kalamakom'=>'Kalamakom',
+		'kalamacom'=>'Kalamacom',
 		'search'=>'search',
 		'tweets'=>'Tweets',
 	);

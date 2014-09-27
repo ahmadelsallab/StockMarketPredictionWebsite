@@ -7,8 +7,8 @@ from DatasetBuilder.DatasetBuilder import DatasetBuilder
 import csv
 import pickle
 from openpyxl.workbook import Workbook
-xlsxManualLabelsFileName = "C:\\Users\\Tarek\\Desktop\\ManualLabels_samba_1.xlsx"
-datasetSerializationFile = "C:\\Users\\Tarek\\Desktop\\dataset_samba.bin"
+xlsxManualLabelsFileName = "C:\\Users\\Tarek\\Desktop\\v.xlsx"
+datasetSerializationFile = "C:\\Users\\Tarek\\Desktop\\v.bin"
 
 
 # Reaad dataset

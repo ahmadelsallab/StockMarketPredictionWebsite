@@ -8,7 +8,7 @@
     <meta name="author" content="">
     <link rel="shortcut icon" href="../../assets/ico/favicon.ico">
 
-    <title>KALAMAKOM</title>
+    <title>KALAMACOM</title>
      {{ HTML::style('css/bootstrap.min.css')}}
     {{ HTML::style('//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css')}}
     {{ HTML::style('css/sign_in.css')}}
