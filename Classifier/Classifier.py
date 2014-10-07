@@ -254,7 +254,7 @@ class Classifier(object):
             # Close the serialization file
             serializationFile.close()
         else:
-            print("Only SVM with liblinear is supported to SaveModel")
+            print("Unsupported classifier and package type for SaveModel")
         '''
         # You must close and open to append to the binary file
         # Open the serialization file
