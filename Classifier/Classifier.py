@@ -241,9 +241,18 @@ class Classifier(object):
     # we should have trainFeaturesExtractor (trainFeatures) and testFeaturesExtractor (testFeatures) 
     # To save to serialzation file
     def SaveModel(self):
-        if(self.classifierType == "SVM" & self.packageType == "liblinear"):
+        if(self.classifierType == "SVM" and self.packageType == "liblinear"):
             from liblinearutil import save_model
             save_model(self.featuresSerializationFileName, self.classifierModel)
+        elif(self.classifierType == "DecisionTree" and self.packageType == "nltk"):
+            # Open the serialization file
+            serializationFile = open(self.featuresSerializationFileName, 'wb')
+            
+            # Save the model
+            pickle.dump(self.classifierModel, serializationFile)
+            
+            # Close the serialization file
+            serializationFile.close()
         else:
             print("Only SVM with liblinear is supported to SaveModel")
         '''
@@ -263,9 +272,16 @@ class Classifier(object):
         
     # To load saved model
     def LoadModel(self):
-        if(self.classifierType == "SVM" & self.packageType == "liblinear"):
+        if(self.classifierType == "SVM" and self.packageType == "liblinear"):
             from liblinearutil import load_model
             self.classifierModel = load_model(self.featuresSerializationFileName)
+        elif(self.classifierType == "DecisionTree" and self.packageType == "nltk"):
+            # Load the model
+            serializationFile = open(self.featuresSerializationFileName, 'rb')
+            
+            self.classifierModel = pickle.load(serializationFile)
+            
+            serializationFile.close()
         else:
             print("Only SVM with liblinear is supported to LoadModel")
         
