@@ -6,7 +6,7 @@ Created on Sep 25, 2014
 from Filter.Filter import Filter
 import pickle
 
-serializationFile = open('filter.bin', 'rb')
+serializationFile = open('/root/kalam/filter.bin', 'rb')
 filter = pickle.load(serializationFile)
 filter.classifier_Lexicon.labelsNamesMap = pickle.load(serializationFile)
 filter.classifier_Tasi.labelsNamesMap = pickle.load(serializationFile)

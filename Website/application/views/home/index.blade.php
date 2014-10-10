@@ -81,7 +81,6 @@
           <h1 class="page-header">{{__('main_components.tweets')->get()}}</h1>
           <div class="tweets-container">
             
-          {{Form::open()}}
               @if($return_tweets!=null)
                 @foreach ($return_tweets as $key => $tweet) 
                   {{$tweet->content}}
@@ -127,26 +126,26 @@
             e.preventDefault()
             return false;
       });
-      count = 0;
-        var timer = $.timer(
-              function() {
-                  count++;
-                  console.log(count);
-                   if(count==allTime){
-                      count=0;
-                    $.ajax({
-                    url: '{{URL::to("twitter_mining/mine/gettweets")}}',
-                    type: 'POST',
-                    data: {search_query:$search_query}
-                  }).done(function($result) {
-                    $('.tweets-container').html($result);
+      // count = 0;
+      //   var timer = $.timer(
+      //         function() {
+      //             count++;
+      //             console.log(count);
+      //              if(count==allTime){
+      //                 count=0;
+      //               $.ajax({
+      //               url: '{{URL::to("twitter_mining/mine/gettweets")}}',
+      //               type: 'POST',
+      //               data: {search_query:$search_query}
+      //             }).done(function($result) {
+      //               $('.tweets-container').html($result);
                     
-                  });
-                   }
-              },
-                  6000,
-                  true
-                ); 
+      //             });
+      //              }
+      //         },
+      //             6000,
+      //             true
+      //           ); 
     });
     	
 

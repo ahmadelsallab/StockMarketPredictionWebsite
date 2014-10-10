@@ -53,5 +53,9 @@ class Home_Controller extends Base_Controller {
        		return View::make('home.search_results')
 			->with('repositories',$repositories);
 	}
+	public function test_py(){
+		$tres=system('/root/kalam/Website/bundles/twitter_mining/controllers/test_filter_class.py ' . escapeshellarg(json_encode("Tsss")));
+		dd($tres);
+	}
 
 }
