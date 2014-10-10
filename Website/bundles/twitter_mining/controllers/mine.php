@@ -69,7 +69,7 @@ class Twitter_Mining_Mine_Controller extends Base_Controller {
 			);
 			//$path_py=path('sys');
 			//$path_py= str_replace('\kalamakom-alpha2\laravel','', $path_py).'kalam';
-			$path_py = '/root/kalam';
+			$path_py = '/srv/www/htdocs/kalam';
 			// $path_py="";
 			if($rep->title_en=="Tassi"){
 					$path_py=$path_py.'/test_filter_class_tassi.py'.' 2>&1';
@@ -140,7 +140,7 @@ class Twitter_Mining_Mine_Controller extends Base_Controller {
 			}
 			$xml->formatOutput = true;
 			// echo "<xmp>". $xml->saveXML() ."</xmp>";
-			$xml->save("/root/kalam/Website/xtest.txt.xml") or die("Error");
+			$xml->save("/srv/www/htdocs/kalam/Website/xtest.txt.xml") or die("Error");
 			// dd("Stop Exec");
 			$tres=exec('/opt/ActivePython-3.3/bin/python3 '.$path_py,$tres);
 			$tres_d = json_decode($tres, true);

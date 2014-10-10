@@ -6,7 +6,7 @@ import sys, json
 # print(Class)
 
 from xml.dom import minidom
-xmldoc = minidom.parse('/root/kalam/Website/xtest.txt.xml')
+xmldoc = minidom.parse('/srv/www/htdocs/kalam/Website/xtest.txt.xml')
 itemlist = xmldoc.getElementsByTagName('tweet')
 
 '''
