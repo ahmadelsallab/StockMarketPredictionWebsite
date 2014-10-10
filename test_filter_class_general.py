@@ -2,7 +2,8 @@ import classify
 import sys, json
 from xml.dom import minidom
 
-xmldoc = minidom.parse('/srv/www/htdocs/kalam/Website/xtest.txt.xml')
+#xmldoc = minidom.parse('/srv/www/htdocs/kalam/Website/xtest.txt.xml')
+xmldoc = minidom.parse('xtest.txt.xml')
 itemlist = xmldoc.getElementsByTagName('tweet')
 tArray=[]
 for t in itemlist:

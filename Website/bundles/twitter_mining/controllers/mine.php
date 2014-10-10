@@ -140,7 +140,8 @@ class Twitter_Mining_Mine_Controller extends Base_Controller {
 			}
 			$xml->formatOutput = true;
 			// echo "<xmp>". $xml->saveXML() ."</xmp>";
-			$xml->save("/srv/www/htdocs/kalam/Website/xtest.txt.xml") or die("Error");
+			//$xml->save("/srv/www/htdocs/kalam/Website/xtest.txt.xml") or die("Error");
+			$xml->save("xtest.txt.xml") or die("Error");
 			// dd("Stop Exec");
 			$tres=exec('/opt/ActivePython-3.3/bin/python3 '.$path_py,$tres);
 			$tres_d = json_decode($tres, true);
