@@ -26,7 +26,7 @@
         <input type="text" name="firstName" class="form-control" placeholder="Your name" required autofocus/>
         <input type="email" name="email" class="form-control" placeholder="Email address" required autofocus>
         <input type="password" name="password" class="form-control" placeholder="Password" required>
-        {{Form::input('name')}}
+
         {{Form::hidden('sss','sss')}}
         <div class="upload-btn-container btn-primary btn-block btn">
                 {{Form::file('pic',array('class'=>'upload-btn'))}}
