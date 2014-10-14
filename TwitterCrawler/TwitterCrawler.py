@@ -211,13 +211,13 @@ class TwitterCrawler(object):
                 if(max_id == -1):
                     if(since_id == -1):
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent')
                     else:
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent',
@@ -226,14 +226,14 @@ class TwitterCrawler(object):
                 else:
                     if(since_id == -1):
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent',
                                                           max_id=max_id)
                     else:
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent',
