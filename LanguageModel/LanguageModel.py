@@ -360,6 +360,30 @@ class LanguageModel(object):
         # Close the file
         fin.close()
 
+    def LoadSentimentLexiconModelFromTxtFile(self, lexiconTxtFileName, weight):  
+            
+            # Load positive words
+            # Open the stop words file name
+            fin = open(lexiconTxtFileName, 'r', encoding='utf-8')        
+            
+            # Read the file line by line
+            for line in fin:
+                                       
+                word = line
+                
+                
+                # Stem the word if enabled
+                if(self.enableStemming == "true"):
+                    item = self.stemmer.stem(word)
+                else:
+                    item = word
+                self.languageModel[item] = {}
+                self.languageModel[item]['existWeight'] = weight
+                self.languageModel[item]['nonExistWeight'] = 0
+                
+            # Close the file
+            fin.close()
+
     # Parse the configurations file
     def ParseConfigFile(self, configDocName):
         # Get the name of configuration file from the cmd line argument
