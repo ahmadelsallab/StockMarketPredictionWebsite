@@ -236,7 +236,63 @@ class Classifier(object):
     # For cross validation accuracy
     # nFoldsParam = 10
     # crossValidationAccuracy = train(featuresExtractor.labels, featuresExtractor.features, '-c' + str(cParam) + '-v' + str(nFoldsParam))
-    
+    def getCrossValidationAccuarcy(self):
+        if (self.classifierType == "SVM" and self.packageType == "liblinear"):
+            from liblinearutil import train
+            self.cParam = 32# Best cross validation accuracy
+            self.nFoldsParam = 10
+            crossValidationAccuracy=train(self.trainTargets, self.trainFeatures, '-c ' + str(self.cParam) + ' -v ' + str(self.nFoldsParam))
+            print("SVM")
+            print(crossValidationAccuracy)
+            return crossValidationAccuracy
+   
+        elif (self.classifierType == "Lexicon"):
+            acc = 0
+            i = 0
+            labels = []
+            for caseFeatures in self.trainFeatures:
+                # Predict case by case
+                label = self.LexiconPredict(caseFeatures)
+                
+                labels.append(label)
+                if(label == self.trainTargets[i]):
+                    acc += 1
+                i += 1
+            
+            # Return accuracy as percentage
+            acc = acc / len(self.trainTargets) * 100
+            print("Lexicon")
+            print(acc)
+            return acc                
+        elif (self.classifierType == "DecisionTree" and self.packageType == "nltk"):
+            import nltk 
+            from sklearn import cross_validation
+            train_set = []
+            i = 0;
+            weights = [];
+            for fet in self.trainFeatures:
+                train_set.append((self.trainFeatures[i],self.trainTargets[i]))
+                weights.append( i * 0.5)                   
+                i +=1
+                
+            
+            
+            #import nltk
+            #from sklearn import cross_validation
+            #training_set = nltk.classify.apply_features(self.trainFeatures, self.trainTargets)
+            cv = cross_validation.KFold(len(train_set), n_folds=10, indices=True, shuffle=False, random_state=None)
+            i=0
+            for traincv, testcv in cv:
+                classifierModel = nltk.DecisionTreeClassifier.train(train_set[traincv[0]:traincv[len(traincv)-1]],entropy_cutoff=.01,depth_cutoff=300,binary=True,verbose=True)
+                #classifier = nltk.DecisionTreeClassifier.train(training_set[traincv[0]:traincv[len(traincv)-1]])
+                accuracy=nltk.classify.util.accuracy(classifierModel, train_set[testcv[0]:testcv[len(testcv)-1]])
+                i+= 1
+            accuracy = accuracy / i * 100
+            print("DECISION TREE")
+            print(accuracy)
+            return accuracy
+        else:
+            print("Can't Calculate Accuarcy for this Classifier")
     # A train test splitter util needs to be added to DatasetBuilder and called before the features extractor, then
     # we should have trainFeaturesExtractor (trainFeatures) and testFeaturesExtractor (testFeatures) 
     # To save to serialzation file

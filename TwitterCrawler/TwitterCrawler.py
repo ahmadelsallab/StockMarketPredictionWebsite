@@ -115,6 +115,9 @@ class TwitterCrawler(object):
              
             for result in resultsCrawl:
                 self.tweetsCtr += 1
+                from app.models import Tweet
+                opinion = Tweet(twitter_id=result['id'], user_id=result['user']['id'], text=result['text'], created_at=result['created_at'], user_followers_count=result['user']['followers_count'], user_profile_image_url=result['user']['profile_image_url'], str(pub_date=timezone.now()), labeled=False)        
+                opinion.save()
                 if (self.inhibitLogFileSaving != "true"):
                     # Write to logs file
                     #self.logFile.write(result['text'] + "\n")  
