@@ -7,6 +7,7 @@
 <div id="debug"></div>
 <div id="main_content">
     <h1 class="page-header" align="right">التغريدات</h1>
+    <div id="stats"></div>
     <div id="tweets"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
@@ -16,164 +17,168 @@
 <div id="side_bar">
     <input id="side_bar_selection" type="text" placeholder="... بحث" class="form-control" />
     <ul id="side_bar_list">
-        <li>استثمار</li>
-        <li>السعودى الهولندى</li>
-        <li>السعودى الفرنسى</li>
-        <li>ساب</li>
-        <li>العربى الوطنى</li>
-        <li>سامبا</li>
-        <li>تاسي</li>
-        <li>الرياض</li>
-        <li>الجزيرة</li>
-        <li>العربي الوطني</li>
-        <li>الراجحي</li>
-        <li>البلاد</li>
-        <li>الإنماء</li>
-        <li>كيمانول</li>
-        <li>بتروكيم </li>
-        <li>سابك</li>
-        <li>سافكو</li>
-        <li>التصنيع</li>
-        <li>اللجين</li>
-        <li>نماء للكيماويات</li>
-        <li>المجموعة السعودية</li>
-        <li>الصحراء للبتروكيماويات</li>
-        <li>ينساب </li>
-        <li>أسمنت حائل</li>
-        <li>أسمنت نجران </li>
-        <li>اسمنت المدينة </li>
-        <li>اسمنت الشمالية </li>
-        <li>الاسمنت العربية </li>
-        <li>اسمنت اليمامة </li>
-        <li>اسمنت السعوديه </li>
-        <li>اسمنت القصيم </li>
-        <li>اسمنت الجنوبيه </li>
-        <li>اسمنت ينبع</li>
-        <li>اسمنت الشرقية </li>
-        <li>اسمنت تبوك </li>
-        <li>اسمنت الجوف </li>
-        <li>أسواق ع العثيم </li>
-        <li>المواساة</li>
-        <li>إكسترا</li>
-        <li>دله الصحية</li>
-        <li>رعاية</li>
-        <li>ساسكو</li>
-        <li>ثمار</li>
-        <li>مجموعة فتيحي </li>
-        <li>جرير</li>
-        <li>الدريس</li>
-        <li>الحكير</li>
-        <li>الخليج للتدريب </li>
-        <li>الغاز والتصنيع </li>
-        <li>كهرباء السعودية </li>
-        <li>مجموعة صافولا</li>
-        <li>الغذائية</li>
-        <li>سدافكو</li>
-        <li>المراعي</li>
-        <li>أنعام القابضة </li>
-        <li>حلواني إخوان</li>
-        <li>هرفي للأغذية</li>
-        <li>التموين</li>
-        <li>نادك</li>
-        <li>القصيم الزراعيه</li>
-        <li>تبوك الزراعيه </li>
-        <li>الأسماك</li>
-        <li>الشرقية للتنمية </li>
-        <li>الجوف الزراعيه</li>
-        <li>بيشة الزراعيه</li>
-        <li>جازان للتنمية</li>
-        <li>الاتصالات</li>
-        <li>اتحاد اتصالات</li>
-        <li>زين السعودية</li>
-        <li>عذيب للاتصالات</li>
-        <li>المتكاملة</li>
-        <li>التعاونية </li>
-        <li>ملاذ للتأمين</li>
-        <li>ميدغلف للتأمين</li>
-        <li>أليانز إس إف </li>
-        <li>سلامة</li>
-        <li>ولاء للتأمين</li>
-        <li>الدرع العربي </li>
-        <li>ساب تكافل</li>
-        <li>سند</li>
-        <li>سايكو</li>
-        <li>وفا للتأمين</li>
-        <li>إتحاد الخليج</li>
-        <li>الأهلي للتكافل</li>
-        <li>الأهلية</li>
-        <li>أسيج</li>
-        <li>التأمين العربية </li>
-        <li>الاتحاد التجاري </li>
-        <li>الصقر للتأمين </li>
-        <li>المتحدة للتأمين </li>
-        <li>الإعادة السعودية </li>
-        <li>بوبا العربية </li>
-        <li>وقاية للتكافل</li>
-        <li>تكافل الراجحي </li>
-        <li>ايس</li>
-        <li>اكسا- التعاونية</li>
-        <li>الخليجية العامة</li>
-        <li> بروج للتأمين</li>
-        <li>العالمية</li>
-        <li>سوليدرتي تكافل</li>
-        <li>الوطنية</li>
-        <li>أمانة للتأمين</li>
-        <li>عناية</li>
-        <li>الإنماء طوكيو مارين</li>
-        <li>المصافي</li>
-        <li>المتطورة</li>
-        <li>الاحساء للتنميه</li>
-        <li>سيسكو</li>
-        <li>عسير</li>
-        <li>الباحة</li>
-        <li>المملكة</li>
-        <li>تكوين</li>
-        <li>بى سى آى</li>
-        <li>معادن</li>
-        <li>أسترا الصناعية</li>
-        <li>مجموعة السريع</li>
-        <li>شاكر</li>
-        <li>الدوائية</li>
-        <li>زجاج</li>
-        <li>فيبكو</li>
-        <li>معدنية</li>
-        <li>الكيميائيه السعوديه</li>
-        <li>صناعة الورق</li>
-        <li>العبداللطيف</li>
-        <li>الصادرات</li>
-        <li>أسلاك</li>
-        <li>مجموعة المعجل</li>
-        <li>الأنابيب السعودية</li>
-        <li>الخضري</li>
-        <li>الخزف</li>
-        <li>الجبس</li>
-        <li>الكابلات</li>
-        <li>صدق</li>
-        <li>اميانتيت</li>
-        <li>أنابيب</li>
-        <li>الزامل للصناعة</li>
-        <li>البابطين</li>
-        <li>الفخارية</li>
-        <li>مسك</li>
-        <li>البحر الأحمر </li>
-        <li>العقارية</li>
-        <li>طيبة للاستثمار </li>
-        <li>مكة للانشاء </li>
-        <li>التعمير</li>
-        <li>إعمار</li>
-        <li>جبل عمر </li>
-        <li>دار الأركان</li>
-        <li>مدينة المعرفة </li>
-        <li>البحري</li>
-        <li>النقل الجماعي </li>
-        <li>مبرد</li>
-        <li>بدجت السعودية </li>
-        <li>تهامه للاعلان</li>
-        <li>الأبحاث و التسويق</li>
-        <li>طباعة وتغليف</li>
-        <li>الطيار</li>
-        <li>الفنادق</li>
-        <li>شمس</li>
+		<li>﻿تاسي</li>
+		<li>الرياض</li>
+		<li>الجزيرة</li>
+		<li>استثمار</li>
+		<li>السعودي الهولندي</li>
+		<li>السعودي الفرنسي</li>
+		<li>ساب</li>
+		<li>العربي الوطني</li>
+		<li>سامبا</li>
+		<li>الراجحي</li>
+		<li>البلاد</li>
+		<li>الإنماء</li>
+		<li>كيمانول</li>
+		<li>بتروكيم</li>
+		<li>سابك</li>
+		<li>سافكو</li>
+		<li>التصنيع</li>
+		<li>اللجين</li>
+		<li>نماء للكيماويات</li>
+		<li>المجموعة السعودية</li>
+		<li>الصحراء للبتروكيماويات</li>
+		<li>ينساب</li>
+		<li>سبكيم العالمية</li>
+		<li>المتقدمة</li>
+		<li>كيان</li>
+		<li>بترو رابغ</li>
+		<li>أسمنت حائل</li>
+		<li>أسمنت نجران</li>
+		<li>اسمنت المدينة</li>
+		<li>اسمنت الشمالية</li>
+		<li>الاسمنت العربية</li>
+		<li>اسمنت اليمامة</li>
+		<li>اسمنت السعوديه</li>
+		<li>اسمنت القصيم</li>
+		<li>اسمنت الجنوبيه</li>
+		<li>اسمنت ينبع</li>
+		<li>اسمنت الشرقية</li>
+		<li>اسمنت تبوك</li>
+		<li>اسمنت الجوف</li>
+		<li>أسواق ع العثيم</li>
+		<li>المواساة</li>
+		<li>إكسترا</li>
+		<li>دله الصحية</li>
+		<li>رعاية</li>
+		<li>ساسكو</li>
+		<li>ثمار</li>
+		<li>مجموعة فتيحي</li>
+		<li>جرير</li>
+		<li>الدريس</li>
+		<li>الحكير</li>
+		<li>الخليج للتدريب</li>
+		<li>الغاز والتصنيع</li>
+		<li>كهرباء السعودية</li>
+		<li>مجموعة صافولا</li>
+		<li>الغذائية</li>
+		<li>سدافكو</li>
+		<li>المراعي</li>
+		<li>أنعام القابضة</li>
+		<li>حلواني إخوان</li>
+		<li>هرفي للأغذية</li>
+		<li>التموين</li>
+		<li>نادك</li>
+		<li>القصيم الزراعيه</li>
+		<li>تبوك الزراعيه</li>
+		<li>الأسماك</li>
+		<li>الشرقية للتنمية</li>
+		<li>الجوف الزراعيه</li>
+		<li>بيشة الزراعيه</li>
+		<li>جازان للتنمية</li>
+		<li>الاتصالات</li>
+		<li>اتحاد اتصالات</li>
+		<li>زين السعودية</li>
+		<li>عذيب للاتصالات</li>
+		<li>المتكاملة</li>
+		<li>التعاونية</li>
+		<li>ملاذ للتأمين</li>
+		<li>ميدغلف للتأمين</li>
+		<li>أليانز إس إف</li>
+		<li>سلامة</li>
+		<li>ولاء للتأمين</li>
+		<li>الدرع العربي</li>
+		<li>ساب تكافل</li>
+		<li>سند</li>
+		<li>سايكو</li>
+		<li>وفا للتأمين</li>
+		<li>إتحاد الخليج</li>
+		<li>الأهلي للتكافل</li>
+		<li>الأهلية</li>
+		<li>أسيج</li>
+		<li>التأمين العربية</li>
+		<li>الاتحاد التجاري</li>
+		<li>الصقر للتأمين</li>
+		<li>المتحدة للتأمين</li>
+		<li>الإعادة السعودية</li>
+		<li>بوبا العربية</li>
+		<li>وقاية للتكافل</li>
+		<li>تكافل الراجحي</li>
+		<li>ايس</li>
+		<li>اكسا- التعاونية</li>
+		<li>الخليجية العامة</li>
+		<li>بروج للتأمين</li>
+		<li>العالمية</li>
+		<li>سوليدرتي تكافل</li>
+		<li>الوطنية</li>
+		<li>أمانة للتأمين</li>
+		<li>عناية</li>
+		<li>الإنماء طوكيو م</li>
+		<li>المصافي</li>
+		<li>المتطورة</li>
+		<li>الاحساء للتنميه</li>
+		<li>سيسكو</li>
+		<li>عسير</li>
+		<li>الباحة</li>
+		<li>المملكة</li>
+		<li>تكوين</li>
+		<li>بى سى آى</li>
+		<li>معادن</li>
+		<li>أسترا الصناعية</li>
+		<li>مجموعة السريع</li>
+		<li>شاكر</li>
+		<li>الدوائية</li>
+		<li>زجاج</li>
+		<li>فيبكو</li>
+		<li>معدنية</li>
+		<li>الكيميائيه السعوديه</li>
+		<li>صناعة الورق</li>
+		<li>العبداللطيف</li>
+		<li>الصادرات</li>
+		<li>أسلاك</li>
+		<li>مجموعة المعجل</li>
+		<li>الأنابيب السعودية</li>
+		<li>الخضري</li>
+		<li>الخزف</li>
+		<li>الجبس</li>
+		<li>الكابلات</li>
+		<li>صدق</li>
+		<li>اميانتيت</li>
+		<li>أنابيب</li>
+		<li>الزامل للصناعة</li>
+		<li>البابطين</li>
+		<li>الفخارية</li>
+		<li>مسك</li>
+		<li>البحر الأحمر</li>
+		<li>العقارية</li>
+		<li>طيبة للاستثمار</li>
+		<li>مكة للانشاء</li>
+		<li>التعمير</li>
+		<li>إعمار</li>
+		<li>جبل عمر</li>
+		<li>دار الأركان</li>
+		<li>مدينة المعرفة</li>
+		<li>البحري</li>
+		<li>النقل الجماعي</li>
+		<li>مبرد</li>
+		<li>بدجت السعودية</li>
+		<li>تهامه للاعلان</li>
+		<li>الأبحاث و التسويق</li>
+		<li>طباعة وتغليف</li>
+		<li>الطيار</li>
+		<li>الفنادق</li>
+		<li>شمس</li>
+
 
     </ul>
 </div>
@@ -212,7 +217,27 @@
         var stock_name = $(this).text()
         ajaxPost('/get_tweets', { 'query': $(this).text() }, function (content) {
             $('#tweets').html('');
-            $('#tweets').append('<div class="tweet"><font color="black">' + 'Stock: ' + stock_name + ' Price: ' + content.price + '</font></div>');
+           	$('#stats').html('<div class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');                      
+            $('#stats').append('<div class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');                        
+            
+            $('#tweets').append('<br></br>')
+            
+           	$('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');                      
+            $('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB for ' + stock_name + ' is: ' + content.stock_irrelevant_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of positive entries in DB for ' + stock_name + ' is: ' + content.stock_positive_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of negative entries in DB for ' + stock_name + ' is: ' + content.stock_negative_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div class="stat_stock"><font color="black">' + 'Total number of neutral entries in DB for ' + stock_name + ' is: ' + content.stock_neutral_labeled_entries_in_DB + '</font></div>');
+            
+            $('#tweets').append('<br></br>')
+            		
+            $('#tweets').append('<div class="stat"><font color="black">' + 'Stock: ' + stock_name + ' Price: ' + content.price + '</font></div>');
             
             for (var i = 0; i < content.statuses.length; i++) {
                 text = content.statuses[i]['text'];

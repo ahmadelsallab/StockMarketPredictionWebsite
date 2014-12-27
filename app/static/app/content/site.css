@@ -134,6 +134,7 @@ body#index_body{
     background-color: #F5F8FA;
     margin: 20px;
     overflow: hidden;
+    text-align: right;
 }
 #main_content #tweets .tweets img{
     float: left;
@@ -151,5 +152,30 @@ body#index_body{
     display: none;
     text-align: center;
 }
+
+/************* stats *************/
+
+#main_content #stats .stat_stock{
+    overflow: hidden;
+    text-align: left;
+}
+#main_content #stats .stat_total{
+    overflow: hidden;
+    text-align: center;
+    font-weight: bold;
+}
+#main_content #stats .stats img{
+    float: left;
+    margin-right: 15px;
+    margin-top: 5px;
+}
+#main_content #stats .stats p{
+    color: #333333;
+    margin: 0;
+}
+#main_content #stats .stats p span{
+    color: #428bca;
+}
+
 
 

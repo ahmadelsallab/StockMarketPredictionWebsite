@@ -200,7 +200,7 @@ def get_stock_price(stock):
                 div_list = td_list[0].findAll('div', { "class" : "left-text portlet-padding-5" })
                 if(len(div_list) != 0):
                     stock_in_website = div_list[0].text.strip()
-                    stock_in_website.replace('*', '').strip()
+                    #stock_in_website.replace('*', '').strip()
                     #if (stock in stock_in_website) | (stock_in_website in stock):
                     if (stock == stock_in_website):
                         try:
@@ -213,10 +213,10 @@ def get_stock_price(stock):
                             continue
                             #print('Not price, skip ' + td_list[1].text)
                             #return ''   
-        return 9999999                 
-    except:
-        print('URL error ' + urlstr )
-        return 9999999 
+        return 0.0                 
+    except Exception as e:
+        print('URL error ' + str(e) )
+        return 0.0 
      
 
 from TwitterCrawler.TwitterCrawler import TwitterCrawler
@@ -226,20 +226,22 @@ updateRateFileName = 'update_rate.txt'
 f_in = open(os.path.join('.', 'TwitterCrawler', 'stocks.txt'), 'r', encoding='utf-8')
 lines = f_in.readlines()
 stock_prices = []
+for line in lines:
+    stock = line.strip()
+    print('<li>' + stock + '</li>')  
 for line in lines:            
     stock = line.strip()
     #twitterCrawler.Crawl("q")
     #print('Stock: ' + stock + ' Price:' + str(get_stock_price(stock)))
     price = get_stock_price(stock)
     stock_prices.append({'name':stock, 'price':price})
-    if(price != 9999999):
-        print("'" + stock + "'" + ':' + "'" + stock + "',")
-        #print("'" + stock + "'" + ':' + "'" + stock + "'," + "Price: " + str(price))
+    if(price != 0.0):
+        #print("'" + stock + "'" + ':' + "'" + stock + "',")
+        print("'" + stock + "'" + ':' + "'" + stock + "'," + "Price: " + str(price))
     else:
-        print("'" + stock + "'" + ':,')
-        #print("'" + stock + "'" + ':,' + "Price: " + str(price))
+        #print("'" + stock + "'" + ':,')
+        print("'" + stock + "'" + ':,' + "Price: " + str(price))
         
 for stock_name in stock_prices:
-    print('Stock: ' + stock_name['name'] + ' Price:' + str(stock_name['price']))
-          
+    print('Stock: ' + stock_name['name'] + ' Price:' + str(stock_name['price']))         
           

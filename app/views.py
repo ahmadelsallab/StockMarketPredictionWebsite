@@ -185,7 +185,7 @@ stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
 'استثمار':'استثمار',
 'السعودي الهولندي':'السعودي الهولندي',
 'السعودي الفرنسي':'السعودي الفرنسي',
-'سـاب':'سـاب',
+'ساب':'سـاب',
 'العربي الوطني': 'العربي',
 'سامبا':'سامبا',
 'الراجحي':'الراجحي',
@@ -353,10 +353,10 @@ def isNumber(value):
     
     
 def get_stock_price(stock):
-    urlstr = 'http://www.tadawul.com.sa/Resources/Reports/DailyList_ar.html'
-    stock = stock_prices_names_mapping_tbl[stock]
+
     try:
-        
+        urlstr = 'http://www.tadawul.com.sa/Resources/Reports/DailyList_ar.html'
+        stock = stock_prices_names_mapping_tbl[stock]
         fileHandle = urllib.request.urlopen(urlstr)
         
         html = fileHandle.read()
@@ -383,8 +383,8 @@ def get_stock_price(stock):
                             #print('Not price, skip ' + td_list[1].text)
                             #return ''   
         return 0.0                 
-    except:
-        print('URL error ' + urlstr )
+    except Exception as e:
+        print('URL error ' + str(e) )
         return 0.0
         
 def index(request):
@@ -468,13 +468,18 @@ def get_tweets(request):
         
     #twittes['price'] = stocks_prices[query] # CHECK: Get from DB?--> use the next line then. You might need migration of DB to update MySQL tables
     price = get_stock_price(stock_name)
-    content_return['price'] = price
+    
     try:
         stock_price_db = StocksPrices.objects.get(stock_name=stock_name)
-        stock_price_db.price = price
+        if(price == 0.0):
+            price = stock_price_db.stock_price
+        else:
+            stock_price_db.stock_price = price
+        
     except:
-        stock_price_db = StocksPrices(stock_name=stock_name, stock_price = price) # CHECK: Needs migration    
-    
+        stock_price_db = StocksPrices(stock_name=stock_name, stock_price=price) # CHECK: Needs migration    
+        
+    content_return['price'] = price
     stock_price_db.save()
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
     for tweet in tweets:
@@ -502,6 +507,26 @@ def get_tweets(request):
     #print(json.dumps(my_list[0]))
     
     content_return['statuses'] = tweetes_to_render
+    
+    # Fill in total number of entries in DB for this stock
+    # Full DB
+    content_return['total_entries_in_DB'] = len(Tweet.objects.all())
+    content_return['total_labeled_entries_in_DB'] = len(Tweet.objects.filter(labeled = True))
+    content_return['total_relevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(relevancy = 'relevant'))
+    content_return['total_irrelevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(relevancy = 'irrelevant'))
+    content_return['total_positive_labeled_entries_in_DB'] = len(Tweet.objects.filter(sentiment = 'positive'))
+    content_return['total_negative_labeled_entries_in_DB'] = len(Tweet.objects.filter(sentiment = 'negative'))
+    content_return['total_neutral_labeled_entries_in_DB'] = len(Tweet.objects.filter(sentiment = 'neutral'))
+    
+    # Stock DB
+    content_return['stock_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name))
+    content_return['stock_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, labeled = True))
+    content_return['stock_relevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, relevancy = 'relevant'))
+    content_return['stock_irrelevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, relevancy = 'irrelevant'))
+    content_return['stock_positive_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, sentiment = 'positive'))
+    content_return['stock_negative_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, sentiment = 'negative'))
+    content_return['stock_neutral_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, sentiment = 'neutral'))
+
     return content_return 
 
 @ajax
@@ -602,7 +627,7 @@ def login_user(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                return redirect('/about')
+                return redirect('/home')
                 #return HttpResponseRedirect('/about/')
     return redirect('/')
 

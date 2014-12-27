@@ -27,9 +27,10 @@ class StocksPrices(models.Model):
     stock_name = models.CharField(max_length=200)
     from django.core.validators import MaxValueValidator, MinValueValidator
     stock_price = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
+    '''
     def __str__(self):
         return self.stock_name
-    
+    '''
 class CorrectionData(models.Model):
 
     text = models.CharField(max_length=200)
