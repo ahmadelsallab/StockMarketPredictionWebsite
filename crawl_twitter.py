@@ -11,9 +11,10 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "DjangoWebProject1.settings"
 
 
 from TwitterCrawler.TwitterCrawler import TwitterCrawler
-configFileName = ".\\TwitterCrawler\\Configurations\\Configurations.xml"
+PROJECT_DIR = os.path.abspath(os.path.dirname(__file__))
+configFileName = os.path.join(PROJECT_DIR, 'TwitterCrawler', 'Configurations', 'Configurations.xml')
 updateRateFileName = 'update_rate.txt'
-f_in = open('.\\TwitterCrawler\\stocks.txt', 'r', encoding='utf-8')
+f_in = open(os.path.join('.', 'TwitterCrawler', 'stocks.txt'), 'r', encoding='utf-8')
 lines = f_in.readlines()
 for line in lines:            
     stock = line.strip()

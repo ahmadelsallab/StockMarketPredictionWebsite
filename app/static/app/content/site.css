@@ -1,4 +1,4 @@
-﻿html{
+html{
     height: 100% !important;
 }
 body{
@@ -129,25 +129,25 @@ body#index_body{
     margin: 0 0  20px 0;
     color: #333333;
 }
-#main_content #twittes .twitte{
+#main_content #tweets .tweet{
     padding: 20px 15px;
     background-color: #F5F8FA;
     margin: 20px;
     overflow: hidden;
 }
-#main_content #twittes .twitte img{
+#main_content #tweets .tweets img{
     float: left;
     margin-right: 15px;
     margin-top: 5px;
 }
-#main_content #twittes .twitte p{
+#main_content #tweets .tweets p{
     color: #333333;
     margin: 0;
 }
-#main_content #twittes .twitte p span{
+#main_content #tweets .tweets p span{
     color: #428bca;
 }
-#main_content #twittes_loading{
+#main_content #tweets_loading{
     display: none;
     text-align: center;
 }

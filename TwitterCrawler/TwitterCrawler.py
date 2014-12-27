@@ -355,7 +355,7 @@ class TwitterCrawler(object):
                                                       since_id=since_id,
                                                       max_id=max_id)                    
         except Exception as e:
-            print("HTTP error, most probably rate\n")
+            print("HTTP error, most probably rate\n" + e)
 
             
         try:        

@@ -15,6 +15,8 @@ from Filter.Filter import Filter
 from bs4 import BeautifulSoup
 import urllib
 import json
+from TwitterCrawler.TwitterCrawler import *
+import os
 
 synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'السعودى الهولندى': 'البنك السعودي الهولندي',
@@ -177,6 +179,170 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 
 stocks_prices = {};
 
+stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
+'الرياض':'الرياض',
+'الجزيرة':'الجزيرة',
+'استثمار':'استثمار',
+'السعودي الهولندي':'السعودي الهولندي',
+'السعودي الفرنسي':'السعودي الفرنسي',
+'سـاب':'سـاب',
+'العربي الوطني': 'العربي',
+'سامبا':'سامبا',
+'الراجحي':'الراجحي',
+'البلاد':'البلاد',
+'الإنماء':'الإنماء',
+'كيمانول':'كيمانول',
+'بتروكيم':'بتروكيم',
+'سابك':'سابك',
+'سافكو':'سافكو',
+'التصنيع':'التصنيع',
+'اللجين':'اللجين',
+'نماء للكيماويات':'نماء للكيماويات',
+'المجموعة السعودية':'المجموعة السعودية',
+'الصحراء للبتروكيماويات': 'الصحراء',
+'ينساب':'ينساب',
+'سبكيم العالمية':'سبكيم العالمية',
+'المتقدمة':'المتقدمة',
+'كيان': 'كيان السعودية',
+'بترو رابغ':'بترو رابغ',
+'أسمنت حائل': 'اسمنت حائل',
+'أسمنت نجران': 'اسمنت نجران',
+'اسمنت المدينة':'اسمنت المدينة',
+'اسمنت الشمالية':'اسمنت الشمالية',
+'الاسمنت العربية':'الاسمنت العربية',
+'اسمنت اليمامة':'اسمنت اليمامة',
+'اسمنت السعوديه':'اسمنت السعوديه',
+'اسمنت القصيم':'اسمنت القصيم',
+'اسمنت الجنوبيه':'اسمنت الجنوبيه',
+'اسمنت ينبع':'اسمنت ينبع',
+'اسمنت الشرقية':'اسمنت الشرقية',
+'اسمنت تبوك':'اسمنت تبوك',
+'اسمنت الجوف':'اسمنت الجوف',
+'أسواق ع العثيم':'أسواق ع العثيم',
+'المواساة':'المواساة',
+'إكسترا':'إكسترا',
+'دله الصحية':'دله الصحية',
+'رعاية':'رعاية',
+'ساسكو':'ساسكو',
+'ثمار':'ثمار',
+'مجموعة فتيحي':'مجموعة فتيحي',
+'جرير':'جرير',
+'الدريس':'الدريس',
+'الحكير':'الحكير',
+'الخليج للتدريب':'الخليج للتدريب',
+'الغاز والتصنيع':'الغاز',
+'كهرباء السعودية':'كهرباء السعودية',
+'مجموعة صافولا': 'صافولا',
+'الغذائية':'الغذائية',
+'سدافكو':'سدافكو',
+'المراعي':'المراعي',
+'أنعام القابضة':'أنعام القابضة',
+'حلواني إخوان':'حلواني إخوان',
+'هرفي للأغذية':'هرفي للأغذية',
+'التموين':'التموين',
+'نادك':'نادك',
+'القصيم الزراعيه':'القصيم الزراعيه',
+'تبوك الزراعيه':'تبوك الزراعيه',
+'الأسماك':'الأسماك',
+'الشرقية للتنمية':'الشرقية للتنمية',
+'الجوف الزراعيه': 'الجوف',
+'بيشة الزراعيه':'بيشة',
+'جازان للتنمية':'جازان للتنمية',
+'الاتصالات':'الاتصالات',
+'اتحاد اتصالات': 'اتحاد اتصالات',
+'زين السعودية':'زين السعودية',
+'عذيب للاتصالات':'عذيب للاتصالات',
+'المتكاملة':'المتكاملة',
+'التعاونية':'التعاونية',
+'ملاذ للتأمين':'ملاذ للتأمين',
+'ميدغلف للتأمين':'ميدغلف للتأمين',
+'أليانز إس إف':'أليانز إس إف',
+'سلامة':'سلامة',
+'ولاء للتأمين':'ولاء للتأمين',
+'الدرع العربي':'الدرع العربي',
+'ساب تكافل':'ساب تكافل',
+'سند':'سند',
+'سايكو':'سايكو',
+'وفا للتأمين':'وفا للتأمين',
+'إتحاد الخليج':'إتحاد الخليج',
+'الأهلي للتكافل':'الأهلي للتكافل',
+'الأهلية':'الأهلية',
+'أسيج':'أسيج',
+'التأمين العربية':'التأمين العربية',
+'الاتحاد التجاري':'الاتحاد التجاري',
+'الصقر للتأمين':'الصقر للتأمين',
+'المتحدة للتأمين':'المتحدة للتأمين',
+'الإعادة السعودية':'الإعادة السعودية',
+'بوبا العربية':'بوبا العربية',
+'وقاية للتكافل':'وقاية للتكافل',
+'تكافل الراجحي':'تكافل الراجحي',
+'ايس':'ايس',
+'اكسا- التعاونية':'اكسا- التعاونية',
+'الخليجية العامة':'الخليجية العامة',
+'بروج للتأمين':'بروج للتأمين',
+'العالمية':'العالمية',
+'سوليدرتي تكافل':'سوليدرتي تكافل',
+'الوطنية':'الوطنية',
+'أمانة للتأمين':'أمانة للتأمين',
+'عناية':'عناية',
+'الإنماء طوكيو م':'الإنماء طوكيو م',
+'المصافي':'المصافي',
+'المتطورة':'المتطورة',
+'الاحساء للتنميه':'الاحساء للتنميه',
+'سيسكو':'سيسكو',
+'عسير':'عسير',
+'الباحة':'الباحة',
+'المملكة':'المملكة',
+'تكوين':'تكوين',
+'بى سى آى':'بى سى آى',
+'معادن':'معادن',
+'أسترا الصناعية':'أسترا الصناعية',
+'مجموعة السريع':'مجموعة السريع',
+'شاكر':'شاكر',
+'الدوائية':'الدوائية',
+'زجاج':'زجاج',
+'فيبكو':'فيبكو',
+'معدنية':'معدنية',
+'الكيميائيه السعوديه':'الكيميائيه السعوديه',
+'صناعة الورق':'صناعة الورق',
+'العبداللطيف':'العبداللطيف',
+'الصادرات':'الصادرات',
+'أسلاك':'أسلاك',
+'مجموعة المعجل':'مجموعة المعجل',
+'الأنابيب السعودية':'انابيب السعودية',
+'الخضري':'الخضري',
+'الخزف':'الخزف السعودي',
+'الجبس':'الجبس',
+'الكابلات':'الكابلات',
+'صدق':'صدق',
+'اميانتيت':'اميانتيت',
+'أنابيب':'أنابيب',
+'الزامل للصناعة':'الزامل للصناعة',
+'البابطين':'البابطين',
+'الفخارية':'الفخارية',
+'مسك':'مسك',
+'البحر الأحمر':'البحر الأحمر',
+'العقارية':'العقارية',
+'طيبة للاستثمار':'طيبة',
+'مكة للانشاء':'مكة',
+'التعمير':'التعمير',
+'إعمار':'إعمار',
+'جبل عمر':'جبل عمر',
+'دار الأركان':'دار الأركان',
+'مدينة المعرفة':'مدينة المعرفة',
+'البحري':'البحري',
+'النقل الجماعي':'النقل الجماعي',
+'مبرد':'مبرد',
+'بدجت السعودية':'بدجت السعودية',
+'تهامه للاعلان':'تهامه للاعلان',
+'الأبحاث و التسويق':'الأبحاث و التسويق',
+'طباعة وتغليف':'طباعة وتغليف',
+'الطيار':'الطيار',
+'الفنادق':'الفنادق',
+'شمس':'شمس',
+}
+
+
 def isNumber(value):
     try:
         float(value)
@@ -188,9 +354,11 @@ def isNumber(value):
     
 def get_stock_price(stock):
     urlstr = 'http://www.tadawul.com.sa/Resources/Reports/DailyList_ar.html'
+    stock = stock_prices_names_mapping_tbl[stock]
     try:
+        
         fileHandle = urllib.request.urlopen(urlstr)
-        #print(urlstr)
+        
         html = fileHandle.read()
         soup = BeautifulSoup(html)
         price = 0.0
@@ -201,7 +369,9 @@ def get_stock_price(stock):
                 div_list = td_list[0].findAll('div', { "class" : "left-text portlet-padding-5" })
                 if(len(div_list) != 0):
                     stock_in_website = div_list[0].text.strip()
-                    if (stock in stock_in_website) | (stock_in_website in stock):
+                    #stock_in_website.replace('*', '').strip()
+                    #if (stock in stock_in_website) | (stock_in_website in stock):
+                    if (stock == stock_in_website):
                         try:
                             price = float(td_list[4].text)
                             if(isNumber(price)):                
@@ -215,7 +385,7 @@ def get_stock_price(stock):
         return 0.0                 
     except:
         print('URL error ' + urlstr )
-        return 0.0 
+        return 0.0
         
 def index(request):
     """Renders the home page."""
@@ -240,9 +410,18 @@ def index(request):
 
 #@login_required
 def home(request):
+    '''
     from twython import Twython
     global twitter
     twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
+    '''
+    
+    # Start the TwitterCrawler      
+    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+    configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+    global twitterCrawler
+    twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+    #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
     '''
     for stock in synonyms:
         price = get_stock_price(stock)
@@ -268,6 +447,8 @@ def get_tweets(request):
     #query = stock_name
     #query = synonyms[query]
     query = stock_name + " AND (سهم OR اسهم OR أسهم OR تداول OR ارتفع OR ارتفاع OR انخفض OR انخفاض OR هدف OR دعم OR ارتداد OR نسبة OR % OR %)‎"
+    
+    '''
     #tweets = twitter.search(q= query + 'OR ' + synonyms[query], result_type='recent')
     try:
         tweets = twitter.search(q=query, result_type='recent')
@@ -275,6 +456,15 @@ def get_tweets(request):
         from twython import Twython
         twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
         tweets = twitter.search(q=query, result_type='recent')
+    '''
+    
+    try:
+        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+    except:        
+        PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+        configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+        twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
         
     #twittes['price'] = stocks_prices[query] # CHECK: Get from DB?--> use the next line then. You might need migration of DB to update MySQL tables
     price = get_stock_price(stock_name)
@@ -287,7 +477,7 @@ def get_tweets(request):
     
     stock_price_db.save()
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
-    for tweet in tweets['statuses']:
+    for tweet in tweets:
         tweet_exist = Tweet.objects.filter(twitter_id=tweet['id_str']);
         if(len(tweet_exist) == 0):
             try:
