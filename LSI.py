@@ -8,6 +8,7 @@ Created on Aug 7, 2014
 #http://radimrehurek.com/gensim/tut3.html
 from gensim import corpora, models, similarities
 
+
 SIZE_OF_LANG_MODEL = 100
 
 # TODO: convert the tweets from excel to text file
@@ -28,7 +29,7 @@ vec_lsi = lsi[vec_bow]
 
 # Match to simialrities
 '''
-To prepare for similarity queries, we need to enter all documents which we want to compare against subsequent queries. In our case, they are the same nine documents used for training LSI, converted to 2-D LSA space. But that”≥ only incidental, we might also be indexing a different corpus altogether
+To prepare for similarity queries, we need to enter all documents which we want to compare against subsequent queries. In our case, they are the same nine documents used for training LSI, converted to 2-D LSA space. But thatís only incidental, we might also be indexing a different corpus altogether
 '''
 index = similarities.MatrixSimilarity(lsi[tweetCopus]) # transform corpus to LSI space and index it
 # Get simialor docs

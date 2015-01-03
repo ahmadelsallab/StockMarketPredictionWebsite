@@ -6,7 +6,7 @@ Created on Sep 25, 2014
 from Filter.Filter import Filter
 import pickle
 
-filter = Filter()
+filter = Filter('/srv/www/htdocs/kalam')
 serializationFile = open('filter.bin', 'wb')
 pickle.dump(filter, serializationFile)
 pickle.dump(filter.classifier_Lexicon.labelsNamesMap, serializationFile)

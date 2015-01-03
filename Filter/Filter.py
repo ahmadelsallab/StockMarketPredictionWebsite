@@ -8,6 +8,7 @@ from LanguageModel.LanguageModel import LanguageModel
 from FeaturesExtractor.FeaturesExtractor import FeaturesExtractor
 from Classifier.Classifier import Classifier
 import os
+import pickle
 
 class Filter(object):
     '''
@@ -15,108 +16,147 @@ class Filter(object):
     '''
 
 
-    def __init__(self):
+    def __init__(self, basePath, stockName , Retrain):
         '''
         Constructor
         :type self:
         '''
+        
+        if(basePath == None):
+            self.basePath = self.basePath
+        else:
+            self.basePath = basePath
+            
+        self.stockName = stockName    
+        serializationFile = open(os.path.join(self.basePath,'StockToClassifier.bin'),'rb')
+        self.StockToClassifier = pickle.load(serializationFile) 
+        #import pdb; pdb.set_trace()   
+        self.usedClassifier = self.StockToClassifier[self.stockName]
         # Start the DatasetBuilder
         #-------------------------
         # Configurations file xml of the dataset builder
-        configFileDatasetBuilder = os.getcwd()+"\\DatasetBuilder\\Configurations\\Configurations.xml"
+        configFileDatasetBuilder = os.path.join(self.basePath, "DatasetBuilder", "Configurations", "Configurations.xml")
                
         # The serialization file to save the dataset
-        datasetSerializationFile = os.getcwd()+"\\DatasetBuilder\\Output\\dataset.bin"
-               
-        # The XLSX file name for train set
-        xlsxTrainFileName = os.getcwd()+"\\DatasetBuilder\\Input\\train"
+        datasetSerializationFile = os.path.join(self.basePath, "DatasetBuilder", "Output", "dataset.bin")
+        
+        if Retrain == False:       
+            # The XLSX file name for train set
+            xlsxTrainFileName = os.path.join(self.basePath, "DatasetBuilder" ,"Input", "train")
         
         
-        # Initialize the DatasetBuilder from serialization file
-        datasetBuilder = DatasetBuilder(configFileDatasetBuilder, [], datasetSerializationFile)
+            # Initialize the DatasetBuilder from serialization file
+            datasetBuilder = DatasetBuilder(configFileDatasetBuilder, [], datasetSerializationFile)
         
-        datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
-                
+         
+            datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
+                    
         
-        # Configurations file xml of the language model
-        configFileLanguageModel_lexicon = os.getcwd()+"\\LanguageModel\\Configurations\\Configurations-lexicon.xml"
-        configFileLanguageModel_Tasi = os.getcwd()+"\\LanguageModel\\Configurations\\Configurations-Tasi.xml"
-        stopWordsFileName = os.getcwd()+"\\LanguageModel\\Input\\stop_words.txt"
-        linksDBFile = os.getcwd()+"\\LanguageModel\\Output\\links_database.txt"
-        # The serialization file to save the model
-        languageModelSerializationFile = os.getcwd()+"\\LanguageModel\\Output\\language_model.bin"
-        langModelTxtLoadFile = os.getcwd()+"\\LanguageModel\\Input\\language_model_lexicon_synonyms.txt"
-        
-        # Start the LanguageModel:
-        
-        # Initialize the LanguageModel_Lexicon
-        self.languageModel_lexicon = LanguageModel(configFileLanguageModel_lexicon, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
-        self.languageModel_lexicon.BuildLanguageModel()
-        self.languageModel_lexicon.LoadModelFromTxtFile(langModelTxtLoadFile)
 
-         # Initialize the LanguageModel_Tasi
-        self.languageModel_Tasi = LanguageModel(configFileLanguageModel_Tasi, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
-        self.languageModel_Tasi.BuildLanguageModel()
+            self.RunLanguageModel(self.usedClassifier,datasetBuilder.trainSet)
         
-        # Configurations file xml of the features extractor
-        configFileFeaturesExtractor_Lexicon = os.getcwd()+"\\FeaturesExtractor\\Configurations\\Configurations-lexicon.xml"
-        configFileFeaturesExtractor_Tasi = os.getcwd()+"\\FeaturesExtractor\\Configurations\\Configurations-Tasi.xml"
-        # The serialization file to save the features
-        trainFeaturesSerializationFile = os.getcwd()+"\\FeaturesExtractor\\Output\\train_features.bin"
-        trainLabelsSerializationFile = os.getcwd()+"\\FeaturesExtractor\\Output\\train_labels.bin"
         
-        # Start the FeaturesExtractor:
-        #-----------------------------    
-        # Initialize the FeaturesExtractor _ Lexicon
-        trainFeaturesExtractor_Lexicon = FeaturesExtractor(configFileFeaturesExtractor_Lexicon, trainFeaturesSerializationFile, trainLabelsSerializationFile, self.languageModel_lexicon, datasetBuilder.trainSet)
-        trainFeaturesExtractor_Lexicon.ExtractLexiconFeatures()
-
-        # Initialize the FeaturesExtractor _ Tasi
-        trainFeaturesExtractor_Tasi = FeaturesExtractor(configFileFeaturesExtractor_Tasi, trainFeaturesSerializationFile, trainLabelsSerializationFile, self.languageModel_Tasi, datasetBuilder.trainSet)
-        trainFeaturesExtractor_Tasi.ExtractNumTfFeatures()
-
-        # The serialization file to save the features
-        configFileClassifier_Lexicon = os.getcwd()+"\\Classifier\\Configurations\\Configurations-lexicon.xml"
-        configFileClassifier_Tasi = os.getcwd()+"\\Classifier\\Configurations\\Configurations-Tasi.xml"
-        modelSerializationFile = os.getcwd()+"\\Classifier\\Output\classifier_model.bin"
-    
-        # Start the Classifier:
-        #---------------------
         
-        self.classifier_Lexicon = Classifier(configFileClassifier_Lexicon, modelSerializationFile,  trainFeaturesExtractor_Lexicon.features, trainFeaturesExtractor_Lexicon.labels, [], [])
-        self.classifier_Tasi = Classifier(configFileClassifier_Tasi, modelSerializationFile, trainFeaturesExtractor_Tasi.features,
-                        trainFeaturesExtractor_Tasi.labels, [],[])
+            trainFeaturesExtractor = self.RunFeatureExtractor(self.usedClassifier,datasetBuilder.trainSet)
+            self.Train(self.usedClassifier,trainFeaturesExtractor,True)
+        else:
+            # Initialize the DatasetBuilder from serialization file
+            datasetBuilder = DatasetBuilder(configFileDatasetBuilder, [], datasetSerializationFile)
         
-        # Train
-        self.classifier_Lexicon.Train()
-        self.classifier_Tasi.Train()
-        
-    def Classify(self, text, stockName):
+    def Classify(self, text):
     
         testSet = []
         for t in text:
             testSet.append({'label' : '', 'text' : t})
 
-        if stockName == 'Tasi':
-            # Configurations file xml of the features extractor
-            configFileFeaturesExtractor = os.getcwd()+"\\FeaturesExtractor\\Configurations\\Configurations-Tasi.xml"
-            testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel_Tasi, testSet)
-            testFeaturesExtractor.ExtractNumTfFeatures()
-            self.classifier_Tasi.testFeatures = testFeaturesExtractor.features
-            self.classifier_Tasi.testTargets = []
-            for i in range(len(self.classifier_Tasi.testFeatures)):        
-                self.classifier_Tasi.testTargets.append(1)
-            label, acc, val = self.classifier_Tasi.Test()
-        else:
-            configFileFeaturesExtractor = os.getcwd()+"\\FeaturesExtractor\\Configurations\\Configurations-lexicon.xml"
-            testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel_lexicon, testSet)
+
+        # Configurations file xml of the features extractor
+        configFileFeaturesExtractor = os.path.join(self.basePath, "FeaturesExtractor", "Configurations", "Configurations-"+self.usedClassifier+".xml")
+        testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, None, None, self.languageModel, testSet)
+        if self.usedClassifier == "Lexicon":
             testFeaturesExtractor.ExtractLexiconFeatures()
-            self.classifier_Lexicon.testFeatures = testFeaturesExtractor.features
-            self.classifier_Lexicon.testTargets = []
-            for i in range(len(self.classifier_Lexicon.testFeatures)):        
-                self.classifier_Lexicon.testTargets.append(1)
-            label, acc, val = self.classifier_Lexicon.Test()
+        else:
+            testFeaturesExtractor.ExtractNumTfFeatures()
+        self.classifier.testFeatures = testFeaturesExtractor.features
+        self.classifier.testTargets = []
+        for i in range(len(self.classifier.testFeatures)):        
+            self.classifier.testTargets.append(1)
+        label, acc, val = self.classifier.Test()
 
         
         return label
+
         
+    def RunLanguageModel(self,_Classifier,trainSet):
+        # Configurations file xml of the language model
+        configFileLanguageModel = os.path.join(self.basePath, "LanguageModel", "Configurations", "Configurations-"+_Classifier+".xml")
+        stopWordsFileName = os.path.join(self.basePath, "LanguageModel", "Input", "stop_words.txt")
+        linksDBFile = os.path.join(self.basePath, "LanguageModel", "Output", "links_database.txt")
+        # The serialization file to save the model
+        languageModelSerializationFile = os.path.join(self.basePath, "LanguageModel" ,"Output" ,"language_model.bin")
+        if _Classifier == "Lexicon":
+            langModelTxtLoadFile = os.path.join(self.basePath, "LanguageModel", "Input", "language_model_lexicon_synonyms.txt")
+        
+        # Start the LanguageModel:
+        
+        # Initialize the LanguageModel_Lexicon
+        self.languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, linksDBFile, trainSet)
+        self.languageModel.BuildLanguageModel()
+        if _Classifier == "Lexicon":
+            self.languageModel.LoadModelFromTxtFile(langModelTxtLoadFile)   
+                 
+    def RunFeatureExtractor(self,_Classifier,trainSet):        
+        # Configurations file xml of the features extractor
+        configFileFeaturesExtractor = os.path.join(self.basePath, "FeaturesExtractor", "Configurations", "Configurations-"+_Classifier+".xml")
+        # The serialization file to save the features
+        trainFeaturesSerializationFile = os.path.join(self.basePath, "FeaturesExtractor", "Output", "train_features.bin")
+        trainLabelsSerializationFile = os.path.join(self.basePath, "FeaturesExtractor", "Output", "train_labels.bin")
+        
+        # Start the FeaturesExtractor:
+        #-----------------------------    
+        # Initialize the FeaturesExtractor 
+        trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, self.languageModel, trainSet)
+        if _Classifier == "Lexicon":
+            trainFeaturesExtractor.ExtractLexiconFeatures()
+        else:
+            trainFeaturesExtractor.ExtractNumTfFeatures()
+        return trainFeaturesExtractor
+            
+    def Train(self,_Classifier,trainFeaturesExtractor,Full):        
+        # The serialization file to save the features
+        configFileClassifier = os.path.join(self.basePath, "Classifier", "Configurations", "Configurations-"+_Classifier+".xml")
+        modelSerializationFile = os.path.join(self.basePath, "Classifier", "Output", "classifier_model.bin")
+    
+        # Start the Classifier:
+        #---------------------
+        
+        self.classifier = Classifier(configFileClassifier, modelSerializationFile,  trainFeaturesExtractor.features, trainFeaturesExtractor.labels, [], [])
+        
+        if Full == True:
+            self.classifier.Train()
+        
+    def GetBestClassifier(self,trainSet):
+        #import pdb; pdb.set_trace()
+        self.RunLanguageModel("Lexicon",trainSet)
+        trainFeaturesExtractor=self.RunFeatureExtractor("Lexicon",trainSet)
+        self.Train("Lexicon",trainFeaturesExtractor,False)
+        LexiconAcc=self.classifier.getCrossValidationAccuarcy()
+        
+        self.RunLanguageModel("DT",trainSet)
+        trainFeaturesExtractor = self.RunFeatureExtractor("DT",trainSet)
+        self.Train("DT",trainFeaturesExtractor,False)
+        DTAcc=self.classifier.getCrossValidationAccuarcy()
+        
+        self.RunLanguageModel("SVM",trainSet)
+        trainFeaturesExtractor=self.RunFeatureExtractor("SVM",trainSet)
+        self.Train("SVM",trainFeaturesExtractor,False)
+        SVMAcc=self.classifier.getCrossValidationAccuarcy()
+        bestClassifier = max(LexiconAcc,DTAcc,SVMAcc)
+        if bestClassifier== LexiconAcc:
+            self.StockToClassifier[self.stockName]="Lexicon"
+        elif bestClassifier == DTAcc:
+            self.StockToClassifier[self.stockName]="DT"
+        else:
+            self.StockToClassifier[self.stockName]="SVM"
+#        serializationFile = open('./StockToClassifier.bin', 'wb')
+#        pickle.dump(self.StockToClassifier, serializationFile)

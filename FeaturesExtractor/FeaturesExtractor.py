@@ -13,7 +13,13 @@ from bs4 import BeautifulSoup
 import urllib.request
 import locale
 
-locale.setlocale(locale.LC_NUMERIC, 'English_USA.1252')
+import platform
+
+if(platform.system() == 'Windows'):
+    locale.setlocale(locale.LC_NUMERIC, 'English_USA.1252')
+elif (platform.system() == 'Linux'):
+    locale.setlocale(locale.LC_NUMERIC, 'en_US.utf8')
+    
 DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST = False
 class FeaturesExtractor(object):
     '''
