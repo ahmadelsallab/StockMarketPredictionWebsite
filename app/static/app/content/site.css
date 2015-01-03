@@ -1,0 +1,181 @@
+html{
+    height: 100% !important;
+}
+body{
+    margin: 0;
+    padding: 0;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.5) inset;
+    color: #ffffff;
+}
+
+/************* common *************/
+.btn{
+    border: 1px solid white;
+    border-radius: 4px;
+    background-color: #428bca;
+    color: white;
+    font-size: 15px;
+    height: 35px;
+    line-height: 0.6;
+}
+.btn:hover{
+    background-color: #39b3d7;
+    border-color: #269abc;
+    color: white;
+}
+
+/************* login *************/
+body#index_body{
+    background-color: #2f3239;
+    min-height: 100% !important;
+}
+#header_login{
+    text-align: center;
+    padding-top: 35px;
+}
+#logo{
+    float: left;
+    color: #ffffff;
+    font-size: 24px;
+    margin: 0 150px 0 250px;
+}
+#login_form{
+    float: left;
+}
+#login_form input[type=text],
+#login_form input[type=password]{
+    float: left;
+    margin-right: 10px;
+    width: 130px;
+}
+#login_form button{
+    float: left;
+    width: 60px;
+}
+
+#registration_div{
+    margin-top: 100px;
+    text-align: center;
+}
+#registration_div #home_welcome{
+    font-size: 36px;
+    color: white;
+    margin-bottom: 10px;
+}
+#registration_div #sign_up_button{
+    width: 120px;
+    height: 44px;
+    border-radius: 6px;
+    font-size: 18px;
+    line-height: 32px;
+    font-weight: bold;
+}
+#registration_div form{
+    display: none;
+}
+#registration_div form input{
+    width: 300px;
+    margin: 5px auto;
+}
+
+/************* layout *************/
+.navbar {
+    border-bottom: 1px solid #080808;
+    background-color: #428BCA;
+    margin: 0;
+}
+.navbar a{
+    color: white;
+}
+.navbar .navbar-brand{
+    width: 230px;
+}
+.body-content #side_bar{
+    float: left;
+    width: 220px;
+    background-color: #2F3239;
+}
+.body-content #main_content{
+    float: left;
+    background-color: white;
+    width: auto;
+}
+
+/************* home *************/
+#side_bar_selection{
+    width: 160px;
+    margin: 20px;
+}
+#side_bar_list{
+    list-style: none;
+    padding: 0;
+}
+#side_bar_list li{
+    height: 40px;
+    color: #428bca;
+    padding: 0 20px;
+    line-height: 40px;
+    cursor: pointer;
+}
+#side_bar_list li:hover,
+#side_bar_list li.select_list_item{
+    background-color: #EEEEEE;
+}
+#main_content{
+    padding: 20px 25px;
+}
+#main_content .page-header{
+    padding-bottom: 10px;
+    margin: 0 0  20px 0;
+    color: #333333;
+}
+#main_content #tweets .tweet{
+    padding: 20px 15px;
+    background-color: #F5F8FA;
+    margin: 20px;
+    overflow: hidden;
+    text-align: right;
+}
+#main_content #tweets .tweets img{
+    float: left;
+    margin-right: 15px;
+    margin-top: 5px;
+}
+#main_content #tweets .tweets p{
+    color: #333333;
+    margin: 0;
+}
+#main_content #tweets .tweets p span{
+    color: #428bca;
+}
+#main_content #tweets_loading{
+    display: none;
+    text-align: center;
+}
+
+/************* stats *************/
+
+#main_content #stats .stat_stock{
+    overflow: hidden;
+    text-align: left;
+}
+#main_content #stats .stat_total{
+    overflow: hidden;
+    text-align: center;
+    font-weight: bold;
+}
+#main_content #stats .stats img{
+    float: left;
+    margin-right: 15px;
+    margin-top: 5px;
+}
+#main_content #stats .stats p{
+    color: #333333;
+    margin: 0;
+}
+#main_content #stats .stats p span{
+    color: #428bca;
+}
+
+
+
