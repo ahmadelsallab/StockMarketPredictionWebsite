@@ -644,7 +644,7 @@ def runNewsCrawling():
     threading.Timer(86400.0, runNewsCrawling).start()
 
 #Crawl the News every 24 hours
-#runNewsCrawling()
+runNewsCrawling()
 
 
 @login_required
