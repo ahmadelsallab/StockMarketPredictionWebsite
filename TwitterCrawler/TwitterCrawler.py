@@ -118,13 +118,14 @@ class TwitterCrawler(object):
             for result in resultsCrawl:
                 self.tweetsCtr += 1
                 
-                from app.models import Tweet
+                from app.models import Opinion
                 from django.utils import timezone
                 
-                tweet_exist = Tweet.objects.filter(twitter_id=result['id_str']);
+                tweet_exist = Opinion.objects.filter(twitter_id=result['id_str']);
                 if(len(tweet_exist) == 0):
-                    opinion = Tweet(twitter_id=result['id_str'], user_id=result['user']['id'], text=result['text'], created_at=result['created_at'], user_followers_count=result['user']['followers_count'], user_profile_image_url=result['user']['profile_image_url'], pub_date=str(timezone.now()), stock=self.stock, labeled=False)        
+                    opinion = Opinion(twitter_id=result['id_str'], user_id=result['user']['id'], text=result['text'], created_at=result['created_at'], user_followers_count=result['user']['followers_count'], user_profile_image_url=result['user']['profile_image_url'], pub_date=str(timezone.now()), stock=self.stock, labeled=False) 
                     opinion.save()
+                    
                 if (self.inhibitLogFileSaving != "true"):
                     # Write to logs file
                     #self.logFile.write(result['text'] + "\n")  
