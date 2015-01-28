@@ -9,7 +9,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django_ajax.decorators import ajax
-from app.models import Tweet, CorrectionData, StocksPrices
+from app.models import Opinion, CorrectionData, StocksPrices
 from django.utils import timezone
 from Filter.Filter import Filter
 from bs4 import BeautifulSoup
@@ -17,6 +17,7 @@ import urllib
 import json
 from TwitterCrawler.TwitterCrawler import *
 import os
+import threading
 
 synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'السعودى الهولندى': 'البنك السعودي الهولندي',
@@ -175,6 +176,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'الطيار': 'الطيار',
 'الفنادق': 'الفنادق',
 'شمس': 'شمس',
+'بوان': 'بوان',
 }
 
 stocks_prices = {};
@@ -340,9 +342,14 @@ stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
 'الطيار':'الطيار',
 'الفنادق':'الفنادق',
 'شمس':'شمس',
+'بوان':'بوان',
 }
 
-
+class NewsItem:
+    title = ""
+    link = ""
+    pubDate = ""
+    
 def isNumber(value):
     try:
         float(value)
@@ -483,10 +490,10 @@ def get_tweets(request):
     stock_price_db.save()
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
     for tweet in tweets:
-        tweet_exist = Tweet.objects.filter(twitter_id=tweet['id_str']);
+        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
         if(len(tweet_exist) == 0):
             try:
-                item = Tweet()
+                item = Opinion()
                 item.twitter_id = tweet['id_str']
                 item.user_id = tweet['user']['id']
                 item.text = tweet['text']
@@ -496,13 +503,16 @@ def get_tweets(request):
                 item.pub_date = str(timezone.now())
                 item.stock = stock_name
                 item.labeled = False
+                item.source = "twitter.com"
                 item.save()
                 item.relevancy = 'none'
                 item.sentiment = 'none'
+                item.labeled_user = 'none'
             except Exception as e: 
               pass
     
-    tweetes_to_render = Tweet.objects.filter(stock=stock_name, labeled = False).values();
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values();
+    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
     #print(json.dumps(my_list[0]))
     
@@ -510,22 +520,22 @@ def get_tweets(request):
     
     # Fill in total number of entries in DB for this stock
     # Full DB
-    content_return['total_entries_in_DB'] = len(Tweet.objects.all())
-    content_return['total_labeled_entries_in_DB'] = len(Tweet.objects.filter(labeled = True))
-    content_return['total_relevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(relevancy = 'relevant'))
-    content_return['total_irrelevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(relevancy = 'irrelevant'))
-    content_return['total_positive_labeled_entries_in_DB'] = len(Tweet.objects.filter(sentiment = 'positive'))
-    content_return['total_negative_labeled_entries_in_DB'] = len(Tweet.objects.filter(sentiment = 'negative'))
-    content_return['total_neutral_labeled_entries_in_DB'] = len(Tweet.objects.filter(sentiment = 'neutral'))
+    content_return['total_entries_in_DB'] = len(Opinion.objects.all())
+    content_return['total_labeled_entries_in_DB'] = len(Opinion.objects.filter(labeled = True))
+    content_return['total_relevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(relevancy = 'relevant'))
+    content_return['total_irrelevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(relevancy = 'irrelevant'))
+    content_return['total_positive_labeled_entries_in_DB'] = len(Opinion.objects.filter(sentiment = 'positive'))
+    content_return['total_negative_labeled_entries_in_DB'] = len(Opinion.objects.filter(sentiment = 'negative'))
+    content_return['total_neutral_labeled_entries_in_DB'] = len(Opinion.objects.filter(sentiment = 'neutral'))
     
     # Stock DB
-    content_return['stock_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name))
-    content_return['stock_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, labeled = True))
-    content_return['stock_relevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, relevancy = 'relevant'))
-    content_return['stock_irrelevant_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, relevancy = 'irrelevant'))
-    content_return['stock_positive_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, sentiment = 'positive'))
-    content_return['stock_negative_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, sentiment = 'negative'))
-    content_return['stock_neutral_labeled_entries_in_DB'] = len(Tweet.objects.filter(stock=stock_name, sentiment = 'neutral'))
+    content_return['stock_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name))
+    content_return['stock_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, labeled = True))
+    content_return['stock_relevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, relevancy = 'relevant'))
+    content_return['stock_irrelevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, relevancy = 'irrelevant'))
+    content_return['stock_positive_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, sentiment = 'positive'))
+    content_return['stock_negative_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, sentiment = 'negative'))
+    content_return['stock_neutral_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, sentiment = 'neutral'))
 
     return content_return 
 
@@ -539,7 +549,7 @@ def get_correction(request):
     
     
     try:
-        tweet = Tweet.objects.filter(twitter_id=tweet_id)[0]
+        tweet = Opinion.objects.filter(twitter_id=tweet_id)[0]
         if(relevancy == 'none'):
             tweet.sentiment = sentiment
             #print('Sentiment')
@@ -548,6 +558,8 @@ def get_correction(request):
             #print('Relevance')
         if(((tweet.relevancy != 'none') & (tweet.relevancy != '')) & ((tweet.sentiment != 'none') & (tweet.sentiment != ''))):
             tweet.labeled = True
+        if request.user.is_authenticated():
+            tweet.labeled_user = request.user.username
             
         tweet.save()
         
@@ -586,6 +598,66 @@ def retrain():
     filter = Filter(r"C:\Users\Tarek Abdelhakim\workspace\DjangoWebProject1",item.stock.strip(),True)
     filter.GetBestClassifier(trainSet)
     
+
+@login_required
+def news(request):
+    #Select Today's News 
+    today =datetime.datetime.strftime(timezone.now(),"%Y-%m-%d")
+    newsList=Opinion.objects.extra(where={"`pub_date` LIKE CONCAT(  '%%',  '"+today+"',  '%%' ) and `source` != 'twitter.com' "}).values()
+    
+    News =[]
+    for newsItem in newsList:
+        n=NewsItem()
+        n.link = newsItem['source']
+        n.title = newsItem['text']
+        News.append(n)
+    """Renders the news page."""
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/news.html',
+        context_instance = RequestContext(request,
+        {
+            'title':'News',
+            'News':News,
+        })
+    )
+
+def runNewsCrawling():
+    rssPage = urllib.request.urlopen('http://www.cma.org.sa/Ar/News/_layouts/listfeed.aspx?List=%7B0622219A-483C-46C4-A066-AA4EDEDD0952%7D')
+    rssFeed = minidom.parse(rssPage)
+
+    for item in rssFeed.getElementsByTagName("item"):
+        Op = Opinion()
+        for a in item.getElementsByTagName("link"):
+            Op.source=a.childNodes[1].nodeValue        
+        for a in item.getElementsByTagName("title"):
+            Op.text=a.childNodes[1].nodeValue
+        #for a in item.getElementsByTagName("pubDate"):
+        #    Op.pub_date=a.childNodes[0].nodeValue
+        try:
+            Op.pub_date=str(timezone.now())
+            Op.twitter_id = 'none'
+            Op.user_id = 'none'
+            Op.created_at = 'none'
+            Op.user_followers_count = 0
+            Op.user_profile_image_url = 'none'
+            Op.stock = 'none'
+            Op.labeled = False
+            Op.relevancy = 'none'
+            Op.labeled_user= 'none'
+            Op.sentiment = 'none'      
+            Op.save()    
+        except:
+            pass
+    #Time by seconds
+    threading.Timer(86400.0, runNewsCrawling).start()
+    #threading.Timer(60.0, runNewsCrawling).start()
+
+#Crawl the News every 24 hours
+runNewsCrawling()
+
+
 @login_required
 def contact(request):
     """Renders the contact page."""
@@ -597,12 +669,12 @@ def contact(request):
         {
             'title':'Contact',
             'message':'Your contact page.',
-            'year':datetime.now().year,
+            'year':datetime.datetime.now().year,
         })
     )
 
 @login_required
-def about(request):
+def about(request):         
     """Renders the about page."""
     assert isinstance(request, HttpRequest)
     return render(
@@ -612,7 +684,7 @@ def about(request):
         {
             'title':'About',
             'message':'Your application description page.',
-            'year':datetime.now().year,
+            'year':datetime.datetime.now().year,
         })
     )
 

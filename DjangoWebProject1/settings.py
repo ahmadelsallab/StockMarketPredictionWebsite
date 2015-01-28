@@ -23,8 +23,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'django2',
-        'USER': 'kalamacom',
-        'PASSWORD': '',
+        'OPTIONS': {'charset': 'utf8mb4'},
+        'USER': 'root',
+        'PASSWORD': 'Hello2Day',
         'HOST': 'localhost',
         'PORT': '3306',
     }
