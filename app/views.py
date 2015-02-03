@@ -9,7 +9,7 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django_ajax.decorators import ajax
-from app.models import Opinion, CorrectionData, StocksPrices 
+from app.models import Opinion, CorrectionData, StocksPrices
 from django.utils import timezone
 from Filter.Filter import Filter
 from bs4 import BeautifulSoup
@@ -518,6 +518,7 @@ def get_tweets(request):
     #print(json.dumps(my_list[0]))
     #tweetes_to_render_temp = Opview.objects.filter(stock=stock_name, labeled = False).values();
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
+
     
     content_return['statuses'] = tweetes_to_render
     
@@ -539,6 +540,7 @@ def get_tweets(request):
     content_return['stock_positive_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'positive').count()
     content_return['stock_negative_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'negative').count()
     content_return['stock_neutral_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'neutral').count()
+
 
     return content_return 
 
@@ -652,7 +654,6 @@ def runNewsCrawling():
         Op.save()
     #Time by seconds
     threading.Timer(86400.0, runNewsCrawling).start()
-    #threading.Timer(60.0, runNewsCrawling).start()
 
 #Crawl the News every 24 hours
 runNewsCrawling()

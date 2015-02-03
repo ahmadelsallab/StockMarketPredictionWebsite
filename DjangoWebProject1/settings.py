@@ -25,7 +25,7 @@ DATABASES = {
         'NAME': 'django2',
         'OPTIONS': {'charset': 'utf8mb4'},
         'USER': 'root',
-        'PASSWORD': 'Hello2Day',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
     }

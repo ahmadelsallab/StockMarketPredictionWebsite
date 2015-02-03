@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     url(r'^login', 'app.views.login_user', name='login'),
     url(r'^register', 'app.views.register', name='register'),
     url(r'^logout$', 'django.contrib.auth.views.logout', {'next_page': '/',}, name='logout'),
-
+    url(r'^news', 'app.views.news', name='news'),
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 
