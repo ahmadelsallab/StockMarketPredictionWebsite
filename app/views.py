@@ -176,6 +176,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'الطيار': 'الطيار',
 'الفنادق': 'الفنادق',
 'شمس': 'شمس',
+'بوان': 'بوان',
 }
 
 stocks_prices = {};
@@ -341,6 +342,7 @@ stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
 'الطيار':'الطيار',
 'الفنادق':'الفنادق',
 'شمس':'شمس',
+'بوان':'بوان',
 }
 
 class NewsItem:
@@ -505,33 +507,40 @@ def get_tweets(request):
                 item.save()
                 item.relevancy = 'none'
                 item.sentiment = 'none'
+                item.labeled_user = 'none'
             except Exception as e: 
               pass
     
-    tweetes_to_render = Opinion.objects.filter(stock=stock_name, labeled = False).values();
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values();
+    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:50];
+    #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
     #print(json.dumps(my_list[0]))
+    #tweetes_to_render_temp = Opview.objects.filter(stock=stock_name, labeled = False).values();
+    #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
+
     
     content_return['statuses'] = tweetes_to_render
     
     # Fill in total number of entries in DB for this stock
     # Full DB
-    content_return['total_entries_in_DB'] = len(Opinion.objects.all())
-    content_return['total_labeled_entries_in_DB'] = len(Opinion.objects.filter(labeled = True))
-    content_return['total_relevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(relevancy = 'relevant'))
-    content_return['total_irrelevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(relevancy = 'irrelevant'))
-    content_return['total_positive_labeled_entries_in_DB'] = len(Opinion.objects.filter(sentiment = 'positive'))
-    content_return['total_negative_labeled_entries_in_DB'] = len(Opinion.objects.filter(sentiment = 'negative'))
-    content_return['total_neutral_labeled_entries_in_DB'] = len(Opinion.objects.filter(sentiment = 'neutral'))
+    content_return['total_entries_in_DB'] = Opinion.objects.all().count()
+    content_return['total_labeled_entries_in_DB'] = Opinion.objects.filter(labeled = True).count()
+    content_return['total_relevant_labeled_entries_in_DB'] = Opinion.objects.filter(relevancy = 'relevant').count()
+    content_return['total_irrelevant_labeled_entries_in_DB'] = Opinion.objects.filter(relevancy = 'irrelevant').count()
+    content_return['total_positive_labeled_entries_in_DB'] = Opinion.objects.filter(sentiment = 'positive').count()
+    content_return['total_negative_labeled_entries_in_DB'] = Opinion.objects.filter(sentiment = 'negative').count()
+    content_return['total_neutral_labeled_entries_in_DB'] = Opinion.objects.filter(sentiment = 'neutral').count()
     
     # Stock DB
-    content_return['stock_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name))
-    content_return['stock_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, labeled = True))
-    content_return['stock_relevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, relevancy = 'relevant'))
-    content_return['stock_irrelevant_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, relevancy = 'irrelevant'))
-    content_return['stock_positive_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, sentiment = 'positive'))
-    content_return['stock_negative_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, sentiment = 'negative'))
-    content_return['stock_neutral_labeled_entries_in_DB'] = len(Opinion.objects.filter(stock=stock_name, sentiment = 'neutral'))
+    content_return['stock_entries_in_DB'] = Opinion.objects.filter(stock=stock_name).count()
+    content_return['stock_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, labeled = True).count()
+    content_return['stock_relevant_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, relevancy = 'relevant').count()
+    content_return['stock_irrelevant_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, relevancy = 'irrelevant').count()
+    content_return['stock_positive_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'positive').count()
+    content_return['stock_negative_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'negative').count()
+    content_return['stock_neutral_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'neutral').count()
+
 
     return content_return 
 
@@ -554,6 +563,8 @@ def get_correction(request):
             #print('Relevance')
         if(((tweet.relevancy != 'none') & (tweet.relevancy != '')) & ((tweet.sentiment != 'none') & (tweet.sentiment != ''))):
             tweet.labeled = True
+        if request.user.is_authenticated():
+            tweet.labeled_user = request.user.username
             
         tweet.save()
         
@@ -630,7 +641,7 @@ def runNewsCrawling():
         #for a in item.getElementsByTagName("pubDate"):
         #    Op.pub_date=a.childNodes[0].nodeValue
         Op.pub_date=str(timezone.now())
-        Op.twitter_id = 'none'
+        Op.twitter_id = str(timezone.now())
         Op.user_id = 'none'
         Op.created_at = 'none'
         Op.user_followers_count = 0
@@ -638,10 +649,12 @@ def runNewsCrawling():
         Op.stock = 'none'
         Op.labeled = False
         Op.relevancy = 'none'
-        Op.sentiment = 'none'      
-        Op.save()    
+        Op.sentiment = 'none'
+        Op.labeled_user= 'none'
+        Op.save()
     #Time by seconds
     threading.Timer(86400.0, runNewsCrawling).start()
+    #threading.Timer(60.0, runNewsCrawling).start()
 
 #Crawl the News every 24 hours
 runNewsCrawling()

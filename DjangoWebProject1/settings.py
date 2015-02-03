@@ -23,6 +23,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'django2',
+        'OPTIONS': {'charset': 'utf8mb4'},
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
