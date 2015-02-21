@@ -3,15 +3,13 @@ Created on Oct 21, 2013
 
 @author: ASALLAB
 '''
-import os
 from TwitterCrawler.TwitterCrawler import TwitterCrawler
 from DatasetBuilder.DatasetBuilder import DatasetBuilder
-from LanguageModel.LanguageModel import LanguageModel
+from LanguageModel.LanguageModel import LanguageModel   
 from FeaturesExtractor.FeaturesExtractor import FeaturesExtractor
 from Classifier.Classifier import Classifier
 import pickle
 from collections import OrderedDict
-
 
 # Start the DatasetBuilder
 #-------------------------
@@ -53,8 +51,8 @@ datasetBuilder.SplitTrainTest()
 '''
 datasetBuilder.trainSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
 # Set the dataset to the train set so that the language model is built from train tweets only
-datasetBuilder.dataSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
-datasetBuilder.testSet = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
+datasetBuilder.dataSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTrainFileName)
+datasetBuilder.testSet  = datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName)
 #datasetBuilder.dataSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
 #datasetBuilder.trainSet.extend(datasetBuilder.GetDatasetFromXLSXFile(xlsxTestFileName))
 
@@ -71,8 +69,7 @@ languageModelSerializationFile = ".\\LanguageModel\\Output\\language_model.bin"
 # Start the LanguageModel:
 
 # Initialize the LanguageModel
-languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, linksDBFile,
-                              datasetBuilder.trainSet)
+languageModel = LanguageModel(configFileLanguageModel, stopWordsFileName, languageModelSerializationFile, linksDBFile, datasetBuilder.trainSet)
 languageModel.BuildLanguageModel()
 '''
 # Extract relevant tweets only
@@ -133,8 +130,7 @@ trainExportFileName = ".\\FeaturesExtractor\\Output\\train_data.txt"
 # Start the FeaturesExtractor:
 #-----------------------------    
 # Initialize the FeaturesExtractor
-trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile,
-                                           trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
+trainFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, trainFeaturesSerializationFile, trainLabelsSerializationFile, languageModel, datasetBuilder.trainSet)
 #trainFeaturesExtractor.ExtractTFFeatures()
 trainFeaturesExtractor.ExtractNumTfFeatures()
 #trainFeaturesExtractor.ExtractTFIDFFeatures()
@@ -143,8 +139,7 @@ trainFeaturesExtractor.ExtractNumTfFeatures()
 trainFeaturesExtractor.SaveLabels()
 trainFeaturesExtractor.DumpFeaturesToTxt(trainExportFileName)
 
-testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile,
-                                          testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
+testFeaturesExtractor = FeaturesExtractor(configFileFeaturesExtractor, testFeaturesSerializationFile, testLabelsSerializationFile, languageModel, datasetBuilder.testSet)
 #testFeaturesExtractor.ExtractTFFeatures()
 #testFeaturesExtractor.ExtractTFIDFFeatures()
 testFeaturesExtractor.ExtractNumTfFeatures()
@@ -160,8 +155,7 @@ modelSerializationFile = ".\\Classifier\\Output\classifier_model.bin"
 # Start the Classifier:
 #---------------------
 
-classifier = Classifier(configFileClassifier, modelSerializationFile, trainFeaturesExtractor.features,
-                        trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
+classifier = Classifier(configFileClassifier, modelSerializationFile,  trainFeaturesExtractor.features, trainFeaturesExtractor.labels, testFeaturesExtractor.features, testFeaturesExtractor.labels)
 
 
 # Train
@@ -170,22 +164,6 @@ classifier.Train()
 # Test
 labels, acc, val = classifier.Test()
 
-
-
-#classifier.Test2Classifiers()
-
-
-# inputfile = 'SoftInput.txt'
-# myclassification = SoftmaxRegression.SoftmaxRegression()
-# myclassification.loadDataSet(inputfile)
-# # myclassification.gradientAscent()
-# myclassification.stochasticGradientAscent_V0()
-# # myclassification.stochasticGradientAscent_V1()
-# myclassification.test()
-#
-
-
 # Build the confusion matrix
-mConfusionMatrix, mNormalConfusionMatrix, vNumTrainExamplesPerClass, vAccuracyPerClass, nOverallAccuracy = classifier.BuildConfusionMatrix(
-    testFeaturesExtractor.labels, labels)
+mConfusionMatrix, mNormalConfusionMatrix, vNumTrainExamplesPerClass, vAccuracyPerClass, nOverallAccuracy = classifier.BuildConfusionMatrix(testFeaturesExtractor.labels, labels)
 print(mConfusionMatrix)

@@ -10,9 +10,9 @@
   <!--The period of acquisition in mins. "forever" will let the script run continously-->
   <UpdatePeriod updatePeriod="480"></UpdatePeriod>
   <!--The maximum number of returned results per search-->
-  <ResultsLimit resultsLimit="1000"></ResultsLimit>
+  <ResultsLimit resultsLimit="300"></ResultsLimit>
    <!--The desired size of crawled tweets. A negative value means non-stop-->
-  <DesiredDataSize desiredDataSize="5000"></DesiredDataSize>
+  <DesiredDataSize desiredDataSize="300"></DesiredDataSize>
   <!--Inhbit saving to log file-->
   <InhibitLogFileSaving inhibitLogFileSaving="false"></InhibitLogFileSaving>
   <!--Inhbit saving to local structure-->

@@ -1,4 +1,6 @@
 <Configurations>
   <!--The language model to buid-->
   <NGram NGram=1></NGram>
+  <!--Type of language model: model, lexicon-->
+  <Type type=lexicon></Type>
 </Configurations>

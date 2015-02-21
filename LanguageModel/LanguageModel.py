@@ -326,22 +326,63 @@ class LanguageModel(object):
         # Read the file line by line
         for line in fin:
             
-            lineItems = line.split()
-            word = lineItems[0]
+            
+            if(self.type == 'frequencyModel'):
+                lineItems = line.split()
+                word = lineItems[0].strip()
+            else:
+                # Note, groups don't work in case of stemming, because stemming does the function of grouping
+                
+                # First get the synonyms
+                lineGroups = line.split('|')
+                word = lineGroups[0].strip()
+                
+                # Now get the weights
+                lineItems = lineGroups[1].strip().split()
+                
             
             # Stem the word if enabled
             if(self.enableStemming == "true"):
                 item = self.stemmer.stem(word)
             else:
                 item = word
-            try:
-                self.languageModel[item] = lineItems[1]
-            except:
-                # The language model contains no frequency, assume 1 for each term
-                self.languageModel[item] = 1
+            self.languageModel[item] = {}
+            if(self.type == 'frequencyModel'):
+                try:
+                    self.languageModel[item] = float(lineItems[1])
+                except:
+                    # The language model contains no frequency, assume 1 for each term
+                    self.languageModel[item] = 1
+            elif (self.type == 'lexicon'):
+                self.languageModel[item]['existWeight'] = float(lineItems[0])
+                self.languageModel[item]['nonExistWeight'] = float(lineItems[1])
             
         # Close the file
         fin.close()
+
+    def LoadSentimentLexiconModelFromTxtFile(self, lexiconTxtFileName, weight):  
+            
+            # Load positive words
+            # Open the stop words file name
+            fin = open(lexiconTxtFileName, 'r', encoding='utf-8')        
+            
+            # Read the file line by line
+            for line in fin:
+                                       
+                word = line
+                
+                
+                # Stem the word if enabled
+                if(self.enableStemming == "true"):
+                    item = self.stemmer.stem(word)
+                else:
+                    item = word
+                self.languageModel[item] = {}
+                self.languageModel[item]['existWeight'] = weight
+                self.languageModel[item]['nonExistWeight'] = 0
+                
+            # Close the file
+            fin.close()
 
     # Parse the configurations file
     def ParseConfigFile(self, configDocName):
@@ -365,6 +406,10 @@ class LanguageModel(object):
 
         # Get the removeLeadTrailTags flag
         self.removeLeadTrailTags = xmldoc.getElementsByTagName('RemoveLeadTrailTags')[0].attributes['removeLeadTrailTags'].value        
+        
+        # Get the removeLeadTrailTags flag
+        self.type = xmldoc.getElementsByTagName('Type')[0].attributes['type'].value        
+        
         
         # Get the list of labels
         labels = xmldoc.getElementsByTagName('Label')

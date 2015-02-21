@@ -9,6 +9,7 @@ import datetime
 import time
 from random import randrange
 import pickle
+import csv
 
 class TwitterCrawler(object):
     '''
@@ -40,6 +41,7 @@ class TwitterCrawler(object):
         '''
         Constructor
         '''
+        
         # Parse the configurations file
         self.ParseConfigFile(configFileName)
         
@@ -52,10 +54,12 @@ class TwitterCrawler(object):
                                     self.consumerSecret)
                          )
         # Open the log file
-        self.logFile = open(feedsLogFileName, 'w', encoding='utf-8')    
+        if(feedsLogFileName != None):
+            self.logFile = open(feedsLogFileName, 'w', encoding='utf-8')    
         
-        # Open the update rate file
-        self.updateRateFile = open(updateRateFileName, 'w', encoding='utf-8')    
+        if(updateRateFileName != None):
+            # Open the update rate file
+            self.updateRateFile = open(updateRateFileName, 'w', encoding='utf-8')    
 
         # Save the serialization file name
         self.serializationFileName = serializationFileName
@@ -64,6 +68,8 @@ class TwitterCrawler(object):
         
         # Each time search returns no new tweets this counter is incremented. After it cross LIMIT_NO_OLDER_TWEETS start searching for more recent instead of older
         self.numberOfNoOlderTweets = 0
+        
+        self.stock = ''
     # The main crawler    
     def Crawl(self, quiet):
         # Start updates
@@ -111,6 +117,15 @@ class TwitterCrawler(object):
              
             for result in resultsCrawl:
                 self.tweetsCtr += 1
+                
+
+                from app.models import Opinion
+                from django.utils import timezone
+                
+                tweet_exist = Opinion.objects.filter(twitter_id=result['id_str']);
+                if(len(tweet_exist) == 0):
+                    opinion = Opinion(twitter_id=result['id_str'], user_id=result['user']['id'], text=result['text'], created_at=result['created_at'], user_followers_count=result['user']['followers_count'], user_profile_image_url=result['user']['profile_image_url'], pub_date=str(timezone.now()), stock=self.stock, labeled=False) 
+                    opinion.save()
                 if (self.inhibitLogFileSaving != "true"):
                     # Write to logs file
                     #self.logFile.write(result['text'] + "\n")  
@@ -211,13 +226,13 @@ class TwitterCrawler(object):
                 if(max_id == -1):
                     if(since_id == -1):
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent')
                     else:
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent',
@@ -226,14 +241,14 @@ class TwitterCrawler(object):
                 else:
                     if(since_id == -1):
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent',
                                                           max_id=max_id)
                     else:
                         resultsAPI = self.t.search.tweets(q=query,
-                                                          geocode=self.geocodeStr,
+                                                          #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
                                                           result_type='recent',
@@ -298,6 +313,72 @@ class TwitterCrawler(object):
         self.noOlderOrNewerTweets = (results.__len__() == 0)
         return results
     
+    # Encapsulates long query > 1000 char limitation
+    def SearchQueryAPI(self, query, since_id, max_id):
+        
+        # Initialize the finalResults list
+        finalResults = []
+        # Initialize the search hash table
+        searchHashTbl = {}
+        # Log time of calling the API
+        print("Call the twitter search API:" + str(datetime.datetime.now()) + "\n")
+        try:
+            # For each query all the search API
+            if(max_id == -1):
+                if(since_id == -1):
+                    resultsAPI = self.t.search.tweets(q=query,
+                                                      #geocode=self.geocodeStr,
+                                                      lang=self.language,
+                                                      count=self.resultsPerSearch,
+                                                      result_type='recent')
+                else:
+                    resultsAPI = self.t.search.tweets(q=query,
+                                                      #geocode=self.geocodeStr,
+                                                      lang=self.language,
+                                                      count=self.resultsPerSearch,
+                                                      result_type='recent',
+                                                      since_id=since_id)
+                    
+            else:
+                if(since_id == -1):
+                    resultsAPI = self.t.search.tweets(q=query,
+                                                      #geocode=self.geocodeStr,
+                                                      lang=self.language,
+                                                      count=self.resultsPerSearch,
+                                                      result_type='recent',
+                                                      max_id=max_id)
+                else:
+                    resultsAPI = self.t.search.tweets(q=query,
+                                                      #sgeocode=self.geocodeStr,
+                                                      lang=self.language,
+                                                      count=self.resultsPerSearch,
+                                                      result_type='recent',
+                                                      since_id=since_id,
+                                                      max_id=max_id)                    
+        except Exception as e:
+            print("HTTP error, most probably rate\n" + str(e))
+
+            
+        try:        
+            results = resultsAPI['statuses']
+        
+            # Add the results one by one, unless it already exists in the list
+            for result in results:
+                # If the current result doesn't exist in the hash table then add it
+                if not result['text'] in searchHashTbl:
+                    # Update hash table
+                    searchHashTbl[result['text']] = self.EXIST
+                    
+                    # Add to final results list
+                    finalResults.append(result)
+                                       
+                    # Update the update rate log file with the current time
+                    print("New Tweet at: " + str(datetime.datetime.now()) + "\n")
+        except:
+            print("No results returned")
+       
+        return finalResults     
+     
     # Encapsulates the search iterations to handle more than 100 counts per call    
     def SearchRecent(self, since_id):
         resultsQuery = self.SearchQuery(since_id=since_id, max_id=-1)
@@ -439,3 +520,86 @@ class TwitterCrawler(object):
             if wrap or isinstance(d, dict):
                 xml = xml + '</' + root + '>\n'
         return xml        
+    
+    # Utility to get single tweet
+    def GetSingleTweetByID(self, tweetID):
+        return self.t.statuses.show(id = tweetID)
+    
+    def GetTweetsByID(self, csvFileName):
+        
+        # Open serializaiton file
+        if(self.serializationFileName != None):
+            serializationFile = open(self.serializationFileName, 'wb')
+        
+        # Open csv for reading
+        csvFile = open(csvFileName, 'r', encoding='UTF-8', newline='')
+        
+        # Get reader handler
+        rows = csv.reader(csvFile, delimiter=',')
+        
+        
+        # Skip the first row
+        skip = True
+        
+        colomns = []
+        
+        rowNum = 0
+        
+        # The tweets objects as returned by twitter
+        tweets = []
+        
+        # The tweets label info from csv file
+        tweetsLabelData = []
+        
+        # Read the label from each row
+        for row in rows:
+            if(skip):
+                # Get the folomns names
+                for item in row:
+                    colomns.append(item.replace('\'', '').strip())
+                skip = False 
+            else:
+                print('Get tweetData ID for row number: ' + str(rowNum))
+                
+                singleTweetData = {}
+                
+                # Fill in example colomns from the csv file
+                i = 0
+                for item in row:
+                    singleTweetData[colomns[i]] = item.replace('\'', '').strip()
+                    i += 1
+                    
+                
+                try:
+                                        
+                    # Get the tweet by ID 
+                    retrievedTweet = dict(self.GetSingleTweetByID(singleTweetData['tweetID']))
+                    
+                    # Update the text in the tweet data
+                    singleTweetData['tweetText'] = retrievedTweet['text']
+                    retrievedTweet['label'] = singleTweetData['Sentiment']
+                    
+                    # Update the final list of tweets
+                    tweets.append(retrievedTweet)
+                    tweetsLabelData.append(singleTweetData)
+                except Exception as e:
+                    # Rate limit exceeded
+                    print('Error: ' + str(e)) 
+                    if('Twitter sent status 429' in str(e)):
+                        # Sleep 15 min, only 180 calls permitted per 15 min
+                        time.sleep(900)
+                # Add in the results
+                
+                
+            
+            rowNum += 1
+        
+        # Serialize the results
+        if(self.serializationFileName != None):
+            pickle.dump(tweets, serializationFile)
+            pickle.dump(tweetsLabelData, serializationFile)
+            serializationFile.close()
+        # Close the files   
+        csvFile.close()
+        
+        
