@@ -250,6 +250,14 @@ for tweet in tweet_iter:
             print(" - found URL: %s" % url["expanded_url"])
 '''
 
+'''
 import re
 m = re.findall('Hello', 'Hello World')
 print(m[0])
+
+'''
+from datetime import datetime
+import time
+
+#print(str(datetime.time()))
+print(str(datetime.now().time()))

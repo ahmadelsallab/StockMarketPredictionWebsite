@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
 encoding//app/templates/app/home.html=UTF-8
+encoding/crawl_price_thread.py=UTF-8
+encoding/crawl_thread.py=UTF-8
 encoding/crawl_twitter.py=UTF-8
 encoding/get_all_stocks_prices.py=UTF-8

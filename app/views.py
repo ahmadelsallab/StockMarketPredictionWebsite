@@ -473,20 +473,22 @@ def get_tweets(request):
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
         tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
         
-    #twittes['price'] = stocks_prices[query] # CHECK: Get from DB?--> use the next line then. You might need migration of DB to update MySQL tables
-    price = get_stock_price(stock_name)
-    
+    # Get the stock price
     try:
-        stock_price_db = StocksPrices.objects.get(stock_name=stock_name)
-        if(price == 0.0):
-            price = stock_price_db.stock_price
-        else:
-            stock_price_db.stock_price = price
+                
+        stock_price_db_all = StocksPrices.objects.filter(stock_name=stock_name).order_by(time_stamp)
+        stock_price_db = stock_price_db_all[0]
+        
         
     except:
-        stock_price_db = StocksPrices(stock_name=stock_name, stock_price=price) # CHECK: Needs migration    
+        # No entry yet in the DB for this stock, create new record
+        stock_price_db = StocksPrices(stock_name=stock_name, stock_price=price)
+        # Get the price from the market now
+        stock_price_db.stock_price = get_stock_price(stock_name)    
+        stock_price_db.time_stamp = datetime.datetime.now()
         
-    content_return['price'] = price
+    content_return['price'] = stock_price_db.stock_price
+    
     stock_price_db.save()
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
     for tweet in tweets:
