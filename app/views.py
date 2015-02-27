@@ -511,20 +511,28 @@ def get_tweets(request):
             except Exception as e: 
               pass
     
-    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values();
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name,labeled=False).values();
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:50];
+    #prevent Duplicate 
     tweets_dict = {}
     tweets_dict[''] = ''
     i = 1
     for tweet_render in tweetes_to_render:
-        if tweet_render['text'] in tweets_dict.keys():
-            tweet_render['similarId'] = tweets_dict[tweet_render['text']]
-            tweet_render.update()
+        if tweet_render.get('text') in tweets_dict.keys():
+            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
+            tweet.similarId = tweets_dict[tweet_render['text']]
+            tweet.save()
             tweetes_to_render.remove(tweet_render)
-            tweetes_to_render.append(tweetes_to_render_temp[50+1])
-            i= i + 1
+            if (len(tweetes_to_render_temp) > len(tweetes_to_render)+1):
+                tweetes_to_render.append(tweetes_to_render_temp[len(tweetes_to_render)+1])
+                i= i + 1
+        elif(tweet_render.get('labeled_user') == request.user.username):
+            tweetes_to_render.remove(tweet_render)
+            if (len(tweetes_to_render_temp) > len(tweetes_to_render)+1):
+                tweetes_to_render.append(tweetes_to_render_temp[len(tweetes_to_render)+1])
+                i= i + 1
         else:
-            tweets_dict[tweet_render['text']] =  tweet_render['twitter_id']
+            tweets_dict[tweet_render.get('text')] =  tweet_render.get('twitter_id')
      
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
@@ -569,15 +577,55 @@ def get_correction(request):
     try:
         tweet = Opinion.objects.filter(twitter_id=tweet_id)[0]
         if(relevancy == 'none'):
-            tweet.sentiment = sentiment
+            if(tweet.sentiment == 'none' or tweet.sentiment == ''):
+                tweet.sentiment = sentiment
+                tweet.voted_sentiment = sentiment
+            elif(tweet.sentiment_second == 'none' or tweet.sentiment_second == ''):
+                tweet.sentiment_second = sentiment
+                if(tweet.sentiment == tweet.sentiment_second):
+                    tweet.voted_sentiment = sentiment
+            elif(tweet.sentiment_third == 'none' or tweet.sentiment_third == ''):
+                tweet.sentiment_third = sentiment
+                if(tweet.voted_sentiment == 'none' or tweet.voted_sentiment ==''):
+                    if(sentiment == tweet.sentiment): 
+                        tweet.voted_sentiment = sentiment
+                    elif(sentiment == tweet.sentiment_second):
+                        tweet.voted_sentiment = sentiment
+                    else:
+                        tweet.voted_sentiment = 'none'       
+                                
             #print('Sentiment')
         elif (sentiment == 'none'):
-            tweet.relevancy = relevancy
+            if(tweet.relevancy == 'none' or tweet.relevancy == ''):
+                tweet.relevancy = relevancy
+                if request.user.is_authenticated():
+                    tweet.labeled_user = request.user.username
+            elif(tweet.relevancy_second == 'none' or tweet.relevancy_second == ''):
+                tweet.relevancy_second = relevancy
+                if request.user.is_authenticated():
+                    tweet.labeled_user_second = request.user.username
+            elif(tweet.relevancy_third == 'none' or tweet.relevancy_third == ''):
+                tweet.relevancy_third = relevancy 
+                if request.user.is_authenticated():
+                    tweet.labeled_user_third = request.user.username        
             #print('Relevance')
-        if(((tweet.relevancy != 'none') & (tweet.relevancy != '')) & ((tweet.sentiment != 'none') & (tweet.sentiment != ''))):
+        
+        if(((tweet.relevancy != 'none') & (tweet.relevancy != '')) & ((tweet.sentiment != 'none') & (tweet.sentiment != ''))
+            & ((tweet.relevancy_second != 'none') & (tweet.relevancy_second != '')) & ((tweet.sentiment_second != 'none') & (tweet.sentiment_second != ''))
+            & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '')) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != ''))):
             tweet.labeled = True
-        if request.user.is_authenticated():
-            tweet.labeled_user = request.user.username
+            x = 0
+            y = 0
+            z = 0
+            if(tweet.relevancy == 'relevant'):
+                x = 1
+            if(tweet.relevancy_second == 'relevant' ):
+                y = 1
+            if(tweet.relevancy_third == 'relevant' ):
+                z = 1     
+            tweet.votel_relevancy = ((x & y) | (x & z) | (y & z))
+             
+        
             
         tweet.save()
         
