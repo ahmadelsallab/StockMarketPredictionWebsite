@@ -256,8 +256,44 @@ m = re.findall('Hello', 'Hello World')
 print(m[0])
 
 '''
-from datetime import datetime
-import time
+#from datetime import datetime
+#import time
+import datetime
 
 #print(str(datetime.time()))
+
+import pytz
+
+
+#datetime.tzinfo = pytz.timezone('Asia/Riyadh')
+
+'''
+print(' '.join(pytz.country_timezones['sa']))
+riyadh_time = pytz.timezone('Asia/Riyadh')
+now_time_local = datetime(datetime.now(), tzinfo=pytz.utc) 
+now_time_riyadh = riyadh_time.localize(now_time_local, is_dst=True)
+fmt = '%Y-%m-%d %H:%M:%S %Z%z'
+print(now_time_riyadh.strftime(fmt))
+#for key, val in pytz.country_names:
+#for key, val in pytz.country_timezones:
+#    print(key + "  ", val) 
 print(str(datetime.now().time()))
+print(str(now_time_riyadh.time()))
+'''
+#open_time = datetime.time(11,0,0, tzinfo=pytz.timezone('Asia/Riyadh'));
+#open_time = datetime.timetz(11,0,0)
+
+
+print(datetime.datetime.now(tz=pytz.timezone('Asia/Riyadh')))
+print(datetime.datetime.now(tz=pytz.timezone('Asia/Riyadh')).time())
+
+now_dt = datetime.datetime.utcnow()
+date_dt = now_dt.date()
+t = datetime.time(11,0,0)
+dt = datetime.datetime.combine(date_dt, t)
+dt.replace(tzinfo = pytz.timezone(str('Asia/Riyadh')))
+print(dt.time())
+
+# t = datetime.time(datetime.datetime.timetz())
+
+print(t)

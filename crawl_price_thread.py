@@ -1,4 +1,6 @@
-from datetime import datetime
+#from datetime import datetime
+import datetime
+import pytz
 from django.utils import timezone
 import threading, time
 import os
@@ -8,7 +10,7 @@ from bs4 import BeautifulSoup
 
 import django
 django.setup()
-
+time_zone = 'Asia/Riyadh'
 stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
 'الرياض':'الرياض',
 'الجزيرة':'الجزيرة',
@@ -188,7 +190,8 @@ def runGetSavePrice(stock):
     
     # Save the entry
     stock_price_db = StocksPrices(stock_name=stock, stock_price=price)
-    stock_price_db.time_stamp = datetime.datetime.now()
+    #stock_price_db.time_stamp = datetime.datetime.now()
+    datetime.datetime.now(tz=pytz.timezone(time_zone))
     stock_price_db.save()
 
 # Market open time 
@@ -256,8 +259,9 @@ while True:
     
     
     # Is it in the market openning time?
-    if(isInMarketTime(datetime.datetime.now().time())):
-        print("start price:" + str(datetime.datetime.now()))
+    
+    if(isInMarketTime(datetime.datetime.now(tz=pytz.timezone(time_zone))).time()):
+        print("Start price:" + str(datetime.datetime.now()))
         for stock in stock_list:        
             
             # Start the thread        
