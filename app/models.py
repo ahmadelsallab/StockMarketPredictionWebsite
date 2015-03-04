@@ -7,6 +7,7 @@ import json
 from django.http import HttpResponse
 
 class Opinion(models.Model):
+    
     twitter_id = models.CharField(max_length=40)
     user_id = models.CharField(max_length=200)
     text = models.CharField(max_length=200)
@@ -15,11 +16,23 @@ class Opinion(models.Model):
     user_profile_image_url = models.CharField(max_length=500)
     pub_date = models.CharField(max_length=100)
     relevancy = models.CharField(max_length=40)
+    relevancy_second = models.CharField(max_length=40)
+    relevancy_third = models.CharField(max_length=40)
     sentiment = models.CharField(max_length=40)
+    sentiment_second = models.CharField(max_length=40)
+    sentiment_third = models.CharField(max_length=40)
     labeled_user = models.CharField(max_length=40)
+    labeled_user_second = models.CharField(max_length=40)
+    labeled_user_third = models.CharField(max_length=40)
+    voted_relevancy = models.CharField(max_length=40)
+    voted_sentiment =  models.CharField(max_length=40)
     stock = models.CharField(max_length=40)
     labeled = models.BooleanField(default=False)
     source = models.CharField(max_length=600)
+    similarId = models.CharField(max_length=40)
+
+      
+    
     '''
     def render_to_response(self, context, **response_kwargs):
         #return HttpResponse(json.dumps(list(self.get_queryset().values_list('code', flat=True))),mimetype="application/json")
