@@ -43,3 +43,22 @@ class CorrectionData(models.Model):
     
     def __str__(self):
         return self.text
+
+class LabledCounter(models.Model):
+    stock = models.CharField(max_length=40)
+    counter = models.BigIntegerField(max_length=21)
+    
+class StockCounter(models.Model):
+    stock = models.CharField(max_length=40)
+    counter = models.BigIntegerField(max_length=21)
+
+class RelevancyCounter(models.Model):
+    stock = models.CharField(max_length=40)
+    relevancy = models.CharField(max_length=200)
+    counter = models.BigIntegerField(max_length=21)
+
+
+class SentimentCounter(models.Model):
+    stock = models.CharField(max_length=40)
+    sentiment = models.CharField(max_length=200)
+    counter = models.BigIntegerField(max_length=21)

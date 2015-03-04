@@ -520,30 +520,48 @@ def get_tweets(request):
     #print(json.dumps(my_list[0]))
     #tweetes_to_render_temp = Opview.objects.filter(stock=stock_name, labeled = False).values();
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
-
-    
     content_return['statuses'] = tweetes_to_render
-    
+
     # Fill in total number of entries in DB for this stock
     # Full DB
-    content_return['total_entries_in_DB'] = Opinion.objects.all().count()
-    content_return['total_labeled_entries_in_DB'] = Opinion.objects.filter(labeled = True).count()
-    content_return['total_relevant_labeled_entries_in_DB'] = Opinion.objects.filter(relevancy = 'relevant').count()
-    content_return['total_irrelevant_labeled_entries_in_DB'] = Opinion.objects.filter(relevancy = 'irrelevant').count()
-    content_return['total_positive_labeled_entries_in_DB'] = Opinion.objects.filter(sentiment = 'positive').count()
-    content_return['total_negative_labeled_entries_in_DB'] = Opinion.objects.filter(sentiment = 'negative').count()
-    content_return['total_neutral_labeled_entries_in_DB'] = Opinion.objects.filter(sentiment = 'neutral').count()
-    
+    content_return['total_entries_in_DB'] = StockCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    content_return['total_labeled_entries_in_DB'] = LabledCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    content_return['total_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'relevant' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'irrelevant' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_positive_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'positive' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_negative_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'negative' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'neutral' "}).aggregate(Sum('counter'))['counter__sum']
+
     # Stock DB
-    content_return['stock_entries_in_DB'] = Opinion.objects.filter(stock=stock_name).count()
-    content_return['stock_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, labeled = True).count()
-    content_return['stock_relevant_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, relevancy = 'relevant').count()
-    content_return['stock_irrelevant_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, relevancy = 'irrelevant').count()
-    content_return['stock_positive_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'positive').count()
-    content_return['stock_negative_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'negative').count()
-    content_return['stock_neutral_labeled_entries_in_DB'] = Opinion.objects.filter(stock=stock_name, sentiment = 'neutral').count()
-
-
+    try:
+        content_return['stock_entries_in_DB'] = StockCounter.objects.extra(where={"`stock` = '"+stock_name+"' "}).values()[0]['counter']
+    except:
+        content_return['stock_entries_in_DB'] = 0
+    try:
+        content_return['stock_labeled_entries_in_DB'] = LabledCounter.objects.extra(where={"`stock` = '"+stock_name+"' "}).values()[0]['counter']
+    except:
+        content_return['stock_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'relevant' "}).values()[0]['counter']
+    except:
+        content_return['stock_relevant_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'irrelevant' "}).values()[0]['counter']
+    except:
+        content_return['stock_irrelevant_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_positive_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'positive' "}).values()[0]['counter']
+    except:
+        content_return['stock_positive_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_negative_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'negative' "}).values()[0]['counter']
+    except:
+        content_return['stock_negative_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'neutral' "}).values()[0]['counter']
+    except:
+        content_return['stock_neutral_labeled_entries_in_DB'] = 0
+ 
     return content_return 
 
 @ajax

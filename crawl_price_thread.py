@@ -191,7 +191,7 @@ def runGetSavePrice(stock):
     # Save the entry
     stock_price_db = StocksPrices(stock_name=stock, stock_price=price)
     #stock_price_db.time_stamp = datetime.datetime.now()
-    datetime.datetime.now(tz=pytz.timezone(time_zone))
+    stock_price_db.time_stamp = datetime.datetime.now(tz=pytz.timezone(time_zone))
     stock_price_db.save()
 
 # Market open time 

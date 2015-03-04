@@ -1,0 +1,62 @@
+--
+-- Table structure for table `app_labledcounter`
+--
+
+DROP TABLE IF EXISTS `app_labledcounter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `app_labledcounter` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `stock` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `counter` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+
+--
+-- Table structure for table `app_relevancycounter`
+--
+
+DROP TABLE IF EXISTS `app_relevancycounter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `app_relevancycounter` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `stock` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `relevancy` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `counter` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=675 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `app_sentimentcounter`
+--
+
+DROP TABLE IF EXISTS `app_sentimentcounter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `app_sentimentcounter` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `stock` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sentiment` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `counter` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=206 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `app_stockcounter`
+--
+
+DROP TABLE IF EXISTS `app_stockcounter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `app_stockcounter` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `stock` varchar(40) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `counter` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
