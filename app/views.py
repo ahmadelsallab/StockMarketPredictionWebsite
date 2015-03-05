@@ -18,6 +18,7 @@ import json
 from TwitterCrawler.TwitterCrawler import *
 import os
 import threading
+from _winapi import DUPLICATE_SAME_ACCESS
 
 synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'السعودى الهولندى': 'البنك السعودي الهولندي',
@@ -511,6 +512,7 @@ def get_tweets(request):
             except Exception as e: 
               pass
     
+    
     tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name,labeled=False).values();
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:50];
     #prevent Duplicate 
@@ -565,6 +567,13 @@ def get_tweets(request):
 
     return content_return 
 
+def getSimilarlabeling():
+    duplicate_tweetes = Opinion.objects.exclude(similarId='').values();
+    for tweet in duplicate_tweetes:
+        parent_tweet =  Opinion.objects.filter(twitter_id = tweet.get("similarId"))
+        tweet["voted_relevancy"] = parent_tweet.parent_tweet
+        tweet["voted_sentiment"] = parent_tweet.voted_sentiment
+        tweet.save()
 @ajax
 def get_correction(request):
     relevancy = request.POST['relevancy']
@@ -785,3 +794,7 @@ def register(request):
             return redirect("/")
            #return render(request, 'app/site_layout.html', {'error':user_form.errors})
 
+
+#def copySimilarId():
+    
+    
