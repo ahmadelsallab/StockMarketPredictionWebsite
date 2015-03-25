@@ -8,7 +8,7 @@
 <div id="main_content">
     <h1 class="page-header" align="right">التغريدات</h1>
     <div id="stats"></div>
-    <div id="tweets"></div>
+    <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
     </div>
@@ -29,6 +29,7 @@
 		<li>الراجحي</li>
 		<li>البلاد</li>
 		<li>الإنماء</li>
+                <li>البنك الأهلي</li>
 		<li>كيمانول</li>
 		<li>بتروكيم</li>
 		<li>سابك</li>
@@ -47,6 +48,7 @@
 		<li>أسمنت نجران</li>
 		<li>اسمنت المدينة</li>
 		<li>اسمنت الشمالية</li>
+		<li>اسمنت ام القرى</li>
 		<li>الاسمنت العربية</li>
 		<li>اسمنت اليمامة</li>
 		<li>اسمنت السعوديه</li>
@@ -61,6 +63,8 @@
 		<li>إكسترا</li>
 		<li>دله الصحية</li>
 		<li>رعاية</li>
+		<li>أسواق المزرعة</li>
+		<li>الحمادي</li>
 		<li>ساسكو</li>
 		<li>ثمار</li>
 		<li>مجموعة فتيحي</li>
@@ -92,6 +96,8 @@
 		<li>عذيب للاتصالات</li>
 		<li>المتكاملة</li>
 		<li>التعاونية</li>
+		<li>العربي للتأمين</li>
+		<li>جزيرة تكافل</li>
 		<li>ملاذ للتأمين</li>
 		<li>ميدغلف للتأمين</li>
 		<li>أليانز إس إف</li>
@@ -146,6 +152,8 @@
 		<li>العبداللطيف</li>
 		<li>الصادرات</li>
 		<li>أسلاك</li>
+		<li>بوان</li>
+		<li>الصناعات الكهربائيه</li>
 		<li>مجموعة المعجل</li>
 		<li>الأنابيب السعودية</li>
 		<li>الخضري</li>
@@ -176,12 +184,10 @@
 		<li>الأبحاث و التسويق</li>
 		<li>طباعة وتغليف</li>
 		<li>الطيار</li>
-		<li>الفنادق</li>
+		<li>مجموعة الحكير</li>
+		<li>دور</li>
 		<li>شمس</li>
-		<li>البنك الأهلي</li>
-		<li>الصناعلات الكهرائيه</li>
-		<li>بوان</li>
-
+		<li>الشرق الاوسط لصناعه</li>
 
     </ul>
 </div>
@@ -191,7 +197,32 @@
 
 {% load static %}
 <script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+<script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
 <script type="text/javascript">
+
+    function findUrls( text )
+    {
+        var source = (text || '').toString();
+        var urlArray = [];
+        var url;
+        var matchArray;
+    
+        // Regular expression to find FTP, HTTP(S) and email URLs.
+        var regexToken = /(((ftp|https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)|((mailto:)?[_.\w-]+@([\w][\w\-]+\.)+[a-zA-Z]{2,3})/g;
+    
+        // Iterate through any URLs in the text.
+        while( (matchArray = regexToken.exec( source )) !== null )
+        {
+            var token = matchArray[0];
+	    if (token.indexOf("twemoji") < 0) 
+             {urlArray.push(token);}
+            //console.debug(token)
+            //console.debug(token.indexOf("twemoji"))
+        }
+    
+        return urlArray;
+    }
+    
     $(window).load(function () {
         var screenWidth = document.documentElement.clientWidth;
         var screenHeight = document.documentElement.clientHeight;
@@ -228,8 +259,7 @@
             $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
 
-            $('#tweets').append('<br></br>')
-
+		$('#stats').append('<br></br>')
                 $('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_rel" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
@@ -238,11 +268,11 @@
             $('#tweets').append('<div id="stock_neg" class="stat_stock"><font color="black">' + 'Total number of negative entries in DB for ' + stock_name + ' is: ' + content.stock_negative_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of neutral entries in DB for ' + stock_name + ' is: ' + content.stock_neutral_labeled_entries_in_DB + '</font></div>'); 
             $('#tweets').append('<br></br>')
-            		
-            $('#tweets').append('<div class="stat"><font color="black">' + 'Stock: ' + stock_name + ' Price: ' + content.price + '</font></div>');
+            $('#stats').append('<div class="stat"><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
             
             for (var i = 0; i < content.statuses.length; i++) {
-                text = content.statuses[i]['text'];
+		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+                //text = content.statuses[i]['text'];
                 date = content.statuses[i].created_at;
                 diff=(new Date()).getTimezoneOffset()*60*1000;
                 date=Date.parse(content.statuses[i]['created_at']);
@@ -253,10 +283,60 @@
                 date2=date.toLocaleTimeString();
                 date=date1+' '+date2;
                 followers_no = content.statuses[i].user_followers_count;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = '@' + content.statuses[i].tweeter_sname;
                 image = content.statuses[i].user_profile_image_url;
-                tweet_id = content.statuses[i].twitter_id
+                tweet_id = content.statuses[i].twitter_id;
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+				media_url1='';
+				try{
+				media_url=content.statuses[i].media_url;
+				media_url=media_url.replace(/'/g, '"');
+				media_url1=JSON.parse(media_url);
+				media_url=(media_url1.media[0]).media_url;
+				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+				}catch(err){
+				try{
+				media_url=(media_url1.urls[0]).expanded_url;
+				if(media_url.indexOf("youtu.be")>-1)
+				{
+				startindex=media_url.lastIndexOf('\/');
+				media_url=media_url.substr(startindex);
+                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
+				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+				}
+				else media_url='';
+				}
+				catch(err){media_url='';}
 
-                $('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><font color="black"><span id='+tweet_id+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>	<button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>	<button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>	<button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+				}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                                url1='';
+                                try{
+                                url1=findUrls(text); 
+                                }
+                                catch(err){}
+                                if(url1!='')
+                                for (var ii = 0; ii < url1.length; ii++)
+                                {
+                                text=text.replace(url1[ii],'<a href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                                }
+
+                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><span id='+tweet_id+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>');
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>')
@@ -267,16 +347,87 @@
             $('#tweets_loading').fadeOut('fast');
         });
     });
-	
+    var sentEditFlag = []
+    var relEditFlag = []
+    var EditCounter = 50;
+    $('body').on('click', '.editSentiment', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	var user_action=$(this).attr("value")
+	var stock = $('.select_list_item').text();
+        $('#negative'+item).show();
+        $('#neutral'+item).show();
+        editstring="<button id= positive"+item+ " class=sentiment type=button value=positive>Positive</button>"
+	console.debug(user_action)
+	$('#editSentLab'+item).replaceWith(editstring);
+       	if ( $('#corRel'+item).text() != 'Relevant' ) 
+		{
+                        N=(Number(document.getElementById('total_lab').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='total_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB is: " + N + "</font></div>" 
+                        $('#total_lab').hide();
+                        $('#total_lab').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_lab').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='stock_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_lab').hide();
+                        $('#stock_lab').replaceWith(newstring);
+		}
+
+
+	if(user_action == "positive")
+                        {
+                        N=(Number(document.getElementById('total_pos').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='total_pos' class='stat_total'><font color='black'> Total number of positive entries in DB is: " + N + "</font></div>" 
+			$('#total_pos').hide();
+			$('#total_pos').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_pos').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='stock_pos' class='stat_total'><font color='black'> Total number of positive entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_pos').hide();
+			$('#stock_pos').replaceWith(newstring);
+                        }		
+	else if(user_action == "negative")	
+	            {
+                        N=(Number(document.getElementById('total_neg').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='total_neg' class='stat_total'><font color='black'> Total number of negative entries in DB is: " + N + "</font></div>" 
+			$('#total_neg').hide();
+			$('#total_neg').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_neg').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='stock_neg' class='stat_total'><font color='black'> Total number of negative entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_neg').hide();
+			$('#stock_neg').replaceWith(newstring);
+                        }	
+	else if(user_action == "neutral")	
+	            {
+                        N=(Number(document.getElementById('total_neu').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='total_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB is: " + N + "</font></div>" 
+			$('#total_neu').hide();
+			$('#total_neu').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_neu').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='stock_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_neu').hide();
+			$('#stock_neu').replaceWith(newstring);
+                    }	
+	sentEditFlag[item]=0;
+	});	
+
     $('body').on('click', '.sentiment', function () {
 	var item = $(this).attr("id").match(/[0-9]+/g)[0];
-	//$('#debug').append('<div><font color="black">' + item + '</font></div>');
+	if ( sentEditFlag[item] == 1 )
+	{
+		return;
+	}
+	sentEditFlag[item]=1
 	var stock = $('.select_list_item').text();
         var user_action = $(this).attr("value")
 	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") ,'tweet_id': item,'stock':stock },function (content) {
+        console.debug($('#positive'+item))
         $('#negative'+item).hide();
         $('#neutral'+item).hide();
-       	$('#positive'+item).replaceWith("<p>Thanks!</p>");
+        editstring="<button id= editSentLab"+item +" class=editSentiment type=button value="+user_action+">Edit My Label</button>"
+	console.debug(editstring)
+       	$('#positive'+item).replaceWith(editstring);
 
         if ( $('#corRel'+item).text() != 'Relevant' ) 
 		{
@@ -331,11 +482,68 @@
 		});
 	});
 
+    $('body').on('click', '.editRel', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	var user_action=$(this).attr("value")
+	var stock = $('.select_list_item').text();
+        $('#corIrrel'+item).show();
+        editstring="<button id= corRel"+item+" class=cor type=button value=relevant>Relevant</button>"
+        $('#corRel'+item).replaceWith(editstring);
+	console.debug(editstring)
+	console.debug(user_action)
+	$('#editRelLab'+item).replaceWith(editstring);
+
+        if ( $('#positive'+item).text() != 'Positive' ) 
+                {
+                        N=(Number(document.getElementById('total_lab').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='total_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB is: " + N + "</font></div>" 
+                        $('#total_lab').hide();
+                        $('#total_lab').replaceWith(newstring);
+                        
+                        stock=user_action 
+                        N=(Number(document.getElementById('stock_lab').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='stock_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_lab').hide();
+                        $('#stock_lab').replaceWith(newstring);
+                }
+
+        if(user_action == "relevant")      
+                    {
+                        N=(Number(document.getElementById('total_rel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='total_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB is: " + N + "</font></div>" 
+                        $('#total_rel').hide();
+                        $('#total_rel').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_rel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='stock_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_rel').hide();
+                        $('#stock_rel').replaceWith(newstring);
+                    }      
+        else if(user_action == "irrelevant")
+                    {
+                        N=(Number(document.getElementById('total_irel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='total_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB is: " + N + "</font></div>" 
+                        $('#total_irel').hide();
+                        $('#total_irel').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_irel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='stock_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_irel').hide();
+                        $('#stock_irel').replaceWith(newstring);
+                    } 
+	relEditFlag[item]=0
+
+	});	
     $('body').on('click', '.cor', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+        if ( relEditFlag[item] == 1)
+        {
+                return;
+        }
+	relEditFlag[item] = 1
         //$('#debug').html('');
         //$('#debug').append('<div><font color="black">' + $(this).attr("id").slice(-1)+ '</font></div>')
 	//var item = $(this).attr("id").slice(-1);
-        var item = $(this).attr("id").match(/[0-9]+/g)[0];
         //$('#debug').append('<div><font color="black">' + item + '</font></div>');
 	var stock = $('.select_list_item').text();
         var user_action = $(this).attr("value")
@@ -343,7 +551,8 @@
   	    //$('#debug').html('');
             //$('#debug').append('<div>' + item + '</div>')
             $('#corIrrel'+item).hide();
-       	    $('#corRel'+item).replaceWith("<p>Thanks!</p>");
+            editstring="<button id= editRelLab"+item +" class=editRel type=button value="+user_action+">Edit My Label</button>"
+       	    $('#corRel'+item).replaceWith(editstring);
 
         if ( $('#positive'+item).text() != 'Positive' ) 
                 {

@@ -22,11 +22,12 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
-        'NAME': 'django2',
+        'NAME': 'kalamacom',
+        #'NAME': 'django_0114_test_1',
         'OPTIONS': {'charset': 'utf8mb4'},
         'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',
+        'PASSWORD': 'kalamacom',
+        'HOST': 'kalamacom.cganvnnahixy.us-east-1.rds.amazonaws.com',
         'PORT': '3306',
     }
 }
@@ -47,11 +48,17 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'app',
     'django_ajax',
+    'django_crontab',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
 )
+
+CRONJOBS = [
+('05,10,15,20,25,30,35,40,45,50,55  11,12,13,14,15,16 * * 1,2,3,4,7', 'app.views.runPriceCrawling')
+]
+
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -60,7 +67,7 @@ INSTALLED_APPS = (
 # timezone as the operating system.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = None
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html

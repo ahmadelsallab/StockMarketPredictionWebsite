@@ -7,14 +7,18 @@ import json
 from django.http import HttpResponse
 
 class Opinion(models.Model):
-    
     twitter_id = models.CharField(max_length=40)
     user_id = models.CharField(max_length=200)
-    text = models.CharField(max_length=200)
-    created_at = models.CharField(max_length=100)
     user_followers_count = models.IntegerField()
     user_profile_image_url = models.CharField(max_length=500)
+    tweeter_name = models.CharField(max_length=100)
+    tweeter_sname = models.CharField(max_length=40)
+    text = models.CharField(max_length=200)
+    created_at = models.CharField(max_length=100)
     pub_date = models.CharField(max_length=100)
+    source = models.CharField(max_length=600)
+    media_url = models.CharField(max_length=5000)
+    stock = models.CharField(max_length=40)
     relevancy = models.CharField(max_length=40)
     relevancy_second = models.CharField(max_length=40)
     relevancy_third = models.CharField(max_length=40)
@@ -26,13 +30,8 @@ class Opinion(models.Model):
     labeled_user_third = models.CharField(max_length=40)
     voted_relevancy = models.CharField(max_length=40)
     voted_sentiment =  models.CharField(max_length=40)
-    stock = models.CharField(max_length=40)
     labeled = models.BooleanField(default=False)
-    source = models.CharField(max_length=600)
     similarId = models.CharField(max_length=40)
-
-      
-    
     '''
     def render_to_response(self, context, **response_kwargs):
         #return HttpResponse(json.dumps(list(self.get_queryset().values_list('code', flat=True))),mimetype="application/json")

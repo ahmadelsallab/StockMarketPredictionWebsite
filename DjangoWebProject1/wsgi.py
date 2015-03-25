@@ -15,6 +15,17 @@ framework.
 """
 import os
 
+
+
+import sys
+path = '/home/ubuntu/DjangoWebProject1_20150128'
+if path not in sys.path:
+    sys.path.append(path)
+
+path = '/usr/local/lib/python3.4/dist-packages/'
+if path not in sys.path:
+    sys.path.append(path)
+
 #os.environ.setdefault("DJANGO_SETTINGS_MODULE", "DjangoWebProject1.settings")
 os.environ["DJANGO_SETTINGS_MODULE"] = "DjangoWebProject1.settings"
 

@@ -229,13 +229,13 @@ class TwitterCrawler(object):
                                                           #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
-                                                          result_type='recent')
+                                                          result_type='recent',show_all_inline_media='true')
                     else:
                         resultsAPI = self.t.search.tweets(q=query,
                                                           #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
-                                                          result_type='recent',
+                                                          result_type='recent',show_all_inline_media='true',
                                                           since_id=since_id)
                         
                 else:
@@ -244,14 +244,14 @@ class TwitterCrawler(object):
                                                           #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
-                                                          result_type='recent',
+                                                          result_type='recent',show_all_inline_media='true',
                                                           max_id=max_id)
                     else:
                         resultsAPI = self.t.search.tweets(q=query,
                                                           #geocode=self.geocodeStr,
                                                           lang=self.language,
                                                           count=self.resultsPerSearch,
-                                                          result_type='recent',
+                                                          result_type='recent',show_all_inline_media='true',
                                                           since_id=since_id,
                                                           max_id=max_id)                    
             except:
@@ -330,13 +330,13 @@ class TwitterCrawler(object):
                                                       #geocode=self.geocodeStr,
                                                       lang=self.language,
                                                       count=self.resultsPerSearch,
-                                                      result_type='recent')
+                                                      result_type='recent',show_all_inline_media='true')
                 else:
                     resultsAPI = self.t.search.tweets(q=query,
                                                       #geocode=self.geocodeStr,
                                                       lang=self.language,
                                                       count=self.resultsPerSearch,
-                                                      result_type='recent',
+                                                      result_type='recent',show_all_inline_media='true',
                                                       since_id=since_id)
                     
             else:
@@ -345,14 +345,14 @@ class TwitterCrawler(object):
                                                       #geocode=self.geocodeStr,
                                                       lang=self.language,
                                                       count=self.resultsPerSearch,
-                                                      result_type='recent',
+                                                      result_type='recent',show_all_inline_media='true',
                                                       max_id=max_id)
                 else:
                     resultsAPI = self.t.search.tweets(q=query,
                                                       #sgeocode=self.geocodeStr,
                                                       lang=self.language,
                                                       count=self.resultsPerSearch,
-                                                      result_type='recent',
+                                                      result_type='recent',show_all_inline_media='true',
                                                       since_id=since_id,
                                                       max_id=max_id)                    
         except Exception as e:
