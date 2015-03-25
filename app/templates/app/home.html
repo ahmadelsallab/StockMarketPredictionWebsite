@@ -5,6 +5,10 @@
 
 
 <div id="debug"></div>
+<div id="word_cloud">
+    <div id="word_cloud_container" style="width: 550px; height: 350px; border: 1px solid #ccc;">
+    <div id="watermark" style="font-size:15px;">www.kalamacom.com</div></div>
+</div>
 <div id="main_content">
     <h1 class="page-header" align="right">التغريدات</h1>
     <div id="stats"></div>
@@ -198,6 +202,7 @@
 {% load static %}
 <script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
 <script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
+<script src="{% static 'app/scripts/jqcloud-1.0.4.min.js' %}"></script>
 <script type="text/javascript">
 
     function findUrls( text )
@@ -229,6 +234,17 @@
 
         $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
         $("#main_content").width(screenWidth - 270);
+        ajaxPost('/get_stocks_weights', {}, function (content) {
+            var word_list = []
+            for (var i = 0; i < content.stocks.length; i++) {
+                word_list[i].text = content.stocks[i]['name'];
+                word_list[i].weight = content.stocks[i]['weight'];
+                word_list[i].html = "class\":\""+content.stocks[i]['category'])+"\";
+        
+                }
+            $("#word_cloud_container").jQCloud(word_list,{width:900,height:500});    
+            
+        }
     });
 
     $('#side_bar_selection').keyup(function () {
