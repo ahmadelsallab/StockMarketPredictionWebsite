@@ -236,12 +236,17 @@
         $("#main_content").width(screenWidth - 270);
         ajaxPost('/get_stocks_weights', {}, function (content) {
             var word_list = []
-            for (var i = 0; i < content.stocks.length; i++) {
-                word_list[i].text = content.stocks[i]['name'];
-                word_list[i].weight = content.stocks[i]['weight'];
-                word_list[i].html = "class\":\""+content.stocks[i]['category'])+"\";
-        
-                }
+            for (var i = 0; i < content.length; i++) {
+                word_list.push(content[i]);                
+            }
+            /*
+            word = {
+                text:"S1", 
+                weight:100,
+                html : {"class":"industry"}
+            }
+            word_list.push(word);
+            */
             $("#word_cloud_container").jQCloud(word_list,{width:900,height:500});    
             
         }

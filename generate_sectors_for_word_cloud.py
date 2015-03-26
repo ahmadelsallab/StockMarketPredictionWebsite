@@ -291,7 +291,7 @@ f1 = urllib.request.urlopen('http://www.marketstoday.net/markets/%D8%A7%D9%84%D8
 
 
 soup = BeautifulSoup(f1.read())  
-f = open('log.txt', 'w', encoding = 'utf-8')
+f = open('stocks_sectors.txt', 'w', encoding = 'utf-8')
 sectors_id = []
 sectors = []
 for a in soup.findAll('span', { "class" : "compsect" }):
