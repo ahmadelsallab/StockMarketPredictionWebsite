@@ -236,17 +236,7 @@
         $("#main_content").width(screenWidth - 270);
         ajaxPost('/get_stocks_weights', {}, function (content) {
             var word_list = []
-            for (var i = 0; i < content.length; i++) {
-                word_list.push(content[i]);                
-            }
-            /*
-            word = {
-                text:"S1", 
-                weight:100,
-                html : {"class":"industry"}
-            }
-            word_list.push(word);
-            */
+            word_list = content
             $("#word_cloud_container").jQCloud(word_list,{width:900,height:500});    
             
         }
