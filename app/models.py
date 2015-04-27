@@ -38,10 +38,10 @@ class Opinion(models.Model):
         return HttpResponse(json.dumps(list(self.get_queryset())), mimetype="application/json")
     '''
 class StocksPrices(models.Model):
-    stock_name = models.CharField(max_length=200)
+    stock_name = models.CharField(max_length=40)
     from django.core.validators import MaxValueValidator, MinValueValidator
     stock_price = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
-    time_stamp = models.DateTimeField()
+    time = models.DateTimeField()
     '''
     def __str__(self):
         return self.stock_name

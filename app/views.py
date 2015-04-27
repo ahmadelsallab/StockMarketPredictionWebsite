@@ -9,15 +9,19 @@ from datetime import datetime
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django_ajax.decorators import ajax
-from app.models import Opinion, CorrectionData, StocksPrices, StockCounter
+from app.models import Opinion, CorrectionData, StocksPrices, LabledCounter, StockCounter, RelevancyCounter, SentimentCounter
 from django.utils import timezone
 from Filter.Filter import Filter
 from bs4 import BeautifulSoup
+from django.db.models import Sum
 import urllib
 import json
 from TwitterCrawler.TwitterCrawler import *
 import os
 import threading
+import django_crontab
+#from pytz import timezone
+from dateutil.parser import parse
 
 synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'السعودى الهولندى': 'البنك السعودي الهولندي',
@@ -27,7 +31,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'سامبا': 'مجموعة سامبا المالية',
 'تاسي': 'تاسي',
 'الرياض': 'بنك الرياض',
-'الجزيرة': 'شركة الجزيرة تكافل تعاوني',
+'الجزيرة': 'بنك الجزيرة',
 'الراجحي': 'مصرف الراجحي',
 'البلاد': 'بنك البلاد',
 'الإنماء': 'مصرف الإنماء',
@@ -44,6 +48,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'أسمنت حائل': 'شركة أسمنت حائل',
 'أسمنت نجران ': 'شركة أسمنت نجران',
 'اسمنت المدينة ': 'شركة اسمنت المدينة',
+'اسمنت ام القرى': 'شركة اسمنت ام القرى',
 'اسمنت الشمالية ': 'شركة أسمنت المنطقة الشمالية',
 'الاسمنت العربية ': 'شركة الاسمنت العربية',
 'اسمنت اليمامة ': 'شركة اسمنت اليمامة',
@@ -59,12 +64,14 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'إكسترا': '',
 'دله الصحية': 'شركة دله للخدمات الصحية القابضة',
 'رعاية': 'الشركة الوطنية للرعاية الطبية',
+'أسواق المزرعة': 'الشركة السعودية للتسويق',
 'ساسكو': 'ساسكو',
 'ثمار': 'ثمار',
 'مجموعة فتيحي ': 'مجموعة فتيحي القابضة',
 'جرير': 'شركة جرير للتسويق',
 'الدريس': 'شركة الدريس للخدمات البترولية و النقليات',
 'الحكير': 'شركة فواز عبدالعزيز الحكير وشركاه',
+'الحمادي':'شركة الحمادي للتنمية والاستثمار',
 'الخليج للتدريب ': 'شركة الخليج للتدريب و التعليم',
 'الغاز والتصنيع ': 'شركة الغاز والتصنيع الاهلية',
 'كهرباء السعودية ': 'الشركة السعودية للكهرباء',
@@ -95,6 +102,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'أليانز إس إف ': 'أليانز إس إف',
 'سلامة': 'شركة سلامة للتأمين التعاوني',
 'ولاء للتأمين': 'ولاء للتأمين',
+'جزيرة تكافل':'شركة الجزيرة تكافل تعاوني',
 'الدرع العربي ': 'شركة الدرع العربي للتأمين التعاوني',
 'ساب تكافل': 'ساب للتكافل',
 'سند': 'شركة سند للتأمين و إعادة التأمين التعاوني',
@@ -102,6 +110,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'وفا للتأمين': 'وفا للتأمين',
 'إتحاد الخليج': 'شركة إتحاد الخليج للتأمين التعاوني',
 'الأهلي للتكافل': 'شركة الأهلي للتكافل',
+'العربي للتأمين': 'شركة متلايف وايه أي جي والبنك العربي للتأمين التعاوني',
 'الأهلية': 'الشركة الأهلية للتأمين التعاوني',
 'أسيج': 'المجموعة المتحدة للتأمين التعاوني',
 'التأمين العربية ': 'شركة التأمين العربية التعاونية',
@@ -174,14 +183,194 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'الأبحاث و التسويق': 'الأبحاث و التسويق',
 'طباعة وتغليف': 'طباعة وتغليف',
 'الطيار': 'الطيار',
-'الفنادق': 'الفنادق',
+'دور': 'دور',
 'شمس': 'شمس',
+'مجموعة الحكير': 'مجموعة الحكير',
 'بوان': 'بوان',
+'الشرق الاوسط لصناعه':'شركة الشرق الاوسط لصناعة وانتاج الورق',
+'ساكو': 'الشركة السعودية للعدد والأدوات',
 }
 
-stocks_prices = {};
 
-stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
+combination = {
+'تاسي': '(ﺕﺎﺴﻳ OR ﺕﺎﺳﻯ)',
+'الرياض': '(ﺐﻨﻛ+ﺎﻟﺮﻳﺎﺿ OR ﻢﺻﺮﻓ+ﺎﻟﺮﻳﺎﺿ)',
+'الجزيرة': '(ﺐﻨﻛ+ﺎﻠﺟﺰﻳﺮﻫ OR ﺐﻨﻛ+ﺎﻠﺟﺰﻳﺭﺓ OR ﻢﺻﺮﻓ+ﺎﻠﺟﺰﻳﺭﺓ OR ﻢﺻﺮﻓ+ﺎﻠﺟﺰﻳﺮﻫ OR ﻢﺻﺮﻓ+ﺎﻠﺟﺰﻳﺮﻫ OR ﻢﺻﺮﻓ+ﺎﻠﺟﺰﻳﺭ OR ﺐﻨﻛ+ﺎﻠﺟﺰﻳﺭ)',
+'استثمار': '(ﺐﻨﻛ+ﺍﻼﺴﺘﺜﻣﺍﺭ OR ﻢﺻﺮﻓ+ﺍﻼﺴﺘﺜﻣﺍﺭ OR ﺐﻨﻛ+ﺍﻸﺴﺘﺜﻣﺍﺭ OR ﻢﺻﺮﻓ+ﺍﻸﺴﺘﺜﻣﺍﺭ)',
+'السعودي الهولندي': '(ﺎﻠﺒﻨﻛ+ﺎﻠﻫﻮﻠﻧﺪﻳ OR ﺎﻠﺒﻨﻛ+ﺎﻠﻫﻮﻠﻧﺩﻯ OR ﻢﺻﺮﻓ+ﺎﻠﻫﻮﻠﻧﺪﻳ OR ﻢﺻﺮﻓ+ﺎﻠﻫﻮﻠﻧﺩﻯ OR ﺎﻠﺴﻋﻭﺪﻳ+ﺎﻠﻫﻮﻠﻧﺪﻳ OR ﺎﻠﺴﻋﻭﺩﻯ+ﺎﻠﻫﻮﻠﻧﺩﻯ OR ﺎﻠﺴﻋﻭﺩﻯ+ﺎﻠﻫﻮﻠﻧﺪﻳ OR ﺎﻠﺴﻋﻭﺪﻳ+ﺎﻠﻫﻮﻠﻧﺩﻯ)',
+'السعودي الفرنسي': '(ﺎﻠﺒﻨﻛ+ﺎﻠﻓﺮﻨﺴﻳ OR ﺎﻠﺒﻨﻛ+ﺎﻠﻓﺮﻨﺳﻯ OR ﻢﺻﺮﻓ+ﺎﻠﻓﺮﻨﺴﻳ OR ﻢﺻﺮﻓ+ﺎﻠﻓﺮﻨﺳﻯ OR ﺎﻠﺴﻋﻭﺪﻳ+ﺎﻠﻓﺮﻨﺴﻳ OR ﺎﻠﺴﻋﻭﺩﻯ+ﺎﻠﻓﺮﻨﺳﻯ OR ﺎﻠﺴﻋﻭﺩﻯ+ﺎﻠﻓﺮﻨﺴﻳ OR ﺎﻠﺴﻋﻭﺪﻳ+ﺎﻠﻓﺮﻨﺳﻯ)',
+'ساب': '(ﻢﺻﺮﻓ+ﺱﺎﺑ OR ﺐﻨﻛ+ﺱﺎﺑ OR ﺕﺎﺴﻳ+ﺱﺎﺑ)',
+'العربي الوطني': '(ﺎﻠﺒﻨﻛ+ﺎﻟﻮﻄﻨﻳ+ﺎﻠﻋﺮﺒﻳ OR ﺎﻠﺒﻨﻛ+ﺎﻟﻮﻄﻧﻯ+ﺎﻠﻋﺮﺑﻯ OR ﺐﻨﻛ+ﺎﻠﻋﺮﺒﻳ+ﺎﻟﻮﻄﻨﻳ OR ﺐﻨﻛ+ﺎﻠﻋﺮﺑﻯ+ﺎﻟﻮﻄﻧﻯ OR ﻢﺻﺮﻓ+ﺎﻠﻋﺮﺒﻳ+ﺎﻟﻮﻄﻨﻳ OR ﻢﺻﺮﻓ+ﺎﻠﻋﺮﺑﻯ+ﺎﻟﻮﻄﻧﻯ)',
+'سامبا': '(ﺱﺎﻤﺑﺍ)',
+'الراجحي': '(ﺐﻨﻛ+ﺎﻠﺟﺍﺮﺤﻳ OR ﺐﻨﻛ+ﺎﻠﺟﺍﺮﺤﻳ OR ﻢﺻﺮﻓ+ﺎﻠﺟﺍﺮﺤﻳ OR ﻢﺻﺮﻓ+ﺎﻠﺟﺍﺮﺤﻳ)',
+'البلاد': '(ﺐﻨﻛ+ﺎﻠﺑﻻﺩ OR ﻢﺻﺮﻓ+ﺎﻠﺑﻻﺩ)',
+'الإنماء': '(ﺐﻨﻛ+ﺍﻼﻨﻣﺍﺀ OR ﻢﺻﺮﻓ+ﺍﻼﻨﻣﺍﺀ OR ﺐﻨﻛ+ﺍﻺﻨﻣﺍﺀ OR ﻢﺻﺮﻓ+ﺍﻸﻨﻣﺍﺀ OR ﺐﻨﻛ+ﺍﻸﻨﻣﺍﺀ OR ﻢﺻﺮﻓ+ﺍﻺﻨﻣﺍﺀ OR ﺍﻼﻨﻣﺍﺀ+ﺕﺎﺴﻳ OR ﺍﻺﻨﻣﺍﺀ+ﺕﺎﺴﻳ)',
+'كيمانول': '(ﻚﻴﻣﺎﻧﻮﻟ OR ﻚﻣﺎﻧﻮﻟ)',
+'بتروكيم': '(ﺐﺗﺭﻮﻜﻴﻣ OR ﺐﻴﺗﺭﻮﻜﻴﻣ)',
+'سابك': '(ﺱﺎﺒﻛ)',
+'سافكو': '(ﺱﺎﻔﻛﻭ)',
+'التصنيع': '(ﺎﻠﺘﺼﻨﻴﻋ OR ﺵﺮﻛﺓ+ﺖﺼﻨﻴﻋ OR ﺵﺮﻜﻫ+ﺖﺼﻨﻴﻋ)',
+'اللجين': '(ﺎﻠﻠﺠﻴﻧ)',
+'نماء للكيماويات': '(ﻦﻣﺍﺀ+ﻞﻠﻜﻴﻣﺍﻮﻳﺎﺗ OR ﻦﻣﺍﺀ+ﺎﻠﻜﻴﻣﺍﻮﻳﺎﺗ OR ﻦﻣﺍﺀ)',
+'المجموعة السعودية': '(ﺎﻠﻤﺠﻣﻮﻋﺓ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺎﻠﻤﺠﻣﻮﻋﺓ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺎﻠﻤﺠﻣﻮﻌﻫ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺎﻠﻤﺠﻣﻮﻌﻫ+ﺎﻠﺴﻋﻭﺪﻴﻫ)',
+'الصحراء للبتروكيماويات': '(ﺎﻠﺼﺣﺭﺍﺀ+ﻞﻠﺒﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ OR ﺎﻠﺼﺣﺭﺍﺀ+ﺐﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ OR ﺎﻠﺼﺣﺭﺍ+ﻞﻠﺒﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ OR ﺎﻠﺼﺣﺭﺍ+ﺐﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ OR ﺎﻠﺼﺣﺭﺍﺀ)',
+'ينساب': '(ﻲﻨﺳﺎﺑ)',
+'سبكيم العالمية': '(ﺲﺒﻜﻴﻣ)',
+'المتقدمة': '(ﺎﻠﻤﺘﻗﺪﻣﺓ OR ﺎﻠﻤﺘﻗﺪﻤﻫ)',
+'كيان': '(ﻚﻳﺎﻧ)',
+'بترو رابغ': '(ﺐﺗﺭﻭ+ﺭﺎﺒﻏ OR ﺐﻴﺗﺭﻭ+ﺭﺎﺒﻏ OR ﺐﺗﺭﻭﺭﺎﺒﻏ OR ﺐﻴﺗﺭﻭﺭﺎﺒﻏ)',
+'أسمنت حائل': '(ﺄﺴﻤﻨﺗ+ﺡﺎﺌﻟ OR ﺎﺴﻤﻨﺘﺣﺎﺌﻟ OR ﺲﻤﻨﺗ+ﺡﺎﺌﻟ OR ﺱ+ﺡﺎﺌﻟ)',
+'أسمنت نجران': '(ﺄﺴﻤﻨﺗ+ﻦﺟﺭﺎﻧ OR ﺎﺴﻤﻨﺗ+ﻦﺟﺭﺎﻧ OR ﺲﻤﻨﺗ+ﻦﺟﺭﺎﻧ OR ﺱ+ﻦﺟﺭﺎﻧ)',
+'اسمنت المدينة': '(ﺎﺴﻤﻨﺗ+ﺎﻠﻣﺪﻴﻨﻫ OR ﺎﺴﻤﻨﺗ+ﺎﻠﻣﺪﻴﻧﺓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻣﺪﻴﻨﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻣﺪﻴﻧﺓ OR ﺲﻤﻨﺗ+ﺎﻠﻣﺪﻴﻨﻫ OR ﺲﻤﻤﻨﺗ+ﺎﻠﻣﺪﻴﻧﺓ OR ﺱ+ﺎﻠﻣﺪﻴﻨﻫ OR ﺱ+ﺎﻠﻣﺪﻴﻧﺓ)',
+'اسمنت الشمالية': '(ﺎﺴﻤﻨﺗ+ﺎﻠﺸﻣﺎﻠﻳﺓ OR ﺎﺴﻤﻨﺗ+ﺎﻠﺸﻣﺎﻠﻴﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺸﻣﺎﻠﻳﺓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺸﻣﺎﻠﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﺸﻣﺎﻠﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﺸﻣﺎﻠﻳﺓ OR ﺱ+ﺎﻠﺸﻣﺎﻠﻴﻫ OR ﺱ+ﺎﻠﺸﻣﺎﻠﻳﺓ)',
+'الاسمنت العربية': '(ﺍﻼﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺍﻸﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺎﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺍﻼﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺍﻸﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺎﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺱ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺱ+ﺎﻠﻋﺮﺒﻳﺓ)',
+'اسمنت اليمامة': '(ﺎﺴﻤﻨﺗ+ﺎﻠﻴﻣﺎﻣﺓ OR ﺎﺴﻤﻨﺗ+ﺎﻠﻴﻣﺎﻤﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻴﻣﺎﻣﺓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻴﻣﺎﻤﻫ OR ﺲﻤﻨﺗ+ﺎﻠﻴﻣﺎﻤﻫ OR ﺲﻤﻨﺗ+ﺎﻠﻴﻣﺎﻣﺓ OR ﺲﻤﻨﺗ+ﺎﻠﻴﻣﺎﻤﻫ OR ﺱ+ﺎﻠﻴﻣﺎﻤﻫ OR ﺱ+ﺎﻠﻴﻣﺎﻣﺓ)',
+'اسمنت السعوديه': '(ﺎﺴﻤﻨﺗ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺎﺴﻤﻨﺗ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺲﻤﻨﺗ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺱ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺱ+ﺎﻠﺴﻋﻭﺪﻳﺓ)',
+'اسمنت القصيم': '(ﺎﺴﻤﻨﺗ+ﺎﻠﻘﺼﻴﻣ OR ﺄﺴﻤﻨﺗ+ﺎﻠﻘﺼﻴﻣ OR ﺲﻤﻨﺗ+ﺎﻠﻘﺼﻴﻣ OR ﺎﺴﻤﻨﺗ+ﺎﻠﻘﺼﻴﻣ OR ﺱ+ﺎﻠﻘﺼﻴﻣ)',
+'اسمنت الجنوبيه': '(ﺎﺴﻤﻨﺗ+ﺎﻠﺠﻧﻮﺒﻴﻫ OR ﺎﺴﻤﻨﺗ+ﺎﻠﺠﻧﻮﺒﻳﺓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺠﻧﻮﺒﻴﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺠﻧﻮﺒﻳﺓ OR ﺲﻤﻨﺗ+ﺎﻠﺠﻧﻮﺒﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﺠﻧﻮﺒﻳﺓ OR ﺱ+ﺎﻠﺠﻧﻮﺒﻳﺓ OR ﺱ+ﺎﻠﺠﻧﻮﺒﻴﻫ)',
+'اسمنت ينبع': '(ﺎﺴﻤﻨﺗ+ﻲﻨﺒﻋ OR ﺄﺴﻤﻨﺗ+ﻲﻨﺒﻋ OR ﺲﻤﻨﺗ+ﻲﻨﺒﻋ OR ﺱ+ﻲﻨﺒﻋ)',
+'اسمنت الشرقية': '(ﺎﺴﻤﻨﺗ+ﺎﻠﺷﺮﻘﻳﺓ OR ﺎﺴﻤﻨﺗ+ﺎﻠﺷﺮﻘﻴﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺷﺮﻘﻴﻫ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺷﺮﻘﻳﺓ OR ﺲﻤﻨﺗ+ﺎﻠﺷﺮﻘﻴﻫ OR ﺲﻤﻨﺗ+ﺎﻠﺷﺮﻘﻳﺓ OR ﺱ+ﺎﻠﺷﺮﻘﻴﻫ OR ﺱ+ﺎﻠﺷﺮﻘﻴﻫ)',
+'اسمنت تبوك': '(ﺄﺴﻤﻨﺗ+ﺖﺑﻮﻛ OR ﺎﺴﻤﻨﺗ+ﺖﺑﻮﻛ OR ﺲﻤﻨﺗ+ﺖﺑﻮﻛ OR ﺱ+ﺖﺑﻮﻛ)',
+'اسمنت الجوف': '(ﺎﺴﻤﻨﺗ+ﺎﻠﺟﻮﻓ OR ﺄﺴﻤﻨﺗ+ﺎﻠﺟﻮﻓ OR ﺲﻤﻨﺗ+ﺎﻠﺟﻮﻓ OR ﺱ+ﺎﻠﺟﻮﻓ)',
+'أسواق ع العثيم': '(ﺎﺳﻭﺎﻗ+ﺎﻠﻌﺜﻴﻣ OR ﺄﺳﻭﺎﻗ+ﺎﻠﻌﺜﻴﻣ OR ﺱﻮﻗ+ﺎﻠﻌﺜﻴﻣ OR ﺵﺮﻜﻫ+ﺎﻠﻌﺜﻴﻣ)',
+'المواساة': '(ﺎﻠﻣﻭﺎﺳﺍﺓ OR ﺎﻠﻣﻭﺎﺳﺎﻫ OR ﻡﻭﺎﺳﺎﻫ OR ﻡﻭﺎﺳﺍﺓ)',
+'إكسترا': '(ﺄﻜﺴﺗﺭﺍ OR ﺈﻜﺴﺗﺭﺍ OR ﺎﻜﺴﺗﺭﺍ)',
+'دله الصحية': '(ﺪﻠﻫ+ﺎﻠﺼﺤﻴﻫ OR ﺪﻠﻫ+ﺎﻠﺼﺤﻳﺓ OR ﺪﻟﺓ+ﺎﻠﺼﺤﻴﻫ OR ﺪﻟﺓ+ﺎﻠﺼﺤﻳﺓ OR ﻢﺠﻣﻮﻌﻫ+ﺪﻠﻫ OR ﻢﺠﻣﻮﻌﻫ+ﺪﻟﺓ OR ﻢﺠﻣﻮﻋﺓ+ﺪﻠﻫ OR ﻢﺠﻣﻮﻋﺓ+ﺪﻟﺓ)',
+'رعاية': '(ﺮﻋﺎﻴﻫ OR ﺮﻋﺎﻳﺓ)',
+'ساسكو': '(ﺱﺎﺴﻛﻭ)',
+'ثمار': '(ﺚﻣﺍﺭ)',
+'مجموعة فتيحي': '(ﻒﺘﻴﺣﻯ OR ﻒﺘﻴﺤﻳ)',
+'جرير': '(ﺝﺮﻳﺭ)',
+'الدريس': '(ﺎﻟﺩﺮﻴﺳ)',
+'الحكير': '(ﺎﻠﺤﻜﻳﺭ)',
+'الخليج للتدريب': '(ﺎﻠﺨﻠﻴﺟ+ﻞﻠﺗﺩﺮﻴﺑ OR ﺎﻠﺨﻠﻴﺟ+ﺎﻠﺗﺩﺮﻴﺑ OR ﺎﻠﺨﻠﻴﺟ+ﺕﺩﺮﻴﺑ OR ﺦﻠﻴﺟ+ﻞﻠﺗﺩﺮﻴﺑ)',
+'الغاز والتصنيع': '(ﺎﻠﻏﺍﺯ+ﺎﻠﺘﺼﻨﻴﻋ OR ﺎﻠﻏﺍﺯ)',
+'كهرباء السعودية': '(ﻚﻫﺮﺑﺍﺀ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﻚﻫﺮﺑﺍﺀ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺲﻬﻣ+ﺎﻠﻜﻫﺮﺑﺍﺀ)',
+'مجموعة صافولا': '(ﺹﺎﻓﻭﻻ)',
+'الغذائية': '(ﺎﻠﻏﺫﺎﺌﻴﻫ OR ﺎﻠﻏﺫﺎﺌﻳﺓ OR ﻮﻓﺮﻫ OR ﻮﻓﺭﺓ)',
+'سدافكو': '(ﺱﺩﺎﻔﻛﻭ)',
+'المراعي': '(ﺎﻠﻣﺭﺎﻋﻯ OR ﺎﻠﻣﺭﺎﻌﻳ)',
+'أنعام القابضة': '(ﺄﻨﻋﺎﻣ+ﺎﻠﻗﺎﺒﺿﺓ OR ﺎﻨﻋﺎﻣﺎﻠﻗﺎﺒﺿﺓ OR ﺄﻨﻋﺎﻣﺎﻠﻗﺎﺒﻀﻫ OR ﺎﻨﻋﺎﻣﺎﻠﻗﺎﺒﻀﻫ OR ﺎﻨﻋﺎﻣ+ﺕﺎﺴﻳ OR ﺄﻨﻋﺎﻣ+ﺕﺎﺴﻳ)',
+'حلواني إخوان': '(ﺢﻟﻭﺎﻨﻳ+ﺈﺧﻭﺎﻧ OR ﺢﻟﻭﺎﻨﻳ+ﺎﺧﻭﺎﻧ OR ﺢﻟﻭﺎﻨﻳ+ﺄﺧﻭﺎﻧ OR ﺢﻟﻭﺎﻨﻳ+ﺈﺧﻭﺎﻧ OR ﺢﻟﻭﺎﻨﻳ+ﺎﺧﻭﺎﻧ OR ﺢﻟﻭﺎﻨﻳ+ﺄﺧﻭﺎﻧ OR ﺵﺮﻜﻫ+ﺢﻟﻭﺎﻧﻯ OR ﺵﺮﻛﺓ+ﺢﻟﻭﺎﻨﻳ OR ﺕﺎﺳﻯ+ﺢﻟﻭﺎﻧﻯ OR ﺕﺎﺴﻳ+ﺢﻟﻭﺎﻨﻳ)',
+'هرفي للأغذية': '(ﻩﺮﻔﻳ OR ﻩﺮﻓﻯ)',
+'التموين': '(ﺎﻠﺘﻣﻮﻴﻧ)',
+'نادك': '(ﻥﺍﺪﻛ)',
+'القصيم الزراعيه': '(ﺎﻠﻘﺼﻴﻣ+ﺎﻟﺯﺭﺎﻌﻴﻫ OR ﺎﻠﻘﺼﻴﻣ+ﺎﻟﺯﺭﺎﻌﻳﺓ OR ﻖﺼﻴﻣ+ﺯ OR ﺎﻠﻘﺼﻴﻣ+ﺯ OR ﻖﺼﻴﻣ+ﺎﻟﺯﺭﺎﻌﻳﺓ OR ﻖﺼﻴﻣ+ﺎﻟﺯﺭﺎﻌﻴﻫ)',
+'تبوك الزراعيه': '(ﺖﺑﻮﻛ+ﺎﻟﺯﺭﺎﻌﻴﻫ OR ﺖﺑﻮﻛ+ﺎﻟﺯﺭﺎﻌﻳﺓ OR ﺖﺑﻮﻛ+ﺯ)',
+'الأسماك': '(ﺍﻸﺴﻣﺎﻛ OR ﺍﻼﺴﻣﺎﻛ)',
+'الشرقية للتنمية': '(ﺎﻠﺷﺮﻘﻳﺓ+ﻞﻠﺘﻨﻤﻳﺓ OR ﺎﻠﺷﺮﻘﻳﺓ+ﻞﻠﺘﻨﻤﻴﻫ OR ﺎﻠﺷﺮﻘﻴﻫ+ﻞﻠﺘﻨﻤﻳﺓ OR ﺎﻠﺷﺮﻘﻴﻫ+ﻞﻠﺘﻨﻤﻴﻫ OR ﺲﻬﻣ+ﺎﻠﺷﺮﻘﻴﻫ OR ﺲﻬﻣ+ﺎﻠﺷﺮﻘﻳﺓ OR ﺎﻠﺷﺮﻘﻴﻫ+ﺯ OR ﺎﻠﺷﺮﻘﻳﺓ+ﺯ)',
+'الجوف الزراعيه': '(ﺎﻠﺟﻮﻓ+ﺎﻟﺯﺭﺎﻌﻴﻫ OR ﺎﻠﺟﻮﻓ+ﺎﻟﺯﺭﺎﻌﻳﺓ OR ﺎﻠﺟﻮﻓ+ﺯ)',
+'بيشة الزراعيه': '(ﺐﻴﺸﻫ+ﺎﻟﺯﺭﺎﻌﻴﻫ OR ﺐﻴﺷﺓ+ﺎﻟﺯﺭﺎﻌﻴﻫ OR ﺐﻴﺷﺓ+ﺎﻟﺯﺭﺎﻌﻳﺓ OR ﺐﻴﺸﻫ+ﺎﻟﺯﺭﺎﻌﻳﺓ OR ﺐﻴﺸﻫ+ﺎﻟﺯﺭﺎﻌﻴﻫ OR ﺐﻴﺸﻫ+ﺯ OR ﺐﻴﺷﺓ+ﺯ OR ﺲﻬﻣ+ﺐﻴﺸﻫ OR ﺲﻬﻣ+ﺐﻴﺷﺓ)',
+'جازان للتنمية': '(ﺝﺍﺯﺎﻧ+ﻞﻠﺘﻨﻤﻳﺓ OR ﺝﺍﺯﺎﻧ+ﻞﻠﺘﻨﻤﻴﻫ)',
+'الاتصالات': '(ﺍﻼﺘﺻﺍﻼﺗ OR ﺍﻸﺘﺻﺍﻼﺗ OR STC)',
+'اتحاد اتصالات': '(ﺎﺘﺣﺍﺩ+ﺎﺘﺻﺍﻼﺗ OR ﺈﺘﺣﺍﺩ+ﺎﺘﺻﺍﻼﺗ OR ﺎﺘﺣﺍﺩ+ﺄﺘﺻﺍﻼﺗ OR ﺈﺘﺣﺍﺩ+ﺄﺘﺻﺍﻼﺗ OR ﺄﺘﺣﺍﺩ+ﺎﺘﺻﺍﻼﺗ OR ﺄﺘﺣﺍﺩ+ﺎﺘﺻﺍﻼﺗ OR سهم+موبايلي OR  سهم+موبايلى)',
+'زين السعودية': '(ﺰﻴﻧ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺰﻴﻧ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺲﻬﻣ+ﺰﻴﻧ)',
+'عذيب للاتصالات': '(ﻉﺬﻴﺑ)',
+'المتكاملة': '(ﺎﻠﻤﺘﻛﺎﻤﻠﻫ OR ﺎﻠﻤﺘﻛﺎﻤﻟﺓ OR ﺎﻠﻤﺘﻛﺎﻤﻠﻫ)',
+'التعاونية': '(ﺎﻠﺘﻋﺍﻮﻨﻴﻫ OR ﺎﻠﺘﻋﺍﻮﻨﻳﺓ OR ﺎﻠﺘﻋﺍﻮﻨﻴﻫ)',
+'ملاذ للتأمين': '(ﻡﻻﺫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﻡﻻﺫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﻡﻻﺫ+ﺕﺎﺴﻳ OR ﺲﻬﻣ+ﻡﻻﺫ)',
+'ميدغلف للتأمين': '(ﻢﻳﺪﻐﻠﻓ OR ﻢﻳﺪﻘﻠﻓ OR ﻢﻳﺩ+ﻎﻠﻓ OR ﻢﻳﺩ+ﻖﻠﻓ)',
+'أليانز إس إف': '(ﺎﻠﻳﺎﻧﺯ+ﺎﺳ+ﺎﻓ OR ﺈﺳ+ﺈﻓ OR ﺎﻠﻳﺎﻧﺯ+ﺕﺎﺴﻳ OR ﺈﻠﻳﺎﻧﺯ+ﺕﺎﺴﻳ)',
+'سلامة': '(ﺲﻬﻣ+ﺱﻼﻤﻫ OR ﺲﻬﻣ+ﺱﻼﻣﺓ OR ﺕﺎﺴﻳ+ﺱﻼﻤﻫ OR ﺕﺎﺴﻳ+ﺱﻼﻤﻫ OR ﺱﻼﻣﺓ+ ﻞﻠﺗﺄﻤﻴﻧ OR ﺱﻼﻤﻫ+ ﻞﻠﺗﺄﻤﻴﻧ)',
+'ولاء للتأمين': '(ﻭﻻﺀ+ﻞﻠﺗﺄﻤﻴﻧ OR ﻭﻻﺀ+ﻞﻠﺗﺎﻤﻴﻧ OR ﻭﻻﺀ+ﺕﺎﺴﻳ OR ﺲﻬﻣ+ﻭﻻﺀ)',
+'الدرع العربي': '(ﺎﻟﺩﺮﻋ+ﺎﻠﻋﺮﺒﻳ OR ﺎﻟﺩﺮﻋ+ﺎﻠﻋﺮﺑﻯ OR ﺎﻟﺩﺮﻋ+ﺕﺎﺴﻳ OR ﺎﻟﺩﺮﻋ+ﺕﺎﻤﻴﻧ OR ﺎﻟﺩﺮﻋ+ﺲﻬﻣ)',
+'ساب تكافل': '(ﺱﺎﺑ+ﺖﻛﺎﻔﻟ OR ﺱﺎﺑ+ﺕﺎﺴﻳ OR ﺱﺎﺑ+ﺲﻬﻣ)',
+'سند': '(ﺲﻧﺩ+ﺲﻬﻣ OR ﺲﻧﺩ+ﺕﺎﻤﻴﻧ OR ﺲﻧﺩ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺲﻧﺩ+ﺕﺎﺴﻳ OR ﺲﻧﺩ+ﺕﺎﺳﻯ)',
+'سايكو': '(ﺱﺎﻴﻛﻭ OR ﺱﺎﻴﻛﻭ+ﺕﺎﻤﻴﻧ OR ﺱﺎﻴﻛﻭ+ﻞﻠﺗﺎﻤﻴﻧ)',
+'وفا للتأمين': '(ﻮﻓﺍ+ﻞﻠﺗﺄﻤﻴﻧ OR ﻮﻓﺍ+ﻞﻠﺗﺎﻤﻴﻧ OR ﻮﻓﺍﺀ+ﻞﻠﺗﺎﻤﻴﻧ OR ﻮﻓﺍﺀ+ﻞﻠﺗﺄﻤﻴﻧ OR ﻮﻓﺍﺀ+ﺲﻬﻣ OR ﻮﻓﺍﺀ+ﺕﺎﺴﻳ OR ﻮﻓﺍﺀ+ﺕﺎﺴﻳ)',
+'إتحاد الخليج': '(ﺈﺘﺣﺍﺩ+ﺎﻠﺨﻠﻴﺟ OR ﺄﺘﺣﺍﺩ+ﺎﻠﺨﻠﻴﺟ OR ﺎﺘﺣﺍﺩ+ﺎﻠﺨﻠﻴﺟ)',
+'الأهلي للتكافل': '(ﺍﻸﻬﻠﻳ+ﻞﻠﺘﻛﺎﻔﻟ OR ﺍﻼﻬﻠﻳ+ﻞﻠﺘﻛﺎﻔﻟ OR ﺍﻸﻬﻠﻳ+ﺖﻛﺎﻔﻟ OR ﺍﻼﻬﻠﻳ+ﺖﻛﺎﻔﻟ)',
+'الأهلية': '(ﺍﻸﻬﻠﻳﺓ+ﺎﻠﺘﻋﺍﻮﻨﻳ OR ﺍﻸﻬﻠﻴﻫ+ﺎﻠﺘﻋﺍﻮﻨﻳ OR ﺍﻼﻬﻠﻴﻫ+ﺎﻠﺘﻋﺍﻮﻨﻳ OR ﺍﻼﻬﻠﻳﺓ+ﺎﻠﺘﻋﺍﻮﻨﻳ OR ﺍﻼﻬﻠﻳﺓ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺍﻼﻬﻠﻴﻫ+ﻞﻠﺗﺎﻤﻴﻧ)',
+'أسيج': '(ﺄﺴﻴﺟ OR ﺎﺴﻴﺟ OR ﺈﺴﻴﺟ)',
+'التأمين العربية': '(ﺎﻠﺗﺄﻤﻴﻧ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺎﻠﺗﺄﻤﻴﻧ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺎﻠﺗﺎﻤﻴﻧ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺎﻠﺗﺎﻤﻴﻧ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺕ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺕ+ﺎﻠﻋﺮﺒﻳﺓ)',
+'الاتحاد التجاري': '(ﺍﻼﺘﺣﺍﺩ+ﺎﻠﺘﺟﺍﺮﻳ OR ﺍﻼﺘﺣﺍﺩ+ﺎﻠﺘﺟﺍﺭﻯ OR ﺍﻸﺘﺣﺍﺩ+ﺎﻠﺘﺟﺍﺭﻯ OR ﺍﻸﺘﺣﺍﺩ+ﺎﻠﺘﺟﺍﺮﻳ OR ﺍﻺﺘﺣﺍﺩ+ﺎﻠﺘﺟﺍﺭﻯ OR ﺍﻺﺘﺣﺍﺩ+ﺎﻠﺘﺟﺍﺮﻳ OR ﺍﻼﺘﺣﺍﺩ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺕ+ﺍﻼﺘﺣﺍﺩ OR ﺕ+ﺍﻸﺘﺣﺍﺩ)',
+'الصقر للتأمين': '(ﺎﻠﺼﻗﺭ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﺼﻗﺭ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺲﻬﻣ+ﺎﻠﺼﻗﺭ OR ﺎﻠﺼﻗﺭ+ﺕﺎﺴﻳ)',
+'المتحدة للتأمين': '(ﺎﻠﻤﺘﺣﺩﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻤﺘﺣﺩﺓ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺎﻠﻤﺘﺣﺪﻫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻤﺘﺣﺪﻫ+ﻞﻠﺗﺎﻤﻴﻧ)',
+'الإعادة السعودية': '(ﺍﻺﻋﺍﺩﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺍﻺﻋﺍﺪﻫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻋﺍﺪﻫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺍﻼﻋﺍﺩﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺍﻸﻋﺍﺩﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR سهم+إعاده OR سهم+إعادة OR سهم+اعاده OR سهم+اعادة)',
+'بوبا العربية': '(ﺏﻮﺑﺍ)',
+'وقاية للتكافل': '(ﻮﻗﺎﻳﺓ+ﻞﻠﺘﻛﺎﻔﻟ OR ﻮﻗﺎﻴﻫ+ﻞﻠﺘﻛﺎﻔﻟ OR ﻮﻗﺎﻴﻫ+ﺖﻛﺎﻔﻟ OR ﺲﻬﻣ+ﻮﻗﺎﻴﻫ OR ﺲﻬﻣ+ﻮﻗﺎﻳﺓ OR ﺕﺎﺴﻳ+ﻮﻗﺎﻴﻫ OR ﺕﺎﺴﻳ+ﻮﻗﺎﻴﻫ OR ﺕﺎﺴﻳ+ﻮﻗﺎﻳﺓ OR ﺕﺎﺴﻳ+ﻮﻗﺎﻳﺓ)',
+'تكافل الراجحي': '(ﺖﻛﺎﻔﻟ+ﺎﻟﺭﺎﺠﺤﻳ OR ﺖﻛﺎﻔﻟ+ﺎﻟﺭﺎﺠﺣﻯ OR ﺕ+ﺎﻟﺭﺎﺠﺤﻳ OR ﺕ+ﺎﻟﺭﺎﺠﺣﻯ)',
+'ايس': '(ﺎﻴﺳ OR ﺄﻴﺳ OR ﺄﻴﺳ+ﻞﻠﺗﺄﻤﻴﻧ  OR ﺎﻴﺳ+ﻞﻠﺗﺄﻤﻴﻧ )',
+'اكسا- التعاونية': '(ﺎﻜﺳﺍ OR ﺈﻜﺳﺍ OR ﺄﻜﺳﺍ)',
+'الخليجية العامة': '(ﺎﻠﺨﻠﻴﺠﻳﺓ+ﺎﻠﻋﺎﻣﺓ OR ﺎﻠﺨﻠﻴﺠﻴﻫ+ﺎﻠﻋﺎﻤﻫ OR ﺎﻠﺨﻠﻴﺠﻳﺓ+ﺎﻠﻋﺎﻤﻫ OR ﺎﻠﺨﻠﻴﺠﻴﻫ+ﺎﻠﻋﺎﻣﺓ OR ﺲﻬﻣ+ﺎﻠﺨﻠﻴﺠﻴﻫ OR ﺕﺎﺴﻳ+ﺎﻠﺨﻠﻴﺠﻴﻫ OR ﺕﺎﺴﻳ+ﺎﻠﺨﻠﻴﺠﻳﺓ OR ﺕﺎﺳﻯ+ﺎﻠﺨﻠﻴﺠﻴﻫ OR ﺕﺎﺳﻯ+ﺎﻠﺨﻠﻴﺠﻳﺓ)',
+'بروج للتأمين': '(ﺏﺭﻮﺟ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺏﺭﻮﺟ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺏﺭﻮﺟ)',
+'العالمية': '(ﺎﻠﻋﺎﻠﻤﻳﺓ OR ﺎﻠﻋﺎﻠﻤﻴﻫ OR ﺎﻠﻋﺎﻠﻤﻴﻫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺎﻠﻤﻳﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺎﻠﻤﻴﻫ+ﺎﻠﺘﻋﺍﻮﻨﻳ OR ﺎﻠﻋﺎﻠﻤﻳﺓ+ﺎﻠﺘﻋﺍﻮﻨﻳ)',
+'سوليدرتي تكافل': '(ﺱﻮﻠﻳﺩﺮﺘﻳ OR ﺱﻮﻠﻳﺩﺮﺗﻯ OR ﺱﻮﻟﺩﺮﺘﻳ OR ﺱﻮﻟﺩﺮﺗﻯ)',
+'الوطنية': '(ﺎﻟﻮﻄﻨﻳﺓ OR ﺎﻟﻮﻄﻨﻴﻫ OR ﺎﻟﻮﻄﻨﻳﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻟﻮﻄﻨﻴﻫ+ﻞﻠﺗﺄﻤﻴﻧ)',
+'أمانة للتأمين': '(ﺄﻣﺎﻧﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻣﺎﻧﺓ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺄﻣﺎﻧﺓ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺎﻣﺎﻧﺓ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺕ+ﺄﻣﺎﻨﻫ OR ﺕ+ﺎﻣﺎﻧﺓ OR ﺕ+ﺎﻣﺎﻨﻫ OR ﺕ+ﺄﻣﺎﻧﺓ)',
+'عناية': '(ﻊﻧﺎﻴﻫ OR ﻊﻧﺎﻳﺓ OR ﻊﻧﺎﻴﻫ+ﻞﻠﺗﺎﻤﻴﻧ OR ﻊﻧﺎﻳﺓ+ﻞﻠﺗﺎﻤﻴﻧ OR ﻊﻧﺎﻴﻫ+ﻞﻠﺗﺄﻤﻴﻧ OR ﻊﻧﺎﻳﺓ+ﻞﻠﺗﺄﻤﻴﻧ)',
+'الإنماء طوكيو م': '(ﺍﻺﻨﻣﺍﺀ+ﻁﻮﻜﻳﻭ OR ﺍﻼﻨﻣﺍﺀ+ﻁﻮﻜﻳﻭ  OR ﻁﻮﻜﻳﻭ+سصهم OR  ﻁﻮﻜﻳﻭ+تاسي )',
+'المصافي': '(ﺎﻠﻤﺻﺎﻔﻳ OR ﺎﻠﻤﺻﺎﻓﻯ)',
+'المتطورة': '(ﺲﻬﻣ+ﺎﻠﻤﺘﻃﻭﺮﻫ OR ﺲﻬﻣ+ﺎﻠﻤﺘﻃﻭﺭﺓ OR ﺕﺎﺴﻳ+ﺎﻠﻤﺘﻃﻭﺮﻫ OR ﺕﺎﺳﻯ+ﺎﻠﻤﺘﻃﻭﺮﻫ OR ﺕﺎﺳﻯ+ﺎﻠﻤﺘﻃﻭﺭﺓ OR ﺕﺎﺴﻳ+ﺎﻠﻤﺘﻃﻭﺭﺓ)',
+'الاحساء للتنميه': '(ﺍﻼﺤﺳﺍﺀ+ﻞﻠﺘﻨﻤﻴﻫ OR ﺍﻸﺤﺳﺍﺀ+ﻞﻠﺘﻨﻤﻴﻫ OR ﺍﻼﺤﺳﺍﺀ+ﻞﻠﺘﻨﻤﻳﺓ OR ﺍﻸﺤﺳﺍﺀ+ﻞﻠﺘﻨﻤﻳﺓ OR ﺲﻬﻣ+ﺍﻸﺤﺳﺍﺀ OR ﺲﻬﻣ+ﺍﻼﺤﺳﺍﺀ OR ﺕﺎﺴﻳ+ﺍﻸﺤﺳﺍﺀ OR ﺕﺎﺴﻳ+ﺍﻼﺤﺳﺍﺀ OR ﺕﺎﺳﻯ+ﺍﻼﺤﺳﺍﺀ OR ﺕﺎﺳﻯ+ﺍﻸﺤﺳﺍﺀ)',
+'سيسكو': '(ﺲﻴﺴﻛﻭ)',
+'عسير': '(ﺲﻬﻣ+ﻊﺴﻳﺭ OR ﺕﺎﺴﻳ+ﻊﺴﻳﺭ OR ﺕﺎﺳﻯ+ﻊﺴﻳﺭ)',
+'الباحة': '(ﺲﻬﻣ+ﺎﻠﺑﺎﺤﻫ OR ﺲﻬﻣ+ﺎﻠﺑﺎﺣﺓ OR ﺕﺎﺴﻳ+ﺎﻠﺑﺎﺤﻫ OR ﺕﺎﺳﻯ+ﺎﻠﺑﺎﺤﻫ OR ﺕﺎﺳﻯ+ﺎﻠﺑﺎﺣﺓ OR ﺕﺎﺴﻳ+ﺎﻠﺑﺎﺣﺓ)',
+'المملكة': '(ﺲﻬﻣ+ﺎﻠﻤﻤﻠﻜﻫ OR ﺲﻬﻣ+ﺎﻠﻤﻤﻠﻛﺓ OR ﺕﺎﺴﻳ+ﺎﻠﻤﻤﻠﻜﻫ OR ﺕﺎﺴﻳ+ﺎﻠﻤﻤﻠﻛﺓ OR ﺕﺎﺳﻯ+ﺎﻠﻤﻤﻠﻛﺓ OR ﺕﺎﺳﻯ+ﺎﻠﻤﻤﻠﻜﻫ)',
+'تكوين': '(ﺖﻛﻮﻴﻧ)',
+'بى سى آى': '(ﺏﻯ+ﺱﻯ+ﺁﻯ OR ﺏﻯ+ﺱﻯ+ﺍﻯ OR ﺐﻳ+ﺲﻳ+ﺂﻳ OR ﺐﻳ+ﺲﻳ+ﺎﻳ)',
+'معادن': '(ﻢﻋﺍﺪﻧ)',
+'أسترا الصناعية': '(ﺄﺴﺗﺭﺍ OR ﺎﺴﺗﺭﺍ)',
+'مجموعة السريع': '(ﻢﺠﻣﻮﻋﺓ+ﺎﻠﺳﺮﻴﻋ OR ﻢﺠﻣﻮﻌﻫ+ﺎﻠﺳﺮﻴﻋ)',
+'شاكر': '(ﺲﻬﻣ+ﺵﺎﻛﺭ OR ﺕﺎﺴﻳ+ﺵﺎﻛﺭ OR ﺕﺎﺳﻯ+ﺵﺎﻛﺭ)',
+'الدوائية': '(ﺲﻬﻣ+ﺎﻟﺩﻭﺎﺌﻳﺓ OR ﺲﻬﻣ+ﺎﻟﺩﻭﺎﺌﻴﻫ)',
+'زجاج': '(ﺰﺟﺎﺟ)',
+'فيبكو': '(ﻒﻴﺒﻛﻭ OR ﻒﺒﻛﻭ)',
+'معدنية': '(ﻢﻋﺪﻨﻳﺓ OR ﻢﻋﺪﻨﻴﻫ)',
+'الكيميائيه السعوديه': '(ﺎﻠﻜﻴﻤﻳﺎﺌﻴﻫ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺎﻠﻜﻴﻤﻳﺎﺌﻳﺓ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺎﻠﻜﻴﻤﻳﺎﺌﻴﻫ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺎﻠﻜﻴﻤﻳﺎﺌﻳﺓ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺎﻠﻜﻴﻤﻳﺎﺌﻴﻫ OR ﺎﻠﻜﻴﻤﻳﺎﺌﻳﺓ)',
+'صناعة الورق': '(ﺺﻧﺎﻋﺓ+ﺎﻟﻭﺮﻗ OR ﺺﻧﺎﻌﻫ+ﺎﻟﻭﺮﻗ OR ﺲﻬﻣ+ﺎﻟﻭﺮﻗ OR ﺕﺎﺴﻳ+ﺎﻟﻭﺮﻗ OR ﺕﺎﺳﻯ+ﺎﻟﻭﺮﻗ)',
+'العبداللطيف': '(ﺎﻠﻌﺑﺩﺎﻠﻠﻄﻴﻓ OR ﺎﻠﻌﺑﺩ+ﺎﻠﻠﻄﻴﻓ OR ﻊﺑﺩﺎﻠﻠﻄﻴﻓ OR ﻊﺑﺩ+ﺎﻠﻠﻄﻴﻓ OR ﻉ+ﺎﻠﻠﻄﻴﻓ)',
+'الصادرات': '(ﺲﻬﻣ+ﺎﻠﺻﺍﺩﺭﺎﺗ OR ﺕﺎﺴﻳ+ﺎﻠﺻﺍﺩﺭﺎﺗ OR ﺕﺎﺳﻯ+ﺎﻠﺻﺍﺩﺭﺎﺗ)',
+'أسلاك': '(ﺲﻬﻣ+ﺄﺳﻼﻛ OR ﺲﻬﻣ+ﺎﺳﻼﻛ OR ﺕﺎﺴﻳ+ﺄﺳﻼﻛ OR ﺕﺎﺴﻳ+ﺎﺳﻼﻛ OR ﺕﺎﺳﻯ+ﺄﺳﻼﻛ OR ﺕﺎﺳﻯ+ﺎﺳﻼﻛ)',
+'مجموعة المعجل': '(ﻢﺠﻣﻮﻋﺓ+ﺎﻠﻤﻌﺠﻟ OR ﻢﺠﻣﻮﻌﻫ+ﺎﻠﻤﻌﺠﻟ OR ﺲﻬﻣ+ﺎﻠﻤﻌﺠﻟ)',
+'الأنابيب السعودية': '(ﺍﻸﻧﺎﺒﻴﺑ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺍﻸﻧﺎﺒﻴﺑ+ﺎﻠﺴﻋﻭﺪﻴﻫ OR ﺍﻼﻧﺎﺒﻴﺑ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺍﻼﻧﺎﺒﻴﺑ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺄﻧﺎﺒﻴﺑ+ﺎﻠﺴﻋﻭﺪﻳﺓ OR ﺄﻧﺎﺒﻴﺑ+ﺎﻠﺴﻋﻭﺪﻴﻫ)',
+'الخضري': '(ﺎﻠﺨﺿﺮﻳ OR ﺎﻠﺨﺿﺭﻯ)',
+'الخزف': '(ﺎﻠﺧﺰﻓ)',
+'الجبس': '(ﺎﻠﺠﺒﺳ)',
+'الكابلات': '(ﺎﻠﻛﺎﺑﻼﺗ)',
+'صدق': '(ﺹﺪﻗ)',
+'اميانتيت': '(ﺎﻤﻳﺎﻨﺘﻴﺗ)',
+'أنابيب': '(ﺲﻬﻣ+ﺄﻧﺎﺒﻴﺑ OR ﺲﻬﻣ+ﺎﻧﺎﺒﻴﺑ OR ﺎﻧﺎﺒﻴﺑ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺄﻧﺎﺒﻴﺑ+ﺎﻠﻋﺮﺒﻳﺓ OR ﺎﻧﺎﺒﻴﺑ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺄﻧﺎﺒﻴﺑ+ﺎﻠﻋﺮﺒﻴﻫ OR ﺕﺎﺴﻳ+ﺄﻧﺎﺒﻴﺑ OR ﺕﺎﺳﻯ+ﺄﻧﺎﺒﻴﺑ OR ﺕﺎﺴﻳ+ﺎﻧﺎﺒﻴﺑ OR ﺕﺎﺳﻯ+ﺎﻧﺎﺒﻴﺑ)',
+'الزامل للصناعة': '(ﺎﻟﺯﺎﻤﻟ+ﻞﻠﺼﻧﺎﻋﺓ OR ﺎﻟﺯﺎﻤﻟ+ﻞﻠﺼﻧﺎﻌﻫ OR ﺎﻟﺯﺎﻤﻟ)',
+'البابطين': '(ﺎﻠﺑﺎﺒﻄﻴﻧ OR ﺏﺎﺒﻄﻴﻧ)',
+'الفخارية': '(ﺎﻠﻔﺧﺍﺮﻳﺓ OR ﺎﻠﻔﺧﺍﺮﻴﻫ)',
+'مسك': '(ﻢﺴﻛ)',
+'البحر الأحمر': '(ﺎﻠﺒﺣﺭ+ﺍﻸﺤﻣﺭ OR ﺎﻠﺒﺣﺭ+ﺍﻼﺤﻣﺭ)',
+'العقارية': '(ﺎﻠﻌﻗﺍﺮﻴﻫ OR ﺎﻠﻌﻗﺍﺮﻳﺓ)',
+'طيبة للاستثمار': '(ﻂﻴﺑﺓ+ﻝﻼﺴﺘﺜﻣﺍﺭ OR ﻂﻴﺒﻫ+ﻝﻼﺴﺘﺜﻣﺍﺭ OR ﻂﻴﺑﺓ+ﻝﻸﺴﺘﺜﻣﺍﺭ OR ﻂﻴﺒﻫ+ﻝﻸﺴﺘﺜﻣﺍﺭ OR ﻂﻴﺑﺓ+ﻝﻺﺴﺘﺜﻣﺍﺭ OR ﻂﻴﺒﻫ+ﻝﻺﺴﺘﺜﻣﺍﺭ OR ﺲﻬﻣ+ﻂﻴﺒﻫ OR ﺲﻬﻣ+ﻂﻴﺑﺓ OR ﺕﺎﺴﻳ+ﻂﻴﺒﻫ OR ﺕﺎﺳﻯ+ﻂﻴﺒﻫ)',
+'مكة للانشاء': '(ﻢﻛﺓ+ﻝﻼﻨﺷﺍﺀ OR ﻢﻜﻫ+ﻝﻼﻨﺷﺍﺀ OR ﻢﻛﺓ+ﻝﻸﻨﺷﺍﺀ OR ﻢﻜﻫ+ﻝﻸﻨﺷﺍﺀ OR ﻢﻛﺓ+ﻝﻺﻨﺷﺍﺀ OR ﻢﻜﻫ+ﻝﻺﻨﺷﺍﺀ OR ﺲﻬﻣ+ﻢﻜﻫ OR ﺕﺎﺴﻳ+ﻢﻜﻫ OR ﺕﺎﺳﻯ+ﻢﻜﻫ)',
+'التعمير': '(ﺲﻬﻣ+ﺎﻠﺘﻌﻤﻳﺭ OR ﺕﺎﺴﻳ+ﺎﻠﺘﻌﻤﻳﺭ OR ﺕﺎﺳﻯ+ﺎﻠﺘﻌﻤﻳﺭ)',
+'إعمار': '(ﺲﻬﻣ+ﺈﻌﻣﺍﺭ OR ﺲﻬﻣ+ﺄﻌﻣﺍﺭ OR ﺲﻬﻣ+ﺎﻌﻣﺍﺭ OR ﺕﺎﺴﻳ+ﺈﻌﻣﺍﺭ OR ﺕﺎﺴﻳ+ﺄﻌﻣﺍﺭ OR ﺕﺎﺴﻳ+ﺎﻌﻣﺍﺭ OR ﺕﺎﺳﻯ+ﺈﻌﻣﺍﺭ OR ﺕﺎﺳﻯ+ﺄﻌﻣﺍﺭ OR ﺕﺎﺳﻯ+ﺎﻌﻣﺍﺭ)',
+'جبل عمر': '(ﺞﺒﻟ+ﻊﻣﺭ)',
+'دار الأركان': '(ﺩﺍﺭ+ﺍﻻﺮﻛﺎﻧ OR ﺩﺍﺭ+ﺍﻹﺮﻛﺎﻧ)',
+'مدينة المعرفة': '(ﻡﺪﻴﻧﺓ+ﺎﻠﻤﻋﺮﻓﺓ OR ﻡﺪﻴﻨﻫ+ﺎﻠﻤﻋﺮﻔﻫ OR ﻡﺪﻴﻧﺓ+ﺎﻠﻤﻋﺮﻔﻫ OR ﻡﺪﻴﻨﻫ+ﺎﻠﻤﻋﺮﻓﺓ OR ﺲﻬﻣ+ﺎﻠﻤﻋﺮﻔﻫ OR ﺲﻬﻣ+ﺎﻠﻤﻋﺮﻓﺓ OR ﺕﺎﺴﻳ+ﺎﻠﻤﻋﺮﻔﻫ OR ﺕﺎﺳﻯ+ﺎﻠﻤﻋﺮﻔﻫ OR ﺕﺎﺴﻳ+ﺎﻠﻤﻋﺮﻓﺓ OR ﺕﺎﺳﻯ+ﺎﻠﻤﻋﺮﻓﺓ)',
+'البحري': '(ﺲﻬﻣ+ﺎﻠﺒﺣﺮﻳ OR ﺲﻬﻣ+ﺎﻠﺒﺣﺭﻯ OR ﺕﺎﺴﻳ+ﺎﻠﺒﺣﺮﻳ OR ﺕﺎﺳﻯ+ﺎﻠﺒﺣﺮﻳ OR ﺕﺎﺴﻳ+ﺎﻠﺒﺣﺭﻯ OR ﺕﺎﺳﻯ+ﺎﻠﺒﺣﺭﻯ)',
+'النقل الجماعي': '(ﺎﻠﻨﻘﻟ+ﺎﻠﺠﻣﺎﻋﻯ OR ﺎﻠﻨﻘﻟ+ﺎﻠﺠﻣﺎﻌﻳ OR ﺲﻬﻣ+ﺎﻠﺠﻣﺎﻌﻳ OR ﺲﻬﻣ+ﺎﻠﺠﻣﺎﻋﻯ OR ﺕﺎﺴﻳ+ﺎﻠﺠﻣﺎﻌﻳ OR ﺕﺎﺳﻯ+ﺎﻠﺠﻣﺎﻌﻳ OR ﺕﺎﺳﻯ+ﺎﻠﺠﻣﺎﻋﻯ OR ﺕﺎﺳﻯ+ﺎﻠﺠﻣﺎﻋﻯ)',
+'مبرد': '(ﻢﺑﺭﺩ)',
+'بدجت السعودية': '(ﺏﺪﺠﺗ)',
+'تهامه للاعلان': '(ﺖﻫﺎﻤﻫ+ﻝﻼﻋﻼﻧ OR ﺖﻫﺎﻣﺓ+ﻝﻼﻋﻼﻧ OR ﺖﻫﺎﻤﻫ+ﻝﻸﻋﻼﻧ OR ﺖﻫﺎﻣﺓ+ﻝﻸﻋﻼﻧ OR ﺲﻬﻣ+ﺖﻫﺎﻤﻫ OR ﺲﻬﻣ+ﺖﻫﺎﻣﺓ OR ﺕﺎﺴﻳ+ﺖﻫﺎﻣﺓ OR ﺕﺎﺳﻯ+ﺖﻫﺎﻤﻫ OR ﺕﺎﺴﻳ+ﺖﻫﺎﻤﻫ OR ﺕﺎﺳﻯ+ﺖﻫﺎﻣﺓ)',
+'الأبحاث و التسويق': '(ﺍﻸﺒﺣﺎﺛ+ﺎﻠﺘﺳﻮﻴﻗ OR ﺍﻼﺒﺣﺎﺛ+ﺎﻠﺘﺳﻮﻴﻗ OR ﺎﺒﺣﺎﺛ+ﺖﺳﻮﻴﻗ OR ﺄﺒﺣﺎﺛ+ﺖﺳﻮﻴﻗ OR ﺲﻬﻣ+ﺍﻼﺒﺣﺎﺛ OR ﺲﻬﻣ+ﺍﻸﺒﺣﺎﺛ OR ﺕﺎﺴﻳ+ﺍﻸﺒﺣﺎﺛ OR ﺕﺎﺴﻳ+ﺍﻼﺒﺣﺎﺛ OR ﺕﺎﺳﻯ+ﺍﻸﺒﺣﺎﺛ OR ﺕﺎﺳﻯ+ﺍﻼﺒﺣﺎﺛ)',
+#'ﻂﺑﺎﻋﺓ ﻮﺘﻐﻠﻴﻓ': '(ﻂﺑﺎﻌﻫ+ﺖﻐﻠﻴﻓ OR ﻂﺑﺎﻋﺓ+ﺖﻐﻠﻴﻓ OR ﻂﺑﺎﻌﻫ+ﺲﻬﻣ OR ﻂﺑﺎﻋﺓ+ﺲﻬﻣ OR ﺕﺎﺳﻯ+ﻂﺑﺎﻌﻫ OR ﺕﺎﺴﻳ+ﻂﺑﺎﻋﺓ OR ﺕﺎﺳﻯ+ﻂﺑﺎﻋﺓ)',
+'طباعة وتغليف': '( ﻂﺑﺎﻌﻫ+ﺖﻐﻠﻴﻓ OR ﻂﺑﺎﻋﺓ+ﺖﻐﻠﻴﻓ OR ﻂﺑﺎﻌﻫ+ﺲﻬﻣ OR ﻂﺑﺎﻋﺓ+ﺲﻬﻣ OR ﺕﺎﺴﻳ+ﻂﺑﺎﻌﻫ OR ﺕﺎﺴﻳ+ﻂﺑﺎﻋﺓ OR ﺕﺎﺳﻯ+ﻂﺑﺎﻌﻫ OR ﺕﺎﺳﻯ+ﻂﺑﺎﻋﺓ )',
+'الطيار': '(ﺲﻬﻣ+ﺎﻠﻄﻳﺍﺭ OR ﺕﺎﺴﻳ+ﺎﻠﻄﻳﺍﺭ OR ﺕﺎﺳﻯ+ﺎﻠﻄﻳﺍﺭ)',
+'الحكير': '(الحكير)',
+'دور': '(ﺩﻭﺭ+ﻞﻠﻀﻳﺎﻓﺓ OR ﺩﻭﺭ+ﻞﻠﻀﻳﺎﻔﻫ OR ﺩﻭﺭ+ﺲﻬﻣ OR ﺕﺎﺴﻳ+ﺩﻭﺭ OR ﺕﺎﺳﻯ+ﺩﻭﺭ OR ﺲﻬﻣ+ﺎﻠﻔﻧﺍﺪﻗ OR ﺕﺎﺴﻳ+ﺎﻠﻔﻧﺍﺪﻗ OR ﺕﺎﺳﻯ+ﺎﻠﻔﻧﺍﺪﻗ)',
+'شمس': '(ﺲﻬﻣ+ﺶﻤﺳ OR ﺕﺎﺳﻯ+ﺶﻤﺳ OR ﺕﺎﺳﻯ+ﺶﻤﺳ)',
+'البنك الأهلي': '(ﺎﻠﺒﻨﻛ+ﺍﻼﻬﻠﻳ OR ﺐﻨﻛ+ﺍﻼﻬﻠﻳ OR ﺲﻬﻣ+ﺍﻼﻬﻠﻳ OR ﺎﻠﺒﻨﻛ+ﺍﻼﻬﻟﻯ OR ﺐﻨﻛ+ﺍﻼﻬﻟﻯ OR ﺲﻬﻣ+ﺍﻼﻬﻟﻯ OR ﺎﻠﺒﻨﻛ+ﺍﻸﻬﻠﻳ OR ﺎﻠﺒﻨﻛ+ﺍﻸﻬﻟﻯ OR ﺐﻨﻛ+ﺍﻸﻬﻟﻯ OR ﺕﺎﺳﻯ+ﺍﻼﻬﻟﻯ)',
+'الصناعات الكهربائيه': '( ﺎﻠﺼﻧﺎﻋﺎﺗ+ﺎﻠﻜﻫﺮﺑﺎﺌﻳﺓ OR  ﺎﻠﺼﻧﺎﻋﺎﺗ+ﺎﻠﻜﻫﺮﺑﺎﺌﻴﻫ)',
+'بوان': 'بوان',
+'اسمنت ام القرى': '( ﺎﺴﻤﻨﺗ+ﺎﻣ+ﺎﻠﻗﺭﻯ OR ﺎﺴﻤﻨﺗ+ﺎﻣ+ﺎﻠﻗﺮﻳ OR ﺎﺴﻤﻨﺗ+ﺄﻣ+ﺎﻠﻗﺮﻳ OR ﺎﺴﻤﻨﺗ+ﺄﻣ+ﺎﻠﻗﺭﻯ OR ﺄﺴﻤﻨﺗ+ﺎﻣ+ﺎﻠﻗﺭﻯ OR ﺄﺴﻤﻨﺗ+ﺎﻣ+ﺎﻠﻗﺮﻳ OR ﺄﺴﻤﻨﺗ+ﺄﻣ+ﺎﻠﻗﺮﻳ OR ﺄﺴﻤﻨﺗ+ﺄﻣ+ﺎﻠﻗﺭﻯ )',
+'أسواق المزرعة': '( ﺄﺳﻭﺎﻗ+ﺎﻠﻣﺯﺮﻌﻫ OR ﺄﺳﻭﺎﻗ+ﺎﻠﻣﺯﺮﻋﺓ OR ﺎﺳﻭﺎﻗ+ﺎﻠﻣﺯﺮﻌﻫ OR ﺎﺳﻭﺎﻗ+ﺎﻠﻣﺯﺮﻋﺓ  )',
+'الحمادي': '( ﺎﻠﺤﻣﺍﺪﻳ OR ﺎﻠﺤﻣﺍﺩﻯ  OR ﺢﻣﺍﺪﻳ OR ﺢﻣﺍﺩﻯ)',
+'جزيرة تكافل': '( ﺝﺰﻳﺮﻫ+ﺖﻛﺎﻘﻟ OR ﺝﺰﻳﺭﺓ+ﺖﻛﺎﻔﻟ )',
+'العربي للتأمين': '(  ﺎﻠﻋﺮﺒﻳ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺮﺑﻯ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺮﺒﻳ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺎﻠﻋﺮﺑﻯ+ﻞﻠﺗﺎﻤﻴﻧ)',
+'مجموعة الحكير': '( ﺎﻠﺤﻜﻳﺭ )',
+'الشرق الاوسط لصناعه': '( الشرق+الاوسط OR الشرق+الورق OR تاسي+الشرق OR الاوسط+تاسي )',
+'ساكو': '( ساكو OR SACO OR عدد+أدوات OR عدد+ادوات )',
+};
+
+
+stock_prices_names_mapping_tbl = {'تاسي':'تاسي',
 'الرياض':'الرياض',
 'الجزيرة':'الجزيرة',
 'استثمار':'استثمار',
@@ -343,21 +532,190 @@ stock_prices_names_mapping_tbl = {'﻿تاسي':'تاسي',
 'الفنادق':'الفنادق',
 'شمس':'شمس',
 'بوان':'بوان',
+'ساكو':'ساكو',
 }
 
-class NewsItem:
-    title = ""
-    link = ""
-    pubDate = ""
-    
-def isNumber(value):
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False 
-    
-    
+
+price_mapping={
+'الرياض' : 'الرياض',
+'الجزيرة' : 'الجزيرة',
+'استثمار': 'استثمار',
+'سعودي هولندي': 'السعودي الهولندي',
+'السعودي الفرنسي': 'السعودي الفرنسي',
+'ساب': 'ساب',
+'العربي': 'العربي الوطني',
+'سامبا': 'سامبا',
+'الراجحي': 'الراجحي',
+'البلاد' : 'البلاد',
+'الإنماء': 'الإنماء',
+'كيمانول': 'كيمانول',
+'بتروكيم': 'بتروكيم',
+'سابك': 'سابك',
+'سافكو': 'سافكو',
+'التصنيع': 'التصنيع',
+'اللجين': 'اللجين',
+'نماء للكيماويات': 'نماء للكيماويات',
+'مجموعة السعودية': 'المجموعة السعودية',
+'البتروكيماويات': 'الصحراء للبتروكيماويات',
+'ينساب': 'ينساب',
+'سبكيم العالمية': 'سبكيم العالمية',
+'المتقدمة': 'المتقدمة',
+'كيان السعودية': 'كيان',
+'بترو رابغ': 'بترو رابغ',
+'اسمنت حائل': 'أسمنت حائل',
+'اسمنت نجران': 'أسمنت نجران',
+'اسمنت المدينة': 'اسمنت المدينة',
+'اسمنت الشمالية': 'اسمنت الشمالية',
+'ﺎﺴﻤﻨﺗ ﺎﻣ ﺎﻠﻗﺭﻯ':'ﺎﺴﻤﻨﺗ ﺎﻣ ﺎﻠﻗﺭﻯ',
+'اسمنت العربية': 'الاسمنت العربية',
+'اسمنت اليمامة': 'اسمنت اليمامة',
+'اسمنت ام القرى': 'اسمنت ام القرى',
+'الأسمنت السعودي': 'اسمنت السعوديه',
+'اسمنت القصيم': 'اسمنت القصيم',
+'اسمنت الجنوب': 'اسمنت الجنوبيه',
+'س ينبع': 'اسمنت ينبع',
+'اسمنت الشرقية': 'اسمنت الشرقية',
+'س تبوك': 'اسمنت تبوك',
+'اسمنت الجوف': 'اسمنت الجوف',
+'أسواق ع العثيم': 'أسواق ع العثيم',
+'ﺎﻠﺤﻣﺍﺪﻳ':'ﺎﻠﺤﻣﺍﺪﻳ',
+'المواساة': 'المواساة',
+'إكسترا': 'إكسترا',
+'دله الصحية': 'دله الصحية',
+'رعاية': 'رعاية',
+'أسواق المزرعة':'أسواق المزرعة',
+'ساسكو': 'ساسكو',
+'ثمار': 'ثمار',
+'مجموعة فتيحي': 'مجموعة فتيحي',
+'جرير': 'جرير',
+'الدريس': 'الدريس',
+'الحكير': 'الحكير',
+'الحمادي':'الحمادي',
+'الخليج للتدريب': 'الخليج للتدريب',
+'الغاز': 'الغاز والتصنيع',
+'كهرباء السعودية': 'كهرباء السعودية',
+'صافولا': 'مجموعة صافولا',
+'وفرة': 'الغذائية',
+'سدافكو': 'سدافكو',
+'المراعي': 'المراعي',
+'أنعام القابضة': 'أنعام القابضة',
+'حلواني إخوان': 'حلواني إخوان',
+'هرفي للأغذية': 'هرفي للأغذية',
+'التموين': 'التموين',
+'نادك': 'نادك',
+'جاكو': 'القصيم الزراعيه',
+'تبوك الزراعية': 'تبوك الزراعيه',
+'الأسماك': 'الأسماك',
+'الشرقية للتنمية': 'الشرقية للتنمية',
+'الجوف': 'الجوف الزراعيه',
+'بيشة': 'بيشة الزراعيه',
+'جازادكو': 'جازان للتنمية',
+'الاتصالات': 'الاتصالات',
+'إتحاد إتصالات': 'اتحاد اتصالات',
+'زين السعودية': 'زين السعودية',
+'عذيب للاتصالات': 'عذيب للاتصالات',
+'المتكاملة': 'المتكاملة',
+'التعاونية': 'التعاونية',
+'ملاذ للتأمين': 'ملاذ للتأمين',
+'العربي للتأمين':'العربي للتأمين',
+'ميدغلف للتأمين': 'ميدغلف للتأمين',
+'أليانز إس إف': 'أليانز إس إف',
+'سلامة': 'سلامة',
+'ولاء': 'ولاء للتأمين',
+'جزيرة تكافل':'جزيرة تكافل',
+'الدرع العربي': 'الدرع العربي',
+'ساب تكافل': 'ساب تكافل',
+'سند': 'سند',
+'سايكو': 'سايكو',
+'وفا للتأمين': 'وفا للتأمين',
+'إتحاد الخليج': 'إتحاد الخليج',
+'الأهلي للتكافل': 'الأهلي للتكافل',
+'ﺎﻠﻋﺮﺒﻳ ﻞﻠﺗﺄﻤﻴﻧ':'ﺎﻠﻋﺮﺒﻳ ﻞﻠﺗﺄﻤﻴﻧ',
+'الأهلية': 'الأهلية',
+'أسيج': 'أسيج',
+'التأمين العربية': 'التأمين العربية',
+'الاتحاد التجاري': 'الاتحاد التجاري',
+'الصقر للتأمين': 'الصقر للتأمين',
+'المتحدة للتأمين': 'المتحدة للتأمين',
+'الإعادة السعودية': 'الإعادة السعودية',
+'بوبا العربية': 'بوبا العربية',
+'وقاية للتكافل': 'وقاية للتكافل',
+'تكافل الراجحي': 'تكافل الراجحي',
+'ايس': 'ايس',
+'اكسا- التعاونية': 'اكسا- التعاونية',
+'الخليجية العامة': 'الخليجية العامة',
+'بروج للتأمين': 'بروج للتأمين',
+'العالمية': 'العالمية',
+'سوليدرتي تكافل': 'سوليدرتي تكافل',
+'الوطنية': 'الوطنية',
+'أمانة للتأمين': 'أمانة للتأمين',
+'عناية': 'عناية',
+'الإنماء طوكيو م': 'الإنماء طوكيو م',
+'المصافي': 'المصافي',
+'متطورة': 'المتطورة',
+'الاحساء': 'الاحساء للتنميه',
+'سيسكو': 'سيسكو',
+'عسير': 'عسير',
+'الباحة': 'الباحة',
+'المملكة': 'المملكة',
+'تكوين': 'تكوين',
+'بى سى آى': 'بى سى آى',
+'معادن': 'معادن',
+'أسترا الصناعية': 'أسترا الصناعية',
+'مجموعة السريع': 'مجموعة السريع',
+'شاكر': 'شاكر',
+'الدوائية': 'الدوائية',
+'زجاج': 'زجاج',
+'فيبكو': 'فيبكو',
+'معدنية': 'معدنية',
+'الكيميائية': 'الكيميائيه السعوديه',
+'صناعة الورق': 'صناعة الورق',
+'العبداللطيف': 'العبداللطيف',
+'صادرات': 'الصادرات',
+'أسلاك': 'أسلاك',
+'مجموعة المعجل': 'مجموعة المعجل',
+'انابيب السعودية': 'الأنابيب السعودية',
+'الخضري': 'الخضري',
+'الخزف السعودي': 'الخزف',
+'جبسكو': 'الجبس',
+'الكابلات': 'الكابلات',
+'صدق': 'صدق',
+'اميانتيت': 'اميانتيت',
+'أنابيب': 'أنابيب',
+'الزامل للصناعة': 'الزامل للصناعة',
+'البابطين': 'البابطين',
+'الفخارية': 'الفخارية',
+'مسك': 'مسك',
+'البحر الأحمر': 'البحر الأحمر',
+'العقارية': 'العقارية',
+'طيبة': 'طيبة للاستثمار',
+'مكة': 'مكة للانشاء',
+'التعمير': 'التعمير',
+'إعمار': 'إعمار',
+'جبل عمر': 'جبل عمر',
+'دار الأركان': 'دار الأركان',
+'مدينة المعرفة': 'مدينة المعرفة',
+'البحري': 'البحري',
+'الجماعي': 'النقل الجماعي',
+'مبرد': 'مبرد',
+'بدجت السعودية': 'بدجت السعودية',
+'تهامه': 'تهامه للاعلان',
+'الأبحاث و التسويق': 'الأبحاث و التسويق',
+'طباعة وتغليف': 'طباعة وتغليف',
+'الطيار': 'الطيار',
+'دور': 'دور',
+'شمس': 'شمس',
+'الاهلي' : 'البنك الأهلي',
+'صناعات كهربائية': 'الصناعلات الكهرائيه',
+'بوان': 'بوان',
+'مجموعة الحكير': 'مجموعة الحكير',
+'الشرق الاوسط لصناعه': 'none',
+'ساكو':'ساكو',
+'HSBC Saudi 20': 'none',
+'Falcom 30': 'none',
+'Falcom petrochemical': 'none',
+}
+
 stocks_sectors = {'الاهلي':'المصارف والخدمات المالية', 
 'ساب':'المصارف والخدمات المالية', 
 'السعودي الفرنسي':'المصارف والخدمات المالية', 
@@ -484,6 +842,7 @@ stocks_sectors = {'الاهلي':'المصارف والخدمات المالية
 'معادن':'الاستثمار الصناعي', 
 'شاكر':'الاستثمار الصناعي', 
 'زجاج':'الاستثمار الصناعي', 
+'ساكو':'الاستثمار الصناعي', 
 'بى سى آى':'الاستثمار الصناعي', 
 'العبداللطيف':'الاستثمار الصناعي', 
 'فيبكو':'الاستثمار الصناعي', 
@@ -532,58 +891,52 @@ stocks_sectors = {'الاهلي':'المصارف والخدمات المالية
 }
 
 
+
+class NewsItem:
+    title = ""
+    link = ""
+    pubDate = ""
+    
+def isNumber(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False 
+    
+    
 @ajax
 def get_stocks_weights(request):
     content_return = []
     for stock in stock_prices_names_mapping_tbl:
-        try:            
-            weight = StockCounter.objects.extra(where={"`stock` = '"+stock+"' "}).values()[0]['counter']            
+        try:
+            weight = StockCounter.objects.extra(where={"`stock` = '"+stock+"' "}).values()[0]['counter']
         except:
             weight = 0
         try:
             sector = stocks_sectors[stock]
         except:
-            sector = 'المصارف والخدمات المالية'
-            print('Stock ' + stock + ' sector not found')
-            
+            sector = 'not_found'
+            print('Stock ' + str(stock.encode("utf-8")) + ' sector not found')
+        sector = 'not_found'
         content_return.append({'text':stock, 'weight':weight,'html':{'class':sector}})
         
     return content_return
 
 def get_stock_price(stock):
-
     try:
-        urlstr = 'http://www.tadawul.com.sa/Resources/Reports/DailyList_ar.html'
-        stock = stock_prices_names_mapping_tbl[stock]
+        urlstr = 'http://www.marketstoday.net/markets/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9/Companies/1/ar/'
         fileHandle = urllib.request.urlopen(urlstr)
-        
         html = fileHandle.read()
         soup = BeautifulSoup(html)
-        price = 0.0
-        #for b in soup.findAll('div'):
-        for b in soup.findAll('tr'):
-            td_list= b.findAll('td')
-            if(len(td_list) != 0):
-                div_list = td_list[0].findAll('div', { "class" : "left-text portlet-padding-5" })
-                if(len(div_list) != 0):
-                    stock_in_website = div_list[0].text.strip()
-                    #stock_in_website.replace('*', '').strip()
-                    #if (stock in stock_in_website) | (stock_in_website in stock):
-                    if (stock == stock_in_website):
-                        try:
-                            price = float(td_list[4].text)
-                            if(isNumber(price)):                
-                                #print('Stock: ' + stock + ' Price: ' + str(price))
-                                return price
-                                
-                        except:
-                            continue
-                            #print('Not price, skip ' + td_list[1].text)
-                            #return ''   
-        return 0.0                 
+        price = 0
+        for b in soup.findAll('tr', attrs={'class':'symbolflip'})[1:]:
+            if ""+price_mapping[stock]+"" == ""+b.find('a', attrs={'class':'jTip'}).text+"":
+                return ""+b.findAll('td')[1].text+""
+                break
     except Exception as e:
-        print('URL error ' + str(e) )
-        return 0.0
+        #print('URL error ' + str(e) )
+        return 0
         
 def index(request):
     """Renders the home page."""
@@ -620,13 +973,7 @@ def home(request):
     global twitterCrawler
     twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
     #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
-    '''
-    for stock in synonyms:
-        price = get_stock_price(stock)
-        stocks_prices[stock] = price
-        stock_price_db = StocksPrices(stock_name=stock, stock_price = price) # CHECK: Needs migration
-        stock_price_db.save()
-    '''
+
     return render(
         request,
         'app/home.html',
@@ -637,6 +984,45 @@ def home(request):
         })
     )
 
+@ajax
+def get_prices_line(request):
+    stock_name = request.POST['query']
+    content_return = {}
+
+    prz = StocksPrices.objects.filter(stock_name=stock_name).order_by('-id')[0:200][::-1]
+    
+    x=[]
+    y=[]
+    content_return=[["date","price"]]
+    w=0
+    for record in prz:
+        content_return.append([record.time.strftime('%Y %m %d %H:%M:%S'),record.stock_price]);
+        w=w+1
+
+    return content_return;
+
+@ajax
+def get_prices_candle(request):
+    stock_name = request.POST['query']
+    content_return = {}
+    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+    f_in = open(os.path.join(PROJECT_DIR, 'app', 'year_prices'), 'r', encoding='utf-8')
+    lines = f_in.readlines()
+    flag=0
+    content_return = [];
+    for line in lines:
+        #print(line)
+        l=line.split(',')
+        if(l[0]=='<ticker>'):
+            continue;
+        if(l[0]=='SIBC'):
+            flag=1
+            content_return.append([l[1][:4]+'-'+l[1][5:6]+'-'+l[1][6:],float(l[4]),float(l[2]),float(l[5]),float(l[3]),'<b>'+l[1][6:]+'-'+l[1][5:6]+'-'+l[1][:4]+'</b>   O:'+l[2]+' H:'+l[3]+' L:'+l[4]+' C:'+l[5]]);
+        elif(flag==1):
+            break
+    #print(content_return);
+    return content_return[0:100][::-1];
+
 #@login_required
 @ajax
 def get_tweets(request):
@@ -644,7 +1030,11 @@ def get_tweets(request):
     content_return = {}
     #query = stock_name
     #query = synonyms[query]
-    query = stock_name + " AND (سهم OR اسهم OR أسهم OR تداول OR ارتفع OR ارتفاع OR انخفض OR انخفاض OR هدف OR دعم OR ارتداد OR نسبة OR % OR %)‎"
+
+    #remove the adult content
+    #naughty_words=" AND ( -ﺰﺑ -ﻂﻳﺯ -ﻂﻴﻇ -ﺲﻜﺳ -ﺲﻜﺴﻳ -ﺲﺣﺎﻗ -ﺞﻨﺳ -ﻦﻴﻛ -ﺞﻨﺳ -ﺏﺯ -ﺏﺯﺍﺯ -ﻚﺳ -ﻒﺤﻟ -ﻒﺣﻮﻠﻫ -ﺬﺑ )"
+
+    query = combination[stock_name] + " AND (سهم OR اسهم OR أسهم OR تداول OR ارتفع OR ارتفاع OR انخفض OR انخفاض OR هدف OR دعم OR ارتداد OR نسبة OR % OR %)" 
     
     '''
     #tweets = twitter.search(q= query + 'OR ' + synonyms[query], result_type='recent')
@@ -663,25 +1053,22 @@ def get_tweets(request):
         configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
         tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
-        
-    # Get the stock price
+
+    price = 0  
+    #price = get_stock_price(stock_name)
     try:
-                
-        stock_price_db_all = StocksPrices.objects.filter(stock_name=stock_name).order_by(time_stamp)
-        stock_price_db = stock_price_db_all[0]
-        
-        
+        #import sys
+        #import codecs
+        #sys.stdout = codecs.getwriter("iso-8859-1")(sys.stdout, 'xmlcharrefreplace')
+        price = StocksPrices.objects.filter(stock_name=""+str(stock_name.encode("utf-8"))+"").order_by('-id')[0].stock_price
+        print('Price in DB')
     except:
-        # No entry yet in the DB for this stock, create new record
-        stock_price_db = StocksPrices(stock_name=stock_name, stock_price=price)
-        # Get the price from the market now
-        stock_price_db.stock_price = get_stock_price(stock_name)    
-        stock_price_db.time_stamp = datetime.datetime.now()
-        
-    content_return['price'] = stock_price_db.stock_price
-    
-    stock_price_db.save()
+        price = get_stock_price(stock_name)
+        print('Getting price')
+    from django.utils import timezone 
+    content_return['price'] = price
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
+    print('Saving tweets')
     for tweet in tweets:
         tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
         if(len(tweet_exist) == 0):
@@ -693,51 +1080,66 @@ def get_tweets(request):
                 item.created_at = tweet['created_at']
                 item.user_followers_count = tweet['user']['followers_count']
                 item.user_profile_image_url = tweet['user']['profile_image_url']
+                item.media_url = tweet['entities']
+                item.tweeter_sname = tweet['user']['screen_name']
+                item.tweeter_name = tweet['user']['name']
                 item.pub_date = str(timezone.now())
                 item.stock = stock_name
                 item.labeled = False
                 item.source = "twitter.com"
-                item.save()
+                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+                    print(tweet['text'])
+                else:
+                    item.save()
                 item.relevancy = 'none'
                 item.sentiment = 'none'
                 item.labeled_user = 'none'
             except Exception as e: 
               pass
-    
-    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name,labeled=False).values();
-    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:50];
-    #prevent Duplicate 
-    tweets_dict = {}
-    tweets_dict[''] = ''
-    i = 1
-    for tweet_render in tweetes_to_render:
-        if tweet_render.get('text') in tweets_dict.keys():
-            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
-            tweet.similarId = tweets_dict[tweet_render['text']]
-            tweet.save()
-            tweetes_to_render.remove(tweet_render)
-            if (len(tweetes_to_render_temp) > len(tweetes_to_render)+1):
-                tweetes_to_render.append(tweetes_to_render_temp[len(tweetes_to_render)+1])
-                i= i + 1
-        elif(tweet_render.get('labeled_user') == request.user.username):
-            tweetes_to_render.remove(tweet_render)
-            if (len(tweetes_to_render_temp) > len(tweetes_to_render)+1):
-                tweetes_to_render.append(tweetes_to_render_temp[len(tweetes_to_render)+1])
-                i= i + 1
-        else:
-            tweets_dict[tweet_render.get('text')] =  tweet_render.get('twitter_id')
-     
+    print('Tweets saved')
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values() 
+    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
     #print(json.dumps(my_list[0]))
     #tweetes_to_render_temp = Opview.objects.filter(stock=stock_name, labeled = False).values();
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
-    content_return['statuses'] = tweetes_to_render
 
+    #prevent Duplicate 
+    tweets_dict = {}
+    tweets_dict[''] = ''
+    i = 1
+    x = 0
+    print('Handling duplicates')
+    while x < 50:
+        tweet_render=tweetes_to_render[x];
+        if tweet_render.get('text').strip() in tweets_dict.keys():
+            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
+            tweet.similarId = tweets_dict[tweet_render['text']]
+            tweet.save()
+            tweetes_to_render.pop(x); 
+            if (len(tweetes_to_render_temp) > 50+i):
+                tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                i=i+1
+        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
+            tweetes_to_render.remove(tweet_render)
+            if (len(tweetes_to_render_temp) > 50+i):
+                tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                i=i+1
+        else:
+            x=x+1
+            tweets_dict[tweet_render.get('text').strip()] = tweet_render.get('twitter_id')
+
+    content_return['statuses'] = tweetes_to_render[0:50]
+    
+    print('Start stats')
     # Fill in total number of entries in DB for this stock
     # Full DB
     content_return['total_entries_in_DB'] = StockCounter.objects.aggregate(Sum('counter'))['counter__sum']
-    content_return['total_labeled_entries_in_DB'] = LabledCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    if(LabledCounter.objects.aggregate(Sum('counter'))['counter__sum'] != None):
+        content_return['total_labeled_entries_in_DB'] = LabledCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    else:
+        content_return['total_labeled_entries_in_DB'] = 0
     content_return['total_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'relevant' "}).aggregate(Sum('counter'))['counter__sum']
     content_return['total_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'irrelevant' "}).aggregate(Sum('counter'))['counter__sum']
     content_return['total_positive_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'positive' "}).aggregate(Sum('counter'))['counter__sum']
@@ -773,57 +1175,64 @@ def get_tweets(request):
         content_return['stock_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'neutral' "}).values()[0]['counter']
     except:
         content_return['stock_neutral_labeled_entries_in_DB'] = 0
- 
+    print('Done')
     return content_return 
+
+def getSimilarlabeling():
+    duplicate_tweetes = Opinion.objects.exclude(similarId='').values();
+    for tweet in duplicate_tweetes:
+        parent_tweet =  Opinion.objects.filter(twitter_id = tweet.get("similarId"))
+        tweet["voted_relevancy"] = parent_tweet.parent_tweet
+        tweet["voted_sentiment"] = parent_tweet.voted_sentiment
+        tweet.save()
 
 @ajax
 def get_correction(request):
     relevancy = request.POST['relevancy']
     sentiment = request.POST['sentiment']
     tweet_id = request.POST['tweet_id']
-    stock = request.POST['stock']
+    stock_name = request.POST['stock']
     #print(tweet_id)
     
-    
     try:
-        tweet = Opinion.objects.filter(twitter_id=tweet_id)[0]
-        if(relevancy == 'none'):
-            if(tweet.sentiment == 'none' or tweet.sentiment == ''):
+        tweet = Opinion.objects.filter(twitter_id=tweet_id, stock=stock_name)[0]
+        if(relevancy == 'none' or relevancy == None):
+            if(tweet.sentiment == 'none' or tweet.sentiment == '' or tweet.sentiment==None):
                 tweet.sentiment = sentiment
                 tweet.voted_sentiment = sentiment
-            elif(tweet.sentiment_second == 'none' or tweet.sentiment_second == ''):
+            elif(tweet.sentiment_second == 'none' or tweet.sentiment_second == '' or tweet.sentiment_second == None):
                 tweet.sentiment_second = sentiment
                 if(tweet.sentiment == tweet.sentiment_second):
                     tweet.voted_sentiment = sentiment
-            elif(tweet.sentiment_third == 'none' or tweet.sentiment_third == ''):
+            elif(tweet.sentiment_third == 'none' or tweet.sentiment_third == '' or tweet.sentiment_third ==  None):
                 tweet.sentiment_third = sentiment
-                if(tweet.voted_sentiment == 'none' or tweet.voted_sentiment ==''):
-                    if(sentiment == tweet.sentiment): 
+                if(tweet.voted_sentiment == 'none' or tweet.voted_sentiment =='' or tweet.voted_sentiment == None):
+                    if(sentiment == tweet.sentiment):
                         tweet.voted_sentiment = sentiment
                     elif(sentiment == tweet.sentiment_second):
                         tweet.voted_sentiment = sentiment
                     else:
-                        tweet.voted_sentiment = 'none'       
-                                
+                        tweet.voted_sentiment = None
+
             #print('Sentiment')
-        elif (sentiment == 'none'):
-            if(tweet.relevancy == 'none' or tweet.relevancy == ''):
+        elif (sentiment == 'none' or sentiment == None):
+            if(tweet.relevancy == 'none' or tweet.relevancy == '' or tweet.relevancy == None):
                 tweet.relevancy = relevancy
                 if request.user.is_authenticated():
                     tweet.labeled_user = request.user.username
-            elif(tweet.relevancy_second == 'none' or tweet.relevancy_second == ''):
+            elif(tweet.relevancy_second == 'none' or tweet.relevancy_second == '' or tweet.relevancy_second == None):
                 tweet.relevancy_second = relevancy
                 if request.user.is_authenticated():
                     tweet.labeled_user_second = request.user.username
-            elif(tweet.relevancy_third == 'none' or tweet.relevancy_third == ''):
-                tweet.relevancy_third = relevancy 
+            elif(tweet.relevancy_third == 'none' or tweet.relevancy_third == '' or tweet.relevancy_third ==  None):
+                tweet.relevancy_third = relevancy
                 if request.user.is_authenticated():
-                    tweet.labeled_user_third = request.user.username        
+                    tweet.labeled_user_third = request.user.username
             #print('Relevance')
-        
-        if(((tweet.relevancy != 'none') & (tweet.relevancy != '')) & ((tweet.sentiment != 'none') & (tweet.sentiment != ''))
-            & ((tweet.relevancy_second != 'none') & (tweet.relevancy_second != '')) & ((tweet.sentiment_second != 'none') & (tweet.sentiment_second != ''))
-            & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '')) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != ''))):
+
+        if(((tweet.relevancy != 'none') & (tweet.relevancy != '') & (tweet.relevancy != None)) & ((tweet.sentiment != 'none') & (tweet.sentiment != '') & (tweet.sentiment != None))
+            & ((tweet.relevancy_second != 'none') & (tweet.relevancy_second != '') & (tweet.relevancy_second != None)) & ((tweet.sentiment_second != 'none') & (tweet.sentiment_second != '')& (tweet.sentiment_second != None))
+            & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '') & (tweet.relevancy_third != None)) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != '') & (tweet.sentiment_third != None))):
             tweet.labeled = True
             x = 0
             y = 0
@@ -833,22 +1242,17 @@ def get_correction(request):
             if(tweet.relevancy_second == 'relevant' ):
                 y = 1
             if(tweet.relevancy_third == 'relevant' ):
-                z = 1     
-            tweet.votel_relevancy = ((x & y) | (x & z) | (y & z))
-             
-        
-            
-        tweet.save()
-        
-                    
+                z = 1
+            tweet.voted_relevancy = ((x & y) | (x & z) | (y & z))
+            #print(tweet.votel_relevancy)
+        tweet.save() 
+
     except Exception as e:
         print('Unexpected error')
 
-    
     #tweet.save()
-    
     #retrain()
-    
+
 def correction_sentiment(request):
     relevancy = request.POST['relevancy']
     sentiment = request.POST['sentiment']
@@ -879,6 +1283,7 @@ def retrain():
 @login_required
 def news(request):
     #Select Today's News 
+    from django.utils import timezone
     today =datetime.datetime.strftime(timezone.now(),"%Y-%m-%d")
     newsList=Opinion.objects.extra(where={"`pub_date` LIKE CONCAT(  '%%',  '"+today+"',  '%%' ) and `source` != 'twitter.com' "}).values()
     
@@ -900,6 +1305,31 @@ def news(request):
         })
     )
 
+
+def runPriceCrawling():
+    urlstr = 'http://www.marketstoday.net/markets/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9/Companies/1/ar/'
+    fileHandle = urllib.request.urlopen(urlstr)
+    html = fileHandle.read()
+    soup = BeautifulSoup(html)
+    #print(soup)
+    from pytz import timezone 
+    localtz = timezone('UTC')
+    time_in_site=localtz.localize(parse(soup.findAll('span', attrs={'class':'tradhour'})[0].text.split('\n', 1)[1].split(" :")[1].replace('(local time)\r\n','',1)));
+    for b in soup.findAll('tr', attrs={'class':'symbolflip'})[1:]:
+        stockname=b.find('a', attrs={'class':'jTip'}).text
+        price=b.findAll('td')[1].text
+        #print(price_mapping[stockname])
+        #print(price)
+        try:
+            item = StocksPrices()
+            item.stock_name=price_mapping[stockname]
+            item.stock_price=price
+            item.time=time_in_site
+            item.save()
+        except:
+            pass
+    return True
+
 def runNewsCrawling():
     rssPage = urllib.request.urlopen('http://www.cma.org.sa/Ar/News/_layouts/listfeed.aspx?List=%7B0622219A-483C-46C4-A066-AA4EDEDD0952%7D')
     rssFeed = minidom.parse(rssPage)
@@ -912,12 +1342,13 @@ def runNewsCrawling():
             Op.text=a.childNodes[1].nodeValue
         #for a in item.getElementsByTagName("pubDate"):
         #    Op.pub_date=a.childNodes[0].nodeValue
-        Op.pub_date=str(timezone.now())
-        Op.twitter_id = str(timezone.now())
+        Op.pub_date= str(datetime.datetime.utcnow())
+        Op.twitter_id = str(datetime.datetime.utcnow())
         Op.user_id = 'none'
         Op.created_at = 'none'
         Op.user_followers_count = 0
         Op.user_profile_image_url = 'none'
+        Op.media_url= 'none'
         Op.stock = 'none'
         Op.labeled = False
         Op.relevancy = 'none'

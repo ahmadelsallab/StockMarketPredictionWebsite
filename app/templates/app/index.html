@@ -7,9 +7,10 @@
     {% load staticfiles %}
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/jqcloud.css' %}" />
     <script src="{% static 'app/scripts/modernizr-2.6.2.js' %}"></script>
 </head>
-
+<div id="debug" ></div>
 <body id="index_body">
     <div id="header_login" class="container body-content">
         <a id="logo" href="#">KALAMACOM</a>
@@ -23,7 +24,10 @@
             <button type="submit" class="btn">Sign In</button>
         </form>
     </div>
-
+    <div id="word_cloud">
+        <div id="word_cloud_container" style="width: 550px; height: 350px; backgroundColor:'#FFFFFF'">
+        <div id="watermark" style="font-size:15px;">www.kalamacom.com</div></div>
+    </div>
     <div class="container body-content">
         <div id="registration_div">
             <h2 id="home_welcome">WELCOME TO KALAMACOM</h2>
@@ -51,7 +55,29 @@
             });
         });
     </script>
-    {% block scripts %}{% endblock %}
+    {% block scripts %}
+    <script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+    <script src="{% static 'app/scripts/jqcloud-1.0.4.min.js' %}"></script>   
+    <script type="text/javascript">
+        
+        $(window).load(function () {
+        //$('#debug').append('<div id="dd"><font color="white">' + 'Hello' + '</font></div>');
+            var screenWidth = document.documentElement.clientWidth;
+            var screenHeight = document.documentElement.clientHeight;
+            
+            ajaxPost('/get_stocks_weights', {}, function (content) {
+                var word_list = []
+                word_list = content
+                //console.debug(word_list)
+                $("#word_cloud_container").jQCloud(word_list,{width:screenWidth,height:500});    
+                
+            });
+        });
+
+     
+    </script>
+
+    {% endblock %}
 
 </body>
 </html>

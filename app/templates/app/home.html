@@ -5,13 +5,25 @@
 
 
 <div id="debug"></div>
-<div id="word_cloud">
-    <div id="word_cloud_container" style="width: 550px; height: 350px; border: 1px solid #ccc;">
-    <div id="watermark" style="font-size:15px;">www.kalamacom.com</div></div>
-</div>
 <div id="main_content">
     <h1 class="page-header" align="right">التغريدات</h1>
-    <div id="stats"></div>
+    <table style="width:100%">
+    <tr class="controller">
+    <td style="width:40%; height:30px;"></td>
+    <td>
+	<div class="controller" id="controller1" style="width: 700px; height: 30px;">
+	<input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
+	</div>
+    </td>
+    </tr>
+    <tr>
+    <td style="width:40%"><div id="stats"></div></td>
+    <!--
+    <td style="width:60%"><div id="curve_chart" style="width: 700px; height: 350px"></div></td>
+    -->
+    <td style="width:60%"><div id="chart_div" style="width: 700px; height: 350px;"></div></td>
+    </tr>
+    </table>
     <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
@@ -21,7 +33,7 @@
 <div id="side_bar">
     <input id="side_bar_selection" type="text" placeholder="... بحث" class="form-control" />
     <ul id="side_bar_list">
-		<li>﻿تاسي</li>
+		<li>تاسي</li>
 		<li>الرياض</li>
 		<li>الجزيرة</li>
 		<li>استثمار</li>
@@ -192,6 +204,7 @@
 		<li>دور</li>
 		<li>شمس</li>
 		<li>الشرق الاوسط لصناعه</li>
+		<li>ساكو</li>
 
     </ul>
 </div>
@@ -202,9 +215,87 @@
 {% load static %}
 <script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
 <script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
-<script src="{% static 'app/scripts/jqcloud-1.0.4.min.js' %}"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart']
+            }]
+          }"></script>
 <script type="text/javascript">
 
+//      function drawChart_line(stock) {
+//            ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
+//                //console.debug(prz)
+//        var data = google.visualization.arrayToDataTable(prz_line
+//        );
+//
+//        var options = {
+//          title: '',
+//          curveType: 'none',
+//          legend: { position: 'bottom' }
+//        };
+//
+//        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+//
+//        chart.draw(data, options);
+//                });
+//      }
+
+  function drawChart_candle(stock,slid) {
+        ajaxPost('/get_prices_candle', { 'query': stock }, function (prz_candle) {
+	console.debug(prz_candle.length);
+	var l_data = [];
+        for (i = 0; i < slid; i++) {
+        l_data[i]=prz_candle[i+prz_candle.length-slid];
+        }
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Day');
+    data.addColumn('number', 'Low');
+    data.addColumn('number', 'Open');
+    data.addColumn('number', 'Close');
+    data.addColumn('number', 'High');
+    data.addColumn({type: 'string', role: 'tooltip', 'p': {'html': true}});
+    data.addRows(l_data);
+
+    var options = {
+	tooltip: {isHtml: true},
+	legend:'none',
+	backgroundColor:'#F5F5F5',
+	animation: {
+	duration: 2000,
+	startup: true,
+	easing: 'inAndOut'
+	},
+	chartArea: {
+	left: 50,
+	width: '90%',
+	height: '65%',
+	},
+	hAxis: {
+	textStyle:{fontSize: 10}
+	},
+        vAxis: {
+        textStyle:{fontSize: 10}
+        },
+	legend: {
+	position: 'right'
+	},
+        candlestick: {
+        fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
+        risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
+        }
+    };
+
+    var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));
+
+    chart.draw(data, options);
+                });
+  }
+
+             
     function findUrls( text )
     {
         var source = (text || '').toString();
@@ -232,14 +323,17 @@
         var screenWidth = document.documentElement.clientWidth;
         var screenHeight = document.documentElement.clientHeight;
 
+	$(".controller").hide()
         $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
         $("#main_content").width(screenWidth - 270);
-        ajaxPost('/get_stocks_weights', {}, function (content) {
+/*        ajaxPost('/get_stocks_weights', {}, function (content) {
             var word_list = []
             word_list = content
-            $("#word_cloud_container").jQCloud(word_list,{width:900,height:500});    
+            //console.debug(word_list)
+            $("#word_cloud_container").jQCloud(word_list,{width:screenWidth,height:500});    
             
-        }
+        });
+*/        
     });
 
     $('#side_bar_selection').keyup(function () {
@@ -253,12 +347,24 @@
         });
     });
 
+    //$(".slider").on("change", function(){console.debug($(this).value)});
+    $(document.getElementById('slider')).on("change", function(){
+	//console.log(document.getElementById('slider').value);
+	google.setOnLoadCallback(drawChart_candle("ay_haga",document.getElementById('slider').value))
+	});
     $('#side_bar_list > li').click(function () {
+	console.log($('#slider').value);
         $('.select_list_item').removeClass('select_list_item');
         $(this).addClass('select_list_item');
+	//google.setOnLoadCallback(drawChart_line($(this).text()));
+        google.load("visualization", "1", {packages:["corechart"]});
+	google.setOnLoadCallback(drawChart_candle($(this).text(),30));
+	$(".controller").show()
 
         $('#tweets').fadeOut('fast');
+        $("#tweets").animate({ scrollTop: 0 }, "fast");
         $('#tweets_loading').fadeIn('fast');
+
         var stock_name = $(this).text()
         ajaxPost('/get_tweets', { 'query': $(this).text() }, function (content) {
             $('#tweets').html('');
@@ -343,10 +449,10 @@
                                 if(url1!='')
                                 for (var ii = 0; ii < url1.length; ii++)
                                 {
-                                text=text.replace(url1[ii],'<a href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
                                 }
 
-                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><span id='+tweet_id+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><div id='+tweet_id+'" >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
 
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>');
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
@@ -355,6 +461,7 @@
             }
 			
             $('#tweets').fadeIn('fast');
+            $("#tweets").animate({ scrollTop: 0 }, "fast");
             $('#tweets_loading').fadeOut('fast');
         });
     });
@@ -368,21 +475,8 @@
         $('#negative'+item).show();
         $('#neutral'+item).show();
         editstring="<button id= positive"+item+ " class=sentiment type=button value=positive>Positive</button>"
-	console.debug(user_action)
+	//console.debug(user_action)
 	$('#editSentLab'+item).replaceWith(editstring);
-       	if ( $('#corRel'+item).text() != 'Relevant' ) 
-		{
-                        N=(Number(document.getElementById('total_lab').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='total_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB is: " + N + "</font></div>" 
-                        $('#total_lab').hide();
-                        $('#total_lab').replaceWith(newstring);
-                        
-                        N=(Number(document.getElementById('stock_lab').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='stock_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_lab').hide();
-                        $('#stock_lab').replaceWith(newstring);
-		}
-
 
 	if(user_action == "positive")
                         {
@@ -433,25 +527,12 @@
 	var stock = $('.select_list_item').text();
         var user_action = $(this).attr("value")
 	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") ,'tweet_id': item,'stock':stock },function (content) {
-        console.debug($('#positive'+item))
+        //console.debug($('#positive'+item))
         $('#negative'+item).hide();
         $('#neutral'+item).hide();
         editstring="<button id= editSentLab"+item +" class=editSentiment type=button value="+user_action+">Edit My Label</button>"
-	console.debug(editstring)
+	//console.debug(editstring)
        	$('#positive'+item).replaceWith(editstring);
-
-        if ( $('#corRel'+item).text() != 'Relevant' ) 
-		{
-                        N=(Number(document.getElementById('total_lab').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='total_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB is: " + N + "</font></div>" 
-                        $('#total_lab').hide();
-                        $('#total_lab').replaceWith(newstring);
-                        
-                        N=(Number(document.getElementById('stock_lab').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='stock_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_lab').hide();
-                        $('#stock_lab').replaceWith(newstring);
-		}
 
 
 	if(user_action == "positive")
@@ -500,23 +581,9 @@
         $('#corIrrel'+item).show();
         editstring="<button id= corRel"+item+" class=cor type=button value=relevant>Relevant</button>"
         $('#corRel'+item).replaceWith(editstring);
-	console.debug(editstring)
-	console.debug(user_action)
+	//console.debug(editstring)
+	//console.debug(user_action)
 	$('#editRelLab'+item).replaceWith(editstring);
-
-        if ( $('#positive'+item).text() != 'Positive' ) 
-                {
-                        N=(Number(document.getElementById('total_lab').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='total_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB is: " + N + "</font></div>" 
-                        $('#total_lab').hide();
-                        $('#total_lab').replaceWith(newstring);
-                        
-                        stock=user_action 
-                        N=(Number(document.getElementById('stock_lab').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='stock_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_lab').hide();
-                        $('#stock_lab').replaceWith(newstring);
-                }
 
         if(user_action == "relevant")      
                     {
@@ -564,20 +631,6 @@
             $('#corIrrel'+item).hide();
             editstring="<button id= editRelLab"+item +" class=editRel type=button value="+user_action+">Edit My Label</button>"
        	    $('#corRel'+item).replaceWith(editstring);
-
-        if ( $('#positive'+item).text() != 'Positive' ) 
-                {
-                        N=(Number(document.getElementById('total_lab').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='total_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB is: " + N + "</font></div>" 
-                        $('#total_lab').hide();
-                        $('#total_lab').replaceWith(newstring);
-                        
-                        stock=user_action 
-                        N=(Number(document.getElementById('stock_lab').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='stock_lab' class='stat_total'><font color='black'> Total number of fully labeled entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_lab').hide();
-                        $('#stock_lab').replaceWith(newstring);
-                }
 
         if(user_action == "relevant")      
                     {

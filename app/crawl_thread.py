@@ -184,6 +184,7 @@ stock_list=[
 'ﺎﻠﻋﺮﺒﻳ ﻞﻠﺗﺄﻤﻴﻧ',
 'ﻢﺠﻣﻮﻋﺓ ﺎﻠﺤﻜﻳﺭ',
 'الشرق الاوسط لصناعه',
+'ساكو',
 ];
 
 
@@ -361,6 +362,7 @@ synonyms = {
 'ﺎﻠﻋﺮﺒﻳ ﻞﻠﺗﺄﻤﻴﻧ': '(  ﺎﻠﻋﺮﺒﻳ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺮﺑﻯ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺮﺒﻳ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺎﻠﻋﺮﺑﻯ+ﻞﻠﺗﺎﻤﻴﻧ)',
 'ﻢﺠﻣﻮﻋﺓ ﺎﻠﺤﻜﻳﺭ': '( ﺎﻠﺤﻜﻳﺭ )',
 'الشرق الاوسط لصناعه': '( الشرق+الاوسط OR الشرق+الورق OR تاسي+الشرق OR الاوسط+تاسي )',
+'ساكو': '( ساكو OR SACO OR عدد+أدوات OR عدد+ادوات )',
 };
 
 
@@ -538,6 +540,7 @@ full_name = {
 'الصناعات الكهربائيه': 'ﺎﻠﺼﻧﺎﻋﻼﺗ ﺎﻠﻜﻫﺭﺎﺌﻴﻫ',
 'بوان': 'ﺵﺮﻛﺓ ﺏﻭﺎﻧ',
 'الشرق الاوسط لصناعه': 'الشرق الاوسط لصناعه وانتاج الورق',
+'ساكو': 'الشركة السعودية للعدد والأدوات',
 }
 
 
@@ -683,7 +686,10 @@ def runSearch(que,stock):
             item.sentiment= 'none'
             print("--------")
             print(item.text)
-            item.save()
+            if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+                print("naughty"+tweet['text'])
+            else:
+                item.save()
         except: 
             pass  
 
@@ -733,9 +739,10 @@ while True:
             #print(line)
             combinations=synonyms[line]
             #print(combinations)
-            
-            naughty_words=" AND ( -ﺰﺑ -ﻂﻳﺯ -ﻂﻴﻇ -ﺲﻜﺳ -ﺲﻜﺴﻳ -ﺲﺣﺎﻗ -ﺞﻨﺳ -ﻦﻴﻛ -ﺞﻨﺳ -ﺏﺯ -ﺏﺯﺍﺯ -ﻚﺳ -ﻒﺤﻟ -ﻒﺣﻮﻠﻫ -ﺬﺑ )" 
-            query = combinations + qo + naughty_words
+
+            #remove adult content
+            #naughty_words=" AND ( -ﺰﺑ -ﻂﻳﺯ -ﻂﻴﻇ -ﺲﻜﺳ -ﺲﻜﺴﻳ -ﺲﺣﺎﻗ -ﺞﻨﺳ -ﻦﻴﻛ -ﺞﻨﺳ -ﺏﺯ -ﺏﺯﺍﺯ -ﻚﺳ -ﻒﺤﻟ -ﻒﺣﻮﻠﻫ -ﺬﺑ )" 
+            query = combinations + qo 
             #print(query)
             try:
                 time.sleep(5)

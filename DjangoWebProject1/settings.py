@@ -32,6 +32,16 @@ DATABASES = {
     }
 }
 
+'''
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+'''
 LOGIN_URL = '/'
 
 AUTHENTICATION_BACKENDS = ('app.backends.EmailAuthBackend',)
@@ -56,7 +66,7 @@ INSTALLED_APPS = (
 )
 
 CRONJOBS = [
-('05,10,15,20,25,30,35,40,45,50,55  11,12,13,14,15,16 * * 1,2,3,4,7', 'app.views.runPriceCrawling')
+('*/5 *  * * *', 'app.views.runPriceCrawling')
 ]
 
 

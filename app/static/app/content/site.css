@@ -136,6 +136,12 @@ body#index_body{
     overflow: hidden;
     text-align: right;
 }
+#controller {
+    background-color: #F5F8FA;
+    margin: 20px;
+    overflow: hidden;
+    text-align: left;
+}
 #main_content #tweets .tweets img{
     float: left;
     margin-right: 15px;
@@ -161,6 +167,11 @@ body#index_body{
 }
 #main_content #stats .stat_total{
     overflow: hidden;
+    text-align: left;
+    font-weight: bold;
+}
+#main_content #stats .stat{
+    overflow: hidden;
     text-align: center;
     font-weight: bold;
 }
@@ -172,6 +183,8 @@ body#index_body{
 #main_content #stats .stats p{
     color: #333333;
     margin: 0;
+    text-align: center;
+    font-weight: bold;
 }
 #main_content #stats .stats p span{
     color: #428bca;
