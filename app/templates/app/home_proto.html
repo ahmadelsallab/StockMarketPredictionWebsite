@@ -1,0 +1,337 @@
+﻿{% extends "app/layout.html" %}
+
+{% block content %}
+{% load static %}
+
+
+<div id="debug"></div>
+<div id="main_content">
+    <h1 class="page-header" align="right">التغريدات</h1>
+    <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
+    <div id="tweets_loading">
+        <img src="{% static 'app/images/loading.gif' %}" />
+    </div>
+    
+</div>
+<div id="side_bar">
+    <input id="side_bar_selection" type="text" placeholder="... بحث" class="form-control" />
+    <ul id="side_bar_list">
+		<li>تاسي</li>
+		<li>الرياض</li>
+		<li>الجزيرة</li>
+		<li>استثمار</li>
+		<li>السعودي الهولندي</li>
+		<li>السعودي الفرنسي</li>
+		<li>ساب</li>
+		<li>العربي الوطني</li>
+		<li>سامبا</li>
+		<li>الراجحي</li>
+		<li>البلاد</li>
+		<li>الإنماء</li>
+                <li>البنك الأهلي</li>
+		<li>كيمانول</li>
+		<li>بتروكيم</li>
+		<li>سابك</li>
+		<li>سافكو</li>
+		<li>التصنيع</li>
+		<li>اللجين</li>
+		<li>نماء للكيماويات</li>
+		<li>المجموعة السعودية</li>
+		<li>الصحراء للبتروكيماويات</li>
+		<li>ينساب</li>
+		<li>سبكيم العالمية</li>
+		<li>المتقدمة</li>
+		<li>كيان</li>
+		<li>بترو رابغ</li>
+		<li>أسمنت حائل</li>
+		<li>أسمنت نجران</li>
+		<li>اسمنت المدينة</li>
+		<li>اسمنت الشمالية</li>
+		<li>اسمنت ام القرى</li>
+		<li>الاسمنت العربية</li>
+		<li>اسمنت اليمامة</li>
+		<li>اسمنت السعوديه</li>
+		<li>اسمنت القصيم</li>
+		<li>اسمنت الجنوبيه</li>
+		<li>اسمنت ينبع</li>
+		<li>اسمنت الشرقية</li>
+		<li>اسمنت تبوك</li>
+		<li>اسمنت الجوف</li>
+		<li>أسواق ع العثيم</li>
+		<li>المواساة</li>
+		<li>إكسترا</li>
+		<li>دله الصحية</li>
+		<li>رعاية</li>
+		<li>أسواق المزرعة</li>
+		<li>الحمادي</li>
+		<li>ساسكو</li>
+		<li>ثمار</li>
+		<li>مجموعة فتيحي</li>
+		<li>جرير</li>
+		<li>الدريس</li>
+		<li>الحكير</li>
+		<li>الخليج للتدريب</li>
+		<li>الغاز والتصنيع</li>
+		<li>كهرباء السعودية</li>
+		<li>مجموعة صافولا</li>
+		<li>الغذائية</li>
+		<li>سدافكو</li>
+		<li>المراعي</li>
+		<li>أنعام القابضة</li>
+		<li>حلواني إخوان</li>
+		<li>هرفي للأغذية</li>
+		<li>التموين</li>
+		<li>نادك</li>
+		<li>القصيم الزراعيه</li>
+		<li>تبوك الزراعيه</li>
+		<li>الأسماك</li>
+		<li>الشرقية للتنمية</li>
+		<li>الجوف الزراعيه</li>
+		<li>بيشة الزراعيه</li>
+		<li>جازان للتنمية</li>
+		<li>الاتصالات</li>
+		<li>اتحاد اتصالات</li>
+		<li>زين السعودية</li>
+		<li>عذيب للاتصالات</li>
+		<li>المتكاملة</li>
+		<li>التعاونية</li>
+		<li>العربي للتأمين</li>
+		<li>جزيرة تكافل</li>
+		<li>ملاذ للتأمين</li>
+		<li>ميدغلف للتأمين</li>
+		<li>أليانز إس إف</li>
+		<li>سلامة</li>
+		<li>ولاء للتأمين</li>
+		<li>الدرع العربي</li>
+		<li>ساب تكافل</li>
+		<li>سند</li>
+		<li>سايكو</li>
+		<li>وفا للتأمين</li>
+		<li>إتحاد الخليج</li>
+		<li>الأهلي للتكافل</li>
+		<li>الأهلية</li>
+		<li>أسيج</li>
+		<li>التأمين العربية</li>
+		<li>الاتحاد التجاري</li>
+		<li>الصقر للتأمين</li>
+		<li>المتحدة للتأمين</li>
+		<li>الإعادة السعودية</li>
+		<li>بوبا العربية</li>
+		<li>وقاية للتكافل</li>
+		<li>تكافل الراجحي</li>
+		<li>ايس</li>
+		<li>اكسا- التعاونية</li>
+		<li>الخليجية العامة</li>
+		<li>بروج للتأمين</li>
+		<li>العالمية</li>
+		<li>سوليدرتي تكافل</li>
+		<li>الوطنية</li>
+		<li>أمانة للتأمين</li>
+		<li>عناية</li>
+		<li>الإنماء طوكيو م</li>
+		<li>المصافي</li>
+		<li>المتطورة</li>
+		<li>الاحساء للتنميه</li>
+		<li>سيسكو</li>
+		<li>عسير</li>
+		<li>الباحة</li>
+		<li>المملكة</li>
+		<li>تكوين</li>
+		<li>بى سى آى</li>
+		<li>معادن</li>
+		<li>أسترا الصناعية</li>
+		<li>مجموعة السريع</li>
+		<li>شاكر</li>
+		<li>الدوائية</li>
+		<li>زجاج</li>
+		<li>فيبكو</li>
+		<li>معدنية</li>
+		<li>الكيميائيه السعوديه</li>
+		<li>صناعة الورق</li>
+		<li>العبداللطيف</li>
+		<li>الصادرات</li>
+		<li>أسلاك</li>
+		<li>بوان</li>
+		<li>الصناعات الكهربائيه</li>
+		<li>مجموعة المعجل</li>
+		<li>الأنابيب السعودية</li>
+		<li>الخضري</li>
+		<li>الخزف</li>
+		<li>الجبس</li>
+		<li>الكابلات</li>
+		<li>صدق</li>
+		<li>اميانتيت</li>
+		<li>أنابيب</li>
+		<li>الزامل للصناعة</li>
+		<li>البابطين</li>
+		<li>الفخارية</li>
+		<li>مسك</li>
+		<li>البحر الأحمر</li>
+		<li>العقارية</li>
+		<li>طيبة للاستثمار</li>
+		<li>مكة للانشاء</li>
+		<li>التعمير</li>
+		<li>إعمار</li>
+		<li>جبل عمر</li>
+		<li>دار الأركان</li>
+		<li>مدينة المعرفة</li>
+		<li>البحري</li>
+		<li>النقل الجماعي</li>
+		<li>مبرد</li>
+		<li>بدجت السعودية</li>
+		<li>تهامه للاعلان</li>
+		<li>الأبحاث و التسويق</li>
+		<li>طباعة وتغليف</li>
+		<li>الطيار</li>
+		<li>مجموعة الحكير</li>
+		<li>دور</li>
+		<li>شمس</li>
+		<li>الشرق الاوسط لصناعه</li>
+		<li>ساكو</li>
+
+    </ul>
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% load static %}
+<script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+<script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
+<script type="text/javascript">
+
+             
+    function findUrls( text )
+    {
+        var source = (text || '').toString();
+        var urlArray = [];
+        var url;
+        var matchArray;
+    
+        // Regular expression to find FTP, HTTP(S) and email URLs.
+        var regexToken = /(((ftp|https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)|((mailto:)?[_.\w-]+@([\w][\w\-]+\.)+[a-zA-Z]{2,3})/g;
+    
+        // Iterate through any URLs in the text.
+        while( (matchArray = regexToken.exec( source )) !== null )
+        {
+            var token = matchArray[0];
+	    if (token.indexOf("twemoji") < 0) 
+             {urlArray.push(token);}
+            //console.debug(token)
+            //console.debug(token.indexOf("twemoji"))
+        }
+    
+        return urlArray;
+    }
+    
+    $(window).load(function () {
+        var screenWidth = document.documentElement.clientWidth;
+        var screenHeight = document.documentElement.clientHeight;
+
+	$(".controller").hide()
+        $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
+        $("#main_content").width(screenWidth - 270);
+    });
+
+    $('#side_bar_selection').keyup(function () {
+        var value = $(this).val();
+        $("#side_bar_list > li").each(function () {
+            if ($(this).text().indexOf(value) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+    $('#side_bar_list > li').click(function () {
+        $('#tweets').fadeOut('fast');
+        $("#tweets").animate({ scrollTop: 0 }, "fast");
+        $('#tweets_loading').fadeIn('fast');
+
+        var stock_name = $(this).text()
+        ajaxPost('/get_tweets', { 'query': $(this).text() }, function (content) {
+            $('#tweets').html('');
+
+            
+            for (var i = 0; i < content.statuses.length; i++) {
+		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+                //text = content.statuses[i]['text'];
+                date = content.statuses[i].created_at;
+                diff=(new Date()).getTimezoneOffset()*60*1000;
+                date=Date.parse(content.statuses[i]['created_at']);
+
+                date=new Date(date);
+                date1=date.toLocaleDateString();
+                currDate=date1;
+                date2=date.toLocaleTimeString();
+                date=date1+' '+date2;
+                followers_no = content.statuses[i].user_followers_count;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = '@' + content.statuses[i].tweeter_sname;
+                image = content.statuses[i].user_profile_image_url;
+                tweet_id = content.statuses[i].twitter_id;
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+				media_url1='';
+				try{
+				media_url=content.statuses[i].media_url;
+				media_url=media_url.replace(/'/g, '"');
+				media_url1=JSON.parse(media_url);
+				media_url=(media_url1.media[0]).media_url;
+				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+				}catch(err){
+				try{
+				media_url=(media_url1.urls[0]).expanded_url;
+				if(media_url.indexOf("youtu.be")>-1)
+				{
+				startindex=media_url.lastIndexOf('\/');
+				media_url=media_url.substr(startindex);
+                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
+				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+				}
+				else media_url='';
+				}
+				catch(err){media_url='';}
+
+				}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                                url1='';
+                                try{
+                                url1=findUrls(text); 
+                                }
+                                catch(err){}
+                                if(url1!='')
+                                for (var ii = 0; ii < url1.length; ii++)
+                                {
+                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                                }
+
+                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><div id='+tweet_id+'" >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /></div>');
+
+                //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>');
+                //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+                //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>')
+                //$('#tweets').append('<div><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+            }
+			
+            $('#tweets').fadeIn('fast');
+            $("#tweets").animate({ scrollTop: 0 }, "fast");
+            $('#tweets_loading').fadeOut('fast');
+        });
+    });
+    	
+</script>
+
+{% endblock %}

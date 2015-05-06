@@ -16,6 +16,7 @@ body{
     color: white;
     font-size: 15px;
     height: 35px;
+    width: 90px;
     line-height: 0.6;
 }
 .btn:hover{
@@ -50,7 +51,7 @@ body#index_body{
 }
 #login_form button{
     float: left;
-    width: 60px;
+    width: 200px;
 }
 
 #registration_div{

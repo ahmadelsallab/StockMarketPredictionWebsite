@@ -917,12 +917,16 @@ def get_stocks_weights(request):
             sector = stocks_sectors[stock]
         except:
             sector = 'not_found'
+            #sector = 'التأمين'
             print('Stock ' + str(stock.encode("utf-8")) + ' sector not found')
+            #print('Stock ' + stock + ' sector not found')
+            #print('Stock sector not found')
         sector = 'not_found'
         content_return.append({'text':stock, 'weight':weight,'html':{'class':sector}})
-        
+
     return content_return
 
+    
 def get_stock_price(stock):
     try:
         urlstr = 'http://www.marketstoday.net/markets/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9/Companies/1/ar/'
@@ -959,6 +963,28 @@ def index(request):
         })
     )
 
+def index_proto(request):
+    """Renders the home page."""
+    if 'message' in request.session:
+        message = request.session['message']
+        del request.session['message']
+    if 'error' in request.session:
+        message = request.session['error']
+        del request.session['error']
+
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/index_proto.html',
+        context_instance = RequestContext(request,
+        {
+            'title':'Home Page',
+            'message': message if 'message' in locals() else "",
+            'error': message if 'error' in locals() else "",
+        })
+    )
+
+
 #@login_required
 def home(request):
     '''
@@ -983,6 +1009,32 @@ def home(request):
             #'tweets': tweets,
         })
     )
+
+#@login_required
+def home_proto(request):
+    '''
+    from twython import Twython
+    global twitter
+    twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
+    '''
+    
+    # Start the TwitterCrawler      
+    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+    configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+    global twitterCrawler
+    twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+    #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
+
+    return render(
+        request,
+        'app/home_proto.html',
+        context_instance = RequestContext(request,
+        {
+            'title':'Home',
+            #'tweets': tweets,
+        })
+    )
+
 
 @ajax
 def get_prices_line(request):
@@ -1027,6 +1079,7 @@ def get_prices_candle(request):
 @ajax
 def get_tweets(request):
     stock_name = request.POST['query']
+    #print(stock_name)
     content_return = {}
     #query = stock_name
     #query = synonyms[query]
@@ -1083,6 +1136,7 @@ def get_tweets(request):
                 item.media_url = tweet['entities']
                 item.tweeter_sname = tweet['user']['screen_name']
                 item.tweeter_name = tweet['user']['name']
+                #print('kkkkkkk'+str(tweet['entities']))
                 item.pub_date = str(timezone.now())
                 item.stock = stock_name
                 item.labeled = False
@@ -1357,6 +1411,7 @@ def runNewsCrawling():
         Op.save()
     #Time by seconds
     threading.Timer(86400.0, runNewsCrawling).start()
+    #threading.Timer(60.0, runNewsCrawling).start()
 
 #Crawl the News every 24 hours
 runNewsCrawling()
@@ -1391,6 +1446,21 @@ def about(request):
             'year':datetime.datetime.now().year,
         })
     )
+
+def login_user_proto(request):
+
+    if request.method == 'POST':
+        #logout(request)
+        username = request.POST['username']
+        password = request.POST['password']
+
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return redirect('/home_proto')
+                #return HttpResponseRedirect('/about/')
+    return redirect('/')
 
 def login_user(request):
 
