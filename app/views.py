@@ -1323,8 +1323,9 @@ def get_tweets_proto(request):
     x = 0
     print('Handling duplicates')
     while x < 50:
-        tweet_render=tweetes_to_render[x];
+        
         try:
+            tweet_render=tweetes_to_render[x];
                                 
             # Get the tweet by ID 
             retrievedTweet = dict(twitterCrawler.GetSingleTweetByID(tweet_render.get('twitter_id')))
