@@ -249,7 +249,7 @@
         $('#tweets_loading').fadeIn('fast');
 
         var stock_name = $(this).text()
-        ajaxPost('/get_tweets', { 'query': $(this).text() }, function (content) {
+        ajaxPost('/get_tweets_proto', { 'query': $(this).text() }, function (content) {
             $('#tweets').html('');
 
             
