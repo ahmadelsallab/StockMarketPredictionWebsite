@@ -22,6 +22,22 @@ import threading
 import django_crontab
 #from pytz import timezone
 from dateutil.parser import parse
+from requests_oauthlib import OAuth1
+import requests
+import urllib.parse as urllib_parse
+from twitter import *
+
+request_token_url = 'https://api.twitter.com/oauth/request_token'
+access_url = 'https://api.twitter.com/oauth/access_token'
+authenticate_url = 'https://api.twitter.com/oauth/authenticate'
+base_authorization_url = 'https://api.twitter.com/oauth/authorize'
+
+consumerKey="xNRGvHoz9L4xKGP28m7qbg"
+consumerSecret="oFv4dhBekboNg7pKa2BS0zztHqusr91SIdmKErDaycI"
+accessToken="1846277677-36dTObVu6LfVDSuU72M3HCTCv2g50dYoTxzuAOZ"
+accessTokenSecret="Yu4lZdbebuO3tpof6xYzi4Qy7HZL4aL3YQiCYgsro"
+resource_owner_key = ""
+resource_owner_secret = ""
 
 synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'السعودى الهولندى': 'البنك السعودي الهولندي',
@@ -1622,28 +1638,17 @@ def about(request):
     )
 
 def login_user_proto(request):
-
-    from requests_oauthlib import OAuth1
-    import requests
-
-    request_token_url = 'https://api.twitter.com/oauth/request_token'
-    access_url = 'https://api.twitter.com/oauth/access_token'
-    authenticate_url = 'https://api.twitter.com/oauth/authenticate'
-
-    consumerKey="xNRGvHoz9L4xKGP28m7qbg"
-    consumerSecret="oFv4dhBekboNg7pKa2BS0zztHqusr91SIdmKErDaycI"
-    accessToken="1846277677-36dTObVu6LfVDSuU72M3HCTCv2g50dYoTxzuAOZ"
-    accessTokenSecret="Yu4lZdbebuO3tpof6xYzi4Qy7HZL4aL3YQiCYgsro"
     
     oauth = OAuth1(consumerKey, client_secret=consumerSecret)
     r = requests.post(url=request_token_url, auth=oauth)
-    import urllib.parse as urllib_parse
     credentials = urllib_parse.parse_qs(r.content.decode("utf-8"))
     resource_owner_key = credentials.get('oauth_token')[0]
     resource_owner_secret = credentials.get('oauth_token_secret')[0]
     
-    full_auth_url = authenticate_url + '?oauth_token=' + resource_owner_key
-
+    #full_auth_url = authenticate_url + '?oauth_token=' + resource_owner_key
+    #authorization_url = oauth.authorization_url(base_authorization_url)
+    full_auth_url = base_authorization_url + '?oauth_token=' + resource_owner_key
+    request.session['request_token'] = str(resource_owner_key)
     return redirect(full_auth_url)    
     
     '''
@@ -1661,8 +1666,96 @@ def login_user_proto(request):
     return redirect('/')
     '''
 def twitter_authenticated(request):
-    print('Done')
+    if request.method == 'GET':
+
+        accessToken = request.GET['oauth_token']
+        accessTokenVerifier = request.GET['oauth_verifier']
+        accessTokenSecret = request.session.get('request_token', None)
+        '''
+        oauth = OAuth1(consumerKey, client_secret=consumerSecret)
+        r = requests.post(url=request_token_url, auth=oauth)
+        credentials = urllib_parse.parse_qs(r.content.decode("utf-8"))
+        resource_owner_key = credentials.get('oauth_token')[0]
+        resource_owner_secret = credentials.get('oauth_token_secret')[0]
     
+        oauth = OAuth1(client_key=consumerKey, client_secret=consumerSecret, resource_owner_key=resource_owner_key, resource_owner_secret=resource_owner_secret)
+        r = requests.post(url=access_url, auth=oauth)
+        
+        access_token_from_url = urllib_parse.parse_qs(r.content.decode("utf-8"))
+        
+        
+        username = access_token_from_url['screen_name']
+        '''
+        '''
+        oauth = OAuth1(consumerKey, client_secret=consumerSecret)
+        r = requests.post(url=request_token_url, auth=oauth)
+        credentials = urllib_parse.parse_qs(r.content.decode("utf-8"))
+        resource_owner_key = credentials.get('oauth_token')[0]
+        resource_owner_secret = credentials.get('oauth_token_secret')[0]
+        #from requests_oauthlib import OAuth1Session
+        oauth = OAuth1(consumerKey,
+                              client_secret=consumerSecret,
+                              resource_owner_key=resource_owner_key,
+                              resource_owner_secret=resource_owner_secret,
+                              verifier=accessTokenVerifier)
+        
+        #oauth_tokens = oauth.fetch_access_token(access_url)
+        r = requests.post(url=access_url, auth=oauth)
+        
+        access_token_from_url = urllib_parse.parse_qs(r.content.decode("utf-8"))
+        username = access_token_from_url['screen_name']
+        #password = oauth_tokens['oauth_token_secret']
+        password = accessTokenSecret
+        '''
+        oauth = OAuth1(consumerKey,
+                       client_secret=consumerSecret,
+                       resource_owner_key=accessToken,
+                       resource_owner_secret=accessTokenSecret,
+                       verifier=accessTokenVerifier)
+
+        r = requests.post(url=access_url, auth=oauth)
+        credentials = urllib_parse.parse_qs(r.content.decode("utf-8"))
+        resource_owner_key = credentials.get('oauth_token')[0]
+        resource_owner_secret = credentials.get('oauth_token_secret')[0]
+        '''
+        See http://requests-oauthlib.readthedocs.org/en/latest/oauth1_workflow.html#workflow-example-showing-use-of-both-oauth1-and-oauth1session
+        >>> protected_url = 'https://api.twitter.com/1/account/settings.json'
+        
+        >>> # Using OAuth1Session
+        >>> oauth = OAuth1Session(client_key,
+                                  client_secret=client_secret,
+                                  resource_owner_key=resource_owner_key,
+                                  resource_owner_secret=resource_owner_secret)
+        >>> r = oauth.get(protected_url)
+        
+        >>> # Using OAuth1 auth helper
+        >>> oauth = OAuth1(client_key,
+                           client_secret=client_secret,
+                           resource_owner_key=resource_owner_key,
+                           resource_owner_secret=resource_owner_secret)
+        >>> r = requests.get(url=protected_url, auth=oauth)
+        '''        
+        
+        t = Twitter(auth=OAuth(resource_owner_key,resource_owner_secret, consumerKey,consumerSecret))
+        results = t.account.verify_credentials()
+        username = results['screen_name']
+        password = resource_owner_secret
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                return redirect('/home')
+                #return HttpResponseRedirect('/about/')
+    return render(
+        request,
+        'app/signup.html',
+        context_instance = RequestContext(request,
+        {
+            'twitter_username':username,
+        })
+    )                
+
+        
 def login_user(request):
 
     if request.method == 'POST':
@@ -1676,7 +1769,31 @@ def login_user(request):
                 login(request, user)
                 return redirect('/home')
                 #return HttpResponseRedirect('/about/')
-    return redirect('/')
+    return redirect('/register')
+
+def twitter_register(request):
+    
+    if request.method == 'POST':
+        from app.forms import UserForm
+        user_form = UserForm(data=request.POST)
+        #user_form.data['username'] = request.session.get('twitter_username', None)
+        from app.models import User
+        if user_form.is_valid() :
+            user = user_form.save()
+
+            user.set_password(user.password)
+            user.save()
+            new_user = User()
+            new_user.username = request.POST['username']
+            new_user.email = request.POST['email']
+            new_user.save()
+            #request.session['message'] = 'registration done please login'
+            return redirect("/home")
+            #return render(request, 'app/site_layout.html', {'message':'registration done please login'})
+        else:
+            request.session['error'] = user_form.errors
+            #return redirect("/prototype")
+            return render(request, 'app/signup.html', {'error':user_form.errors})
 
 def register(request):
     

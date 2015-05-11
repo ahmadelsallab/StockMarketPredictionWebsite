@@ -29,6 +29,7 @@ urlpatterns = patterns('',
     url(r'^login_proto', 'app.views.login_user_proto', name='login_proto'),
     url(r'^login', 'app.views.login_user', name='login'),
     url(r'^register', 'app.views.register', name='register'),
+    url(r'^twitter_register', 'app.views.twitter_register', name='twitter_register'),
     url(r'^logout$', 'django.contrib.auth.views.logout', {'next_page': '/prototype',}, name='logout'),
     url(r'^news', 'app.views.news', name='news'),
     # Uncomment the admin/doc line below to enable admin documentation:

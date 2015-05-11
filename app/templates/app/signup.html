@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Kalamacom</title>
+    {% load staticfiles %}
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/bootstrap.min.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'app/content/jqcloud.css' %}" />
+    <script src="{% static 'app/scripts/modernizr-2.6.2.js' %}"></script>
+</head>
+<div id="debug" ></div>
+<body id="index_body">
+
+    <div class="container body-content">
+        <div id="registration_div">
+            <h2 id="home_welcome">WELCOME TO KALAMACOM</h2>
+            <a id="sign_up_button" class="btn">SIGN UP</a>
+            <form action="/twitter_register" method="post" class="form-horizontal" id="registration_form">
+                {% csrf_token %}
+                <input type="hidden" name="username" value={{ twitter_username }} class="form-control" required />                
+                <input type="email" name="email" placeholder="Email" class="form-control" required />
+                <input type="password" name="password" id="password" placeholder="Password" class="form-control" required />
+                <input type="submit" value="Sign Up" class="btn btn-default" />
+            </form>
+        </div>
+    </div>
+    {{ message }} 
+    {{ error }} 
+
+    <script src="{% static 'app/scripts/jquery-1.10.2.js' %}"></script>
+    <script src="{% static 'app/scripts/bootstrap.js' %}"></script>
+    <script src="{% static 'app/scripts/respond.js' %}"></script>
+    <script src="{% static 'app/scripts/jquery.validate.min.js' %}"></script>
+    <script>
+        $('#sign_up_button').click(function () {
+            $('#sign_up_button').fadeOut('fast', function () {
+                $('#registration_div form').fadeIn('fast');
+            });
+        });
+    </script>
+    {% block scripts %}
+    <script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+    <script src="{% static 'app/scripts/jqcloud-1.0.4.min.js' %}"></script>   
+
+
+    {% endblock %}
+
+</body>
+</html>

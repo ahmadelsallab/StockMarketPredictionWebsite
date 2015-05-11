@@ -74,3 +74,7 @@ class SentimentCounter(models.Model):
     stock = models.CharField(max_length=40)
     sentiment = models.CharField(max_length=200)
     counter = models.BigIntegerField(max_length=21)
+    
+class User(models.Model):
+    username = models.CharField(max_length=200)
+    email = models.CharField(max_length=200)
