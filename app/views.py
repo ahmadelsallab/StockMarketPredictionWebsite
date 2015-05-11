@@ -1739,21 +1739,23 @@ def twitter_authenticated(request):
         t = Twitter(auth=OAuth(resource_owner_key,resource_owner_secret, consumerKey,consumerSecret))
         results = t.account.verify_credentials()
         username = results['screen_name']
-        password = resource_owner_secret
-        user = authenticate(username=username, password=password)
-        if user is not None:
-            if user.is_active:
-                login(request, user)
-                return redirect('/home')
-                #return HttpResponseRedirect('/about/')
-    return render(
-        request,
-        'app/signup.html',
-        context_instance = RequestContext(request,
-        {
-            'twitter_username':username,
-        })
-    )                
+        #password = resource_owner_secret
+        #user = authenticate(username=username, password=password)
+        from app.models import User
+        
+        try:
+            user = User.objects.get(username=username)
+            return redirect('/home_proto') 
+               
+        except User.DoesNotExist:
+            return render(
+                            request,
+                            'app/signup.html',
+                            context_instance = RequestContext(request,
+                            {
+                                'twitter_username':username,
+                            }))
+    
 
         
 def login_user(request):
@@ -1788,7 +1790,7 @@ def twitter_register(request):
             new_user.email = request.POST['email']
             new_user.save()
             #request.session['message'] = 'registration done please login'
-            return redirect("/home")
+            return redirect("/home_proto")
             #return render(request, 'app/site_layout.html', {'message':'registration done please login'})
         else:
             request.session['error'] = user_form.errors
