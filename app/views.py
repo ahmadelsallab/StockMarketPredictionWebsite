@@ -1332,29 +1332,30 @@ def get_tweets_proto(request):
             
             # Update the text in the tweet data
             tweet_text = retrievedTweet['text']
+            tweet_render['text'] = tweet_text
+            if tweet_text.strip() in tweets_dict.keys():
+                tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
+                tweet.similarId = tweets_dict[tweet_render['text']]
+                tweet.save()
+                tweetes_to_render.pop(x); 
+                if (len(tweetes_to_render_temp) > 50+i):
+                    tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                    i=i+1
+            elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
+                tweetes_to_render.remove(tweet_render)
+                if (len(tweetes_to_render_temp) > 50+i):
+                    tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                    i=i+1
+            else:
+                x=x+1
+                tweets_dict[tweet_render.get('text').strip()] = tweet_render.get('twitter_id')
+
         except Exception as e:
             # Rate limit exceeded
             print('Error: ' + str(e)) 
             if('Twitter sent status 429' in str(e)):
                 # Sleep 15 min, only 180 calls permitted per 15 min
                 time.sleep(900)
-        tweet_render['text'] = tweet_text
-        if tweet_text.strip() in tweets_dict.keys():
-            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
-            tweet.similarId = tweets_dict[tweet_render['text']]
-            tweet.save()
-            tweetes_to_render.pop(x); 
-            if (len(tweetes_to_render_temp) > 50+i):
-                tweetes_to_render.append(tweetes_to_render_temp[49+i])
-                i=i+1
-        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
-            tweetes_to_render.remove(tweet_render)
-            if (len(tweetes_to_render_temp) > 50+i):
-                tweetes_to_render.append(tweetes_to_render_temp[49+i])
-                i=i+1
-        else:
-            x=x+1
-            tweets_dict[tweet_render.get('text').strip()] = tweet_render.get('twitter_id')
 
     content_return['statuses'] = tweetes_to_render[0:50]
     
@@ -1622,6 +1623,30 @@ def about(request):
 
 def login_user_proto(request):
 
+    from requests_oauthlib import OAuth1
+    import requests
+
+    request_token_url = 'https://api.twitter.com/oauth/request_token'
+    access_url = 'https://api.twitter.com/oauth/access_token'
+    authenticate_url = 'https://api.twitter.com/oauth/authenticate'
+
+    consumerKey="xNRGvHoz9L4xKGP28m7qbg"
+    consumerSecret="oFv4dhBekboNg7pKa2BS0zztHqusr91SIdmKErDaycI"
+    accessToken="1846277677-36dTObVu6LfVDSuU72M3HCTCv2g50dYoTxzuAOZ"
+    accessTokenSecret="Yu4lZdbebuO3tpof6xYzi4Qy7HZL4aL3YQiCYgsro"
+    
+    oauth = OAuth1(consumerKey, client_secret=consumerSecret)
+    r = requests.post(url=request_token_url, auth=oauth)
+    import urllib.parse as urllib_parse
+    credentials = urllib_parse.parse_qs(r.content.decode("utf-8"))
+    resource_owner_key = credentials.get('oauth_token')[0]
+    resource_owner_secret = credentials.get('oauth_token_secret')[0]
+    
+    full_auth_url = authenticate_url + '?oauth_token=' + resource_owner_key
+
+    return redirect(full_auth_url)    
+    
+    '''
     if request.method == 'POST':
         #logout(request)
         username = request.POST['username']
@@ -1634,7 +1659,10 @@ def login_user_proto(request):
                 return redirect('/home_proto')
                 #return HttpResponseRedirect('/about/')
     return redirect('/')
-
+    '''
+def twitter_authenticated(request):
+    print('Done')
+    
 def login_user(request):
 
     if request.method == 'POST':
