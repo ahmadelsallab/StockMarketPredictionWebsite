@@ -99,17 +99,19 @@ body#index_body{
 .body-content #main_content{
     float: left;
     background-color: white;
-    width: auto;
+    width: 1129;
 }
 
 /************* home *************/
 #side_bar_selection{
     width: 160px;
     margin: 20px;
+    align: right;
 }
 #side_bar_list{
     list-style: none;
     padding: 0;
+    align: right;
 }
 #side_bar_list li{
     height: 40px;
@@ -117,6 +119,7 @@ body#index_body{
     padding: 0 20px;
     line-height: 40px;
     cursor: pointer;
+    align: right;
 }
 #side_bar_list li:hover,
 #side_bar_list li.select_list_item{
@@ -136,6 +139,8 @@ body#index_body{
     margin: 20px;
     overflow: hidden;
     text-align: right;
+    dispay: inline-block;
+    align: right;
 }
 #controller {
     background-color: #F5F8FA;

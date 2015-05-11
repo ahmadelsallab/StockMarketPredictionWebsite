@@ -1322,7 +1322,7 @@ def get_tweets_proto(request):
     i = 1
     x = 0
     print('Handling duplicates')
-    while x < 50:
+    while x < min(50, len(tweetes_to_render)):
         
         try:
             tweet_render=tweetes_to_render[x];
