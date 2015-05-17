@@ -31,6 +31,7 @@ class Opinion(models.Model):
     voted_relevancy = models.CharField(max_length=40)
     voted_sentiment =  models.CharField(max_length=40)
     labeled = models.BooleanField(default=False)
+    manual_labeled = models.BooleanField(default=False)
     similarId = models.CharField(max_length=40)
     '''
     def render_to_response(self, context, **response_kwargs):

@@ -203,8 +203,9 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'شمس': 'شمس',
 'مجموعة الحكير': 'مجموعة الحكير',
 'بوان': 'بوان',
-'الشرق الاوسط لصناعه':'شركة الشرق الاوسط لصناعة وانتاج الورق',
+'ميبكو':'شركة الشرق الاوسط لصناعة وانتاج الورق',
 'ساكو': 'الشركة السعودية للعدد والأدوات',
+'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
 }
 
 
@@ -381,8 +382,9 @@ combination = {
 'جزيرة تكافل': '( ﺝﺰﻳﺮﻫ+ﺖﻛﺎﻘﻟ OR ﺝﺰﻳﺭﺓ+ﺖﻛﺎﻔﻟ )',
 'العربي للتأمين': '(  ﺎﻠﻋﺮﺒﻳ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺮﺑﻯ+ﻞﻠﺗﺄﻤﻴﻧ OR ﺎﻠﻋﺮﺒﻳ+ﻞﻠﺗﺎﻤﻴﻧ OR ﺎﻠﻋﺮﺑﻯ+ﻞﻠﺗﺎﻤﻴﻧ)',
 'مجموعة الحكير': '( ﺎﻠﺤﻜﻳﺭ )',
-'الشرق الاوسط لصناعه': '( الشرق+الاوسط OR الشرق+الورق OR تاسي+الشرق OR الاوسط+تاسي )',
+'ميبكو': '( الشرق+الاوسط OR الشرق+الورق OR تاسي+الشرق OR الاوسط+تاسي )',
 'ساكو': '( ساكو OR SACO OR عدد+أدوات OR عدد+ادوات )',
+'الشركة السعودية للخدمات الأرضية': 'الشركة السعودية للخدمات الأرضية',
 };
 
 
@@ -548,7 +550,9 @@ stock_prices_names_mapping_tbl = {'تاسي':'تاسي',
 'الفنادق':'الفنادق',
 'شمس':'شمس',
 'بوان':'بوان',
+'ميبكو':'ميبكو',
 'ساكو':'ساكو',
+'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
 }
 
 
@@ -730,6 +734,7 @@ price_mapping={
 'HSBC Saudi 20': 'none',
 'Falcom 30': 'none',
 'Falcom petrochemical': 'none',
+'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
 }
 
 stocks_sectors = {'الاهلي':'المصارف والخدمات المالية', 
@@ -904,6 +909,7 @@ stocks_sectors = {'الاهلي':'المصارف والخدمات المالية
 'HSBC Saudi 20':'صناديق المؤشرات المتداولة', 
 'Falcom 30':'صناديق المؤشرات المتداولة', 
 'Falcom petrochemical':'صناديق المؤشرات المتداولة', 
+'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
 }
 
 
@@ -1056,18 +1062,23 @@ def home_proto(request):
 def get_prices_line(request):
     stock_name = request.POST['query']
     content_return = {}
+    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+    f_in = open(os.path.join(PROJECT_DIR, 'app', 'year_prices'), 'r', encoding='utf-8')
+    lines = f_in.readlines()
+    flag=0
+    content_return = [];
+    for line in reversed(lines):
+        #print(line)
+        l=line.split(',')
+        if(l[0]=='<ticker>'):
+            continue;
+        if(l[0]=='SIBC'):
+            flag=1
+            content_return.append([l[1][:4]+'-'+l[1][5:6]+'-'+l[1][6:],float(l[5])]);
+        elif(flag==1):
+            break
 
-    prz = StocksPrices.objects.filter(stock_name=stock_name).order_by('-id')[0:200][::-1]
-    
-    x=[]
-    y=[]
-    content_return=[["date","price"]]
-    w=0
-    for record in prz:
-        content_return.append([record.time.strftime('%Y %m %d %H:%M:%S'),record.stock_price]);
-        w=w+1
-
-    return content_return;
+    return content_return[0:100];
 
 @ajax
 def get_prices_candle(request):
@@ -1078,7 +1089,7 @@ def get_prices_candle(request):
     lines = f_in.readlines()
     flag=0
     content_return = [];
-    for line in lines:
+    for line in reversed(lines):
         #print(line)
         l=line.split(',')
         if(l[0]=='<ticker>'):
@@ -1089,13 +1100,13 @@ def get_prices_candle(request):
         elif(flag==1):
             break
     #print(content_return);
-    return content_return[0:100][::-1];
+    return content_return[0:100];
+
 
 #@login_required
 @ajax
 def get_tweets(request):
     stock_name = request.POST['query']
-    #print(stock_name)
     content_return = {}
     #query = stock_name
     #query = synonyms[query]
@@ -1152,7 +1163,6 @@ def get_tweets(request):
                 item.media_url = tweet['entities']
                 item.tweeter_sname = tweet['user']['screen_name']
                 item.tweeter_name = tweet['user']['name']
-                #print('kkkkkkk'+str(tweet['entities']))
                 item.pub_date = str(timezone.now())
                 item.stock = stock_name
                 item.labeled = False
@@ -1183,9 +1193,29 @@ def get_tweets(request):
     print('Handling duplicates')
     while x < 50:
         tweet_render=tweetes_to_render[x];
-        if tweet_render.get('text').strip() in tweets_dict.keys():
+        tweet_render_text=tweet_render.get('text').strip()
+        tweet_render_text=re.sub(r"RT @\w*\w: ", '', tweet_render_text, flags=re.MULTILINE)
+        tweet_render_text=re.sub(r"...", '', tweet_render_text, flags=re.MULTILINE)
+        try:
+            urls=re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', tweet_render_text);
+            for i in range(0,len(urls)):
+                rep='r\''+urls[i]+'\''
+                tweet_render_text=re.sub(r""+urls[i]+"", '', tweet_render_text, flags=re.MULTILINE)
+        except:
+            pass
+    
+        if tweet_render_text in tweets_dict.keys():
             tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
-            tweet.similarId = tweets_dict[tweet_render['text']]
+            tweet.similarId = tweets_dict[tweet_render_text]
+            tweet.save()
+            tweetes_to_render.pop(x); 
+            if (len(tweetes_to_render_temp) > 50+i):
+                tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                i=i+1
+        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
+            tweetes_to_render.remove(tweet_render)
+            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
+            tweet.similarId = tweets_dict[tweet_render_text]
             tweet.save()
             tweetes_to_render.pop(x); 
             if (len(tweetes_to_render_temp) > 50+i):
@@ -1198,7 +1228,7 @@ def get_tweets(request):
                 i=i+1
         else:
             x=x+1
-            tweets_dict[tweet_render.get('text').strip()] = tweet_render.get('twitter_id')
+            tweets_dict[tweet_render_text] = tweet_render.get('twitter_id')
 
     content_return['statuses'] = tweetes_to_render[0:50]
     
@@ -1478,6 +1508,7 @@ def get_correction(request):
             & ((tweet.relevancy_second != 'none') & (tweet.relevancy_second != '') & (tweet.relevancy_second != None)) & ((tweet.sentiment_second != 'none') & (tweet.sentiment_second != '')& (tweet.sentiment_second != None))
             & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '') & (tweet.relevancy_third != None)) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != '') & (tweet.sentiment_third != None))):
             tweet.labeled = True
+            tweet.manual_labeled = True
             x = 0
             y = 0
             z = 0
@@ -1558,7 +1589,7 @@ def runPriceCrawling():
     #print(soup)
     from pytz import timezone 
     localtz = timezone('UTC')
-    time_in_site=localtz.localize(parse(soup.findAll('span', attrs={'class':'tradhour'})[0].text.split('\n', 1)[1].split(" :")[1].replace('(local time)\r\n','',1)));
+    time_in_site=localtz.localize(parse(soup.findAll('span', attrs={'class':'tradhour'})[0].text.split('\n', 1)[1].split(" :")[1].replace('(local time)\n','',1)));
     for b in soup.findAll('tr', attrs={'class':'symbolflip'})[1:]:
         stockname=b.find('a', attrs={'class':'jTip'}).text
         price=b.findAll('td')[1].text
@@ -1601,7 +1632,6 @@ def runNewsCrawling():
         Op.save()
     #Time by seconds
     threading.Timer(86400.0, runNewsCrawling).start()
-    #threading.Timer(60.0, runNewsCrawling).start()
 
 #Crawl the News every 24 hours
 runNewsCrawling()
