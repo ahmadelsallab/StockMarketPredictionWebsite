@@ -223,58 +223,61 @@
           }"></script>
 <script type="text/javascript">
 function drawTrendlines(stock,slid) {
-	/*
+	
         ajaxPost('/get_stock_volume', { 'query': stock }, function (content) {
-	console.debug(content.length);
-	var l_data = [];
-        for (i = 0; i < slid; i++) {
-        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
-        }
-        */
-      var data = new google.visualization.DataTable();
-        
-      //data.addColumn('string', 'Day');
-     
-      //data.addColumn('number', 'Number of tweets');
-      
-      data.addColumn('timeofday', 'Time of Day');
-      data.addColumn('number', 'Number of tweets');
-	  //data.addRows(l_data);
 
-      data.addRows([
-        [{v: [8, 0, 0], f: '8 am'}, getRandomInt(1, 10)],
-        [{v: [9, 0, 0], f: '9 am'}, getRandomInt(1, 10)],
-        [{v: [10, 0, 0], f:'10 am'}, getRandomInt(1, 10)],
-        [{v: [11, 0, 0], f: '11 am'}, getRandomInt(1, 10)],
-        [{v: [12, 0, 0], f: '12 pm'}, getRandomInt(1, 10)],
-        [{v: [13, 0, 0], f: '1 pm'}, getRandomInt(1, 10)],
-        [{v: [14, 0, 0], f: '2 pm'}, getRandomInt(1, 10)],
-        [{v: [15, 0, 0], f: '3 pm'}, getRandomInt(1, 10)],
-        [{v: [16, 0, 0], f: '4 pm'}, getRandomInt(1, 10)],
-        [{v: [17, 0, 0], f: '5 pm'}, getRandomInt(1, 10)],
-      ]);
-      
-      var options = {
-        title: 'Trend of tweets volume over the day',
-        trendlines: {
-          0: {type: 'polynomial', degree: 3, lineWidth: 5, opacity: .3}
-        },
-        hAxis: {
-          title: 'Time of Day',
-          format: 'h:mm a',
-          viewWindow: {
-            min: [7, 30, 0],
-            max: [17, 30, 0]
-          }
-        },
-        vAxis: {
-          title: 'Number of tweets'
-        }
-      };
-
-      var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
-      chart.draw(data, options);
-                //});
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Number of tweets');
+			  data.addRows(content);
+			  
+			  /*
+		      data.addRows([
+		        [{v: [8, 0, 0], f: '8 am'}, getRandomInt(1, 10)],
+		        [{v: [9, 0, 0], f: '9 am'}, getRandomInt(1, 10)],
+		        [{v: [10, 0, 0], f:'10 am'}, getRandomInt(1, 10)],
+		        [{v: [11, 0, 0], f: '11 am'}, getRandomInt(1, 10)],
+		        [{v: [12, 0, 0], f: '12 pm'}, getRandomInt(1, 10)],
+		        [{v: [13, 0, 0], f: '1 pm'}, getRandomInt(1, 10)],
+		        [{v: [14, 0, 0], f: '2 pm'}, getRandomInt(1, 10)],
+		        [{v: [15, 0, 0], f: '3 pm'}, getRandomInt(1, 10)],
+		        [{v: [16, 0, 0], f: '4 pm'}, getRandomInt(1, 10)],
+		        [{v: [17, 0, 0], f: '5 pm'}, getRandomInt(1, 10)],
+		      ]);
+			  */
+		      
+		      var options = {
+		        title: 'Trend of tweets volume over the day',
+		        trendlines: {
+		          0: {type: 'polynomial', degree: 3, lineWidth: 5, opacity: .3}
+		        },
+		        hAxis: {
+		          title: 'Time of Day',
+		          format: 'h:mm a',
+		          viewWindow: {
+		            min: [7, 30, 0],
+		            max: [17, 30, 0]
+		          }
+		        },
+		        vAxis: {
+		          title: 'Number of tweets'
+		        }
+		      };
+		
+		      var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+		      chart.draw(data, options);
+      	});
 	
     }
 

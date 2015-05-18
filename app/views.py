@@ -1105,14 +1105,28 @@ def get_prices_candle(request):
 @ajax
 def get_stock_volume(request):
     stock_name = request.POST['query']
-    content_return = {}
-    try:
-        weight = StockCounter.objects.extra(where={"`stock` = '"+stock_name+"' "}).values()[0]['counter']
-    except:
-        weight = 0
+    content_return = []
+    now_time = timezone.now()
+    start_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 8, 0, 0,)
+    graph_point = start_point
+    end_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 17, 0, 0,)
+    one_hour = timezone.timedelta(hours=1)
+    while(graph_point <= end_point):
+        prev_graph_point = graph_point
+        graph_point += one_hour
+        all_tweets = Opinion.objects.filter(stock=stock_name).values()
+        w = count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point)
+        content_return.append([{'v':[prev_graph_point.hour,0,0],'f':str(prev_graph_point.hour)}, w]);
+
     return content_return;
 
-
+def count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point):
+    for tweet in all_tweets:
+        tweet_time_stamp = datetime.datetime.strptime(tweet['pub_date'], '%Y-%m-%d %H:%M:%S.%f+00:00')
+        w = 0
+        if((tweet_time_stamp >= prev_graph_point) and (tweet_time_stamp <= graph_point)):
+            w += 1
+    return w
 #@login_required
 @ajax
 def get_tweets(request):
