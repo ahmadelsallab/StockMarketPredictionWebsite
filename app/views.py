@@ -1102,6 +1102,16 @@ def get_prices_candle(request):
     #print(content_return);
     return content_return[0:100];
 
+@ajax
+def get_stock_volume(request):
+    stock_name = request.POST['query']
+    content_return = {}
+    try:
+        weight = StockCounter.objects.extra(where={"`stock` = '"+stock_name+"' "}).values()[0]['counter']
+    except:
+        weight = 0
+    return content_return;
+
 
 #@login_required
 @ajax

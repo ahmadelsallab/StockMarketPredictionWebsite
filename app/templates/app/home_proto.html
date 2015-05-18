@@ -7,7 +7,21 @@
 <div id="debug"></div>
 <div id="main_content" align="right">
     <h1 class="page-header" align="right">التغريدات</h1>
-    <div id="tweets" style=" overflow-y: scroll; height: 2000px; width: auto;"></div>
+    <table style="width:100%">
+    <tr class="controller">
+    <td style="width:40%; height:30px;"></td>
+    <td>
+	<div class="controller" id="controller1" style="width: 700px; height: 30px;">
+	<input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
+	</div>
+    </td>
+    </tr>
+    <tr>
+    <td></td>
+    <td style="width:100%" align="right"><div id="chart_div" align="right" style="width: 700px; height: 350px;"></div></td>
+    </tr>
+    </table>
+    <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
     </div>
@@ -198,9 +212,80 @@
 {% load static %}
 <script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
 <script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart']
+            }]
+          }"></script>
 <script type="text/javascript">
+function drawTrendlines(stock,slid) {
+	/*
+        ajaxPost('/get_stock_volume', { 'query': stock }, function (content) {
+	console.debug(content.length);
+	var l_data = [];
+        for (i = 0; i < slid; i++) {
+        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+        }
+        */
+      var data = new google.visualization.DataTable();
+        
+      //data.addColumn('string', 'Day');
+     
+      //data.addColumn('number', 'Number of tweets');
+      
+      data.addColumn('timeofday', 'Time of Day');
+      data.addColumn('number', 'Number of tweets');
+	  //data.addRows(l_data);
 
-             
+      data.addRows([
+        [{v: [8, 0, 0], f: '8 am'}, getRandomInt(1, 10)],
+        [{v: [9, 0, 0], f: '9 am'}, getRandomInt(1, 10)],
+        [{v: [10, 0, 0], f:'10 am'}, getRandomInt(1, 10)],
+        [{v: [11, 0, 0], f: '11 am'}, getRandomInt(1, 10)],
+        [{v: [12, 0, 0], f: '12 pm'}, getRandomInt(1, 10)],
+        [{v: [13, 0, 0], f: '1 pm'}, getRandomInt(1, 10)],
+        [{v: [14, 0, 0], f: '2 pm'}, getRandomInt(1, 10)],
+        [{v: [15, 0, 0], f: '3 pm'}, getRandomInt(1, 10)],
+        [{v: [16, 0, 0], f: '4 pm'}, getRandomInt(1, 10)],
+        [{v: [17, 0, 0], f: '5 pm'}, getRandomInt(1, 10)],
+      ]);
+      
+      var options = {
+        title: 'Trend of tweets volume over the day',
+        trendlines: {
+          0: {type: 'polynomial', degree: 3, lineWidth: 5, opacity: .3}
+        },
+        hAxis: {
+          title: 'Time of Day',
+          format: 'h:mm a',
+          viewWindow: {
+            min: [7, 30, 0],
+            max: [17, 30, 0]
+          }
+        },
+        vAxis: {
+          title: 'Number of tweets'
+        }
+      };
+
+      var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
+      chart.draw(data, options);
+                //});
+	
+    }
+
+	/**
+	 * Returns a random integer between min (inclusive) and max (inclusive)
+	 * Using Math.round() will give you a non-uniform distribution!
+	 */
+	function getRandomInt(min, max) {
+	    return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+	
     function findUrls( text )
     {
         var source = (text || '').toString();
@@ -227,10 +312,11 @@
     $(window).load(function () {
         var screenWidth = document.documentElement.clientWidth;
         var screenHeight = document.documentElement.clientHeight;
-
+        
 	$(".controller").hide()
         $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
         $("#main_content").width(screenWidth - 270);
+        //google.load('visualization', '1', {packages: ['corechart']});
     });
 
     $('#side_bar_selection').keyup(function () {
@@ -243,7 +329,23 @@
             }
         });
     });
+    
+    $(document.getElementById('slider')).on("change", function(){
+    	//console.log(document.getElementById('slider').value);
+    	google.setOnLoadCallback(drawTrendlines("a",document.getElementById('slider').value))
+    	});
     $('#side_bar_list > li').click(function () {
+    	
+    	/*
+        $('.select_list_item').removeClass('select_list_item');
+        
+        $(this).addClass('select_list_item');
+        */
+        
+        google.load("visualization", "1", {packages:["corechart"]});
+		google.setOnLoadCallback(drawTrendlines($(this).text(),30));
+		$(".controller").show()
+		
         $('#tweets').fadeOut('fast');
         $("#tweets").animate({ scrollTop: 0 }, "fast");
         $('#tweets_loading').fadeIn('fast');
