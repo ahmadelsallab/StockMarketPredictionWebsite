@@ -1121,9 +1121,10 @@ def get_stock_volume(request):
     return content_return;
 
 def count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point):
+    w = 0
     for tweet in all_tweets:
         tweet_time_stamp = datetime.datetime.strptime(tweet['pub_date'], '%Y-%m-%d %H:%M:%S.%f+00:00')
-        w = 0
+        
         if((tweet_time_stamp >= prev_graph_point) and (tweet_time_stamp <= graph_point)):
             w += 1
     return w
