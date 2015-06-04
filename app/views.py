@@ -5,7 +5,7 @@ Definition of views.
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
 from django.template import RequestContext
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django_ajax.decorators import ajax
@@ -26,6 +26,8 @@ from requests_oauthlib import OAuth1
 import requests
 import urllib.parse as urllib_parse
 from twitter import *
+import re
+import gc
 
 request_token_url = 'https://api.twitter.com/oauth/request_token'
 access_url = 'https://api.twitter.com/oauth/access_token'
@@ -726,7 +728,7 @@ price_mapping={
 'دور': 'دور',
 'شمس': 'شمس',
 'الاهلي' : 'البنك الأهلي',
-'صناعات كهربائية': 'الصناعلات الكهرائيه',
+'صناعات كهربائية': 'الصناعات الكهربائيه',
 'بوان': 'بوان',
 'مجموعة الحكير': 'مجموعة الحكير',
 'الشرق الاوسط لصناعه': 'none',
@@ -1124,13 +1126,16 @@ def count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point):
     w = 0
     for tweet in all_tweets:
         tweet_time_stamp = datetime.datetime.strptime(tweet['pub_date'], '%Y-%m-%d %H:%M:%S.%f+00:00')
-        
+
         if((tweet_time_stamp >= prev_graph_point) and (tweet_time_stamp <= graph_point)):
             w += 1
     return w
+
+
 #@login_required
 @ajax
 def get_tweets(request):
+    #gc.collect()
     stock_name = request.POST['query']
     content_return = {}
     #query = stock_name
@@ -1157,7 +1162,7 @@ def get_tweets(request):
         PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
         configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
-        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+##        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
 
     price = 0  
     #price = get_stock_price(stock_name)
@@ -1165,7 +1170,9 @@ def get_tweets(request):
         #import sys
         #import codecs
         #sys.stdout = codecs.getwriter("iso-8859-1")(sys.stdout, 'xmlcharrefreplace')
-        price = StocksPrices.objects.filter(stock_name=""+str(stock_name.encode("utf-8"))+"").order_by('-id')[0].stock_price
+        #price_list = StocksPrices.objects.filter(stock=""+str(stock_name.encode("utf-8"))+"").order_by('-id')
+        price_list = StocksPrices.objects.filter(stock=stock_name).order_by('-id')
+        price = price_list[0].stock_price
         print('Price in DB')
     except:
         price = get_stock_price(stock_name)
@@ -1173,36 +1180,37 @@ def get_tweets(request):
     from django.utils import timezone 
     content_return['price'] = price
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
-    print('Saving tweets')
-    for tweet in tweets:
-        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
-        if(len(tweet_exist) == 0):
-            try:
-                item = Opinion()
-                item.twitter_id = tweet['id_str']
-                item.user_id = tweet['user']['id']
-                item.text = tweet['text']
-                item.created_at = tweet['created_at']
-                item.user_followers_count = tweet['user']['followers_count']
-                item.user_profile_image_url = tweet['user']['profile_image_url']
-                item.media_url = tweet['entities']
-                item.tweeter_sname = tweet['user']['screen_name']
-                item.tweeter_name = tweet['user']['name']
-                item.pub_date = str(timezone.now())
-                item.stock = stock_name
-                item.labeled = False
-                item.source = "twitter.com"
-                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
-                    print(tweet['text'])
-                else:
-                    item.save()
-                item.relevancy = 'none'
-                item.sentiment = 'none'
-                item.labeled_user = 'none'
-            except Exception as e: 
-              pass
-    print('Tweets saved')
-    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values() 
+##    print('Saving tweets')
+##    for tweet in tweets:
+##        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
+##        if(len(tweet_exist) == 0):
+##            try:
+##                item = Opinion()
+##                item.twitter_id = tweet['id_str']
+##                item.user_id = tweet['user']['id']
+##                item.text = tweet['text']
+##                item.created_at = tweet['created_at']
+##                item.user_followers_count = tweet['user']['followers_count']
+##                item.user_profile_image_url = tweet['user']['profile_image_url']
+##                item.media_url = tweet['entities']
+##                item.tweeter_sname = tweet['user']['screen_name']
+##                item.tweeter_name = tweet['user']['name']
+##                item.pub_date = str(timezone.now())
+##                item.stock = stock_name
+##                item.labeled = False
+##                item.source = "twitter.com"
+##                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+##                    print(tweet['text'])
+##                else:
+##                    item.save()
+##                item.relevancy = 'none'
+##                item.sentiment = 'none'
+##                item.labeled_user = 'none'
+##            except Exception as e: 
+##              pass
+##    print('Tweets saved')
+##
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values().order_by('-id')[:800]
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
@@ -1216,11 +1224,11 @@ def get_tweets(request):
     i = 1
     x = 0
     print('Handling duplicates')
-    while x < 50:
+    while x < min(50, len(tweetes_to_render)):
         tweet_render=tweetes_to_render[x];
         tweet_render_text=tweet_render.get('text').strip()
         tweet_render_text=re.sub(r"RT @\w*\w: ", '', tweet_render_text, flags=re.MULTILINE)
-        tweet_render_text=re.sub(r"...", '', tweet_render_text, flags=re.MULTILINE)
+        tweet_render_text=re.sub(r'\.\.\.', '', tweet_render_text, flags=re.MULTILINE)
         try:
             urls=re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', tweet_render_text);
             for i in range(0,len(urls)):
@@ -1228,7 +1236,7 @@ def get_tweets(request):
                 tweet_render_text=re.sub(r""+urls[i]+"", '', tweet_render_text, flags=re.MULTILINE)
         except:
             pass
-    
+
         if tweet_render_text in tweets_dict.keys():
             tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
             tweet.similarId = tweets_dict[tweet_render_text]
@@ -1237,16 +1245,7 @@ def get_tweets(request):
             if (len(tweetes_to_render_temp) > 50+i):
                 tweetes_to_render.append(tweetes_to_render_temp[49+i])
                 i=i+1
-        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
-            tweetes_to_render.remove(tweet_render)
-            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
-            tweet.similarId = tweets_dict[tweet_render_text]
-            tweet.save()
-            tweetes_to_render.pop(x); 
-            if (len(tweetes_to_render_temp) > 50+i):
-                tweetes_to_render.append(tweetes_to_render_temp[49+i])
-                i=i+1
-        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
+        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username) and request.user.username != '':
             tweetes_to_render.remove(tweet_render)
             if (len(tweetes_to_render_temp) > 50+i):
                 tweetes_to_render.append(tweetes_to_render_temp[49+i])
@@ -1255,6 +1254,20 @@ def get_tweets(request):
             x=x+1
             tweets_dict[tweet_render_text] = tweet_render.get('twitter_id')
 
+    print('adding the prices')
+    from datetime import datetime, timedelta
+    for x in range(0,50):
+        tweet_time=datetime.strptime(tweetes_to_render[x]['created_at'],'%a %b %d %X %z %Y')+timedelta(hours=3)
+        done = False
+        i=0
+        while i < len(price_list) and not done:
+            if(tweet_time > datetime.strptime(price_list[i].time.strftime('%a %b %d %X %z %Y'),'%a %b %d %X %z %Y')):
+                #print(price_list[i].time.strftime('%a %b %d %X'))
+                done = True
+                tweetes_to_render[x]['price_time_then']=price_list[i].time.strftime('%a %b %d %I:%M %p')
+                tweetes_to_render[x]['price_then']=price_list[i].stock_price
+            i=i+1
+    
     content_return['statuses'] = tweetes_to_render[0:50]
     
     print('Start stats')
@@ -1301,6 +1314,7 @@ def get_tweets(request):
     except:
         content_return['stock_neutral_labeled_entries_in_DB'] = 0
     print('Done')
+    #gc.collect()
     return content_return 
 
 #@login_required
@@ -1333,7 +1347,7 @@ def get_tweets_proto(request):
         PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
         configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
-        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+        #tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
 
     price = 0  
     #price = get_stock_price(stock_name)
@@ -1341,7 +1355,7 @@ def get_tweets_proto(request):
         #import sys
         #import codecs
         #sys.stdout = codecs.getwriter("iso-8859-1")(sys.stdout, 'xmlcharrefreplace')
-        price = StocksPrices.objects.filter(stock_name=""+str(stock_name.encode("utf-8"))+"").order_by('-id')[0].stock_price
+        price = StocksPrices.objects.filter(stock=""+str(stock_name.encode("utf-8"))+"").order_by('-id')[0].stock_price
         print('Price in DB')
     except:
         price = get_stock_price(stock_name)
@@ -1349,36 +1363,36 @@ def get_tweets_proto(request):
     from django.utils import timezone 
     content_return['price'] = price
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
-    print('Saving tweets')
-    for tweet in tweets:
-        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
-        if(len(tweet_exist) == 0):
-            try:
-                item = Opinion()
-                item.twitter_id = tweet['id_str']
-                item.user_id = tweet['user']['id']
-                item.text = tweet['text']
-                item.created_at = tweet['created_at']
-                item.user_followers_count = tweet['user']['followers_count']
-                item.user_profile_image_url = tweet['user']['profile_image_url']
-                item.media_url = tweet['entities']
-                item.tweeter_sname = tweet['user']['screen_name']
-                item.tweeter_name = tweet['user']['name']
-                #print('kkkkkkk'+str(tweet['entities']))
-                item.pub_date = str(timezone.now())
-                item.stock = stock_name
-                item.labeled = False
-                item.source = "twitter.com"
-                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
-                    print(tweet['text'])
-                else:
-                    item.save()
-                item.relevancy = 'none'
-                item.sentiment = 'none'
-                item.labeled_user = 'none'
-            except Exception as e: 
-              pass
-    print('Tweets saved')
+##    print('Saving tweets')
+##    for tweet in tweets:
+##        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
+##        if(len(tweet_exist) == 0):
+##            try:
+##                item = Opinion()
+##                item.twitter_id = tweet['id_str']
+##                item.user_id = tweet['user']['id']
+##                item.text = tweet['text']
+##                item.created_at = tweet['created_at']
+##                item.user_followers_count = tweet['user']['followers_count']
+##                item.user_profile_image_url = tweet['user']['profile_image_url']
+##                item.media_url = tweet['entities']
+##                item.tweeter_sname = tweet['user']['screen_name']
+##                item.tweeter_name = tweet['user']['name']
+##                #print('kkkkkkk'+str(tweet['entities']))
+##                item.pub_date = str(timezone.now())
+##                item.stock = stock_name
+##                item.labeled = False
+##                item.source = "twitter.com"
+##                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+##                    print(tweet['text'])
+##                else:
+##                    item.save()
+##                item.relevancy = 'none'
+##                item.sentiment = 'none'
+##                item.labeled_user = 'none'
+##            except Exception as e: 
+##              pass
+##    print('Tweets saved')
     tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values() 
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
@@ -1491,64 +1505,62 @@ def get_correction(request):
     sentiment = request.POST['sentiment']
     tweet_id = request.POST['tweet_id']
     stock_name = request.POST['stock']
-    #print(tweet_id)
+    print(tweet_id)
+    print(request.user.username)
+    print(stock_name)
     
-    try:
-        tweet = Opinion.objects.filter(twitter_id=tweet_id, stock=stock_name)[0]
-        if(relevancy == 'none' or relevancy == None):
-            if(tweet.sentiment == 'none' or tweet.sentiment == '' or tweet.sentiment==None):
-                tweet.sentiment = sentiment
+    tweet = Opinion.objects.filter(twitter_id=tweet_id, stock=stock_name)[0]
+    if(relevancy == 'none' or relevancy == None):
+        if(tweet.sentiment == 'none' or tweet.sentiment == '' or tweet.sentiment==None):
+            tweet.sentiment = sentiment
+            tweet.voted_sentiment = sentiment
+        elif(tweet.sentiment_second == 'none' or tweet.sentiment_second == '' or tweet.sentiment_second == None):
+            tweet.sentiment_second = sentiment
+            if(tweet.sentiment == tweet.sentiment_second):
                 tweet.voted_sentiment = sentiment
-            elif(tweet.sentiment_second == 'none' or tweet.sentiment_second == '' or tweet.sentiment_second == None):
-                tweet.sentiment_second = sentiment
-                if(tweet.sentiment == tweet.sentiment_second):
+        elif(tweet.sentiment_third == 'none' or tweet.sentiment_third == '' or tweet.sentiment_third ==  None):
+            tweet.sentiment_third = sentiment
+            if(tweet.voted_sentiment == 'none' or tweet.voted_sentiment =='' or tweet.voted_sentiment == None):
+                if(sentiment == tweet.sentiment):
                     tweet.voted_sentiment = sentiment
-            elif(tweet.sentiment_third == 'none' or tweet.sentiment_third == '' or tweet.sentiment_third ==  None):
-                tweet.sentiment_third = sentiment
-                if(tweet.voted_sentiment == 'none' or tweet.voted_sentiment =='' or tweet.voted_sentiment == None):
-                    if(sentiment == tweet.sentiment):
-                        tweet.voted_sentiment = sentiment
-                    elif(sentiment == tweet.sentiment_second):
-                        tweet.voted_sentiment = sentiment
-                    else:
-                        tweet.voted_sentiment = None
+                elif(sentiment == tweet.sentiment_second):
+                    tweet.voted_sentiment = sentiment
+                else:
+                    tweet.voted_sentiment = None
 
-            #print('Sentiment')
-        elif (sentiment == 'none' or sentiment == None):
-            if(tweet.relevancy == 'none' or tweet.relevancy == '' or tweet.relevancy == None):
-                tweet.relevancy = relevancy
-                if request.user.is_authenticated():
-                    tweet.labeled_user = request.user.username
-            elif(tweet.relevancy_second == 'none' or tweet.relevancy_second == '' or tweet.relevancy_second == None):
-                tweet.relevancy_second = relevancy
-                if request.user.is_authenticated():
-                    tweet.labeled_user_second = request.user.username
-            elif(tweet.relevancy_third == 'none' or tweet.relevancy_third == '' or tweet.relevancy_third ==  None):
-                tweet.relevancy_third = relevancy
-                if request.user.is_authenticated():
-                    tweet.labeled_user_third = request.user.username
-            #print('Relevance')
+        #print('Sentiment')
+    elif (sentiment == 'none' or sentiment == None):
+        if(tweet.relevancy == 'none' or tweet.relevancy == '' or tweet.relevancy == None):
+            tweet.relevancy = relevancy
+            if request.user.is_authenticated():
+                tweet.labeled_user = request.user.username
+        elif(tweet.relevancy_second == 'none' or tweet.relevancy_second == '' or tweet.relevancy_second == None):
+            tweet.relevancy_second = relevancy
+            if request.user.is_authenticated():
+                tweet.labeled_user_second = request.user.username
+        elif(tweet.relevancy_third == 'none' or tweet.relevancy_third == '' or tweet.relevancy_third ==  None):
+            tweet.relevancy_third = relevancy
+            if request.user.is_authenticated():
+                tweet.labeled_user_third = request.user.username
+        #print('Relevance')
 
-        if(((tweet.relevancy != 'none') & (tweet.relevancy != '') & (tweet.relevancy != None)) & ((tweet.sentiment != 'none') & (tweet.sentiment != '') & (tweet.sentiment != None))
-            & ((tweet.relevancy_second != 'none') & (tweet.relevancy_second != '') & (tweet.relevancy_second != None)) & ((tweet.sentiment_second != 'none') & (tweet.sentiment_second != '')& (tweet.sentiment_second != None))
-            & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '') & (tweet.relevancy_third != None)) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != '') & (tweet.sentiment_third != None))):
-            tweet.labeled = True
-            tweet.manual_labeled = True
-            x = 0
-            y = 0
-            z = 0
-            if(tweet.relevancy == 'relevant'):
-                x = 1
-            if(tweet.relevancy_second == 'relevant' ):
-                y = 1
-            if(tweet.relevancy_third == 'relevant' ):
-                z = 1
-            tweet.voted_relevancy = ((x & y) | (x & z) | (y & z))
-            #print(tweet.votel_relevancy)
-        tweet.save() 
-
-    except Exception as e:
-        print('Unexpected error')
+    if(((tweet.relevancy != 'none') & (tweet.relevancy != '') & (tweet.relevancy != None)) & ((tweet.sentiment != 'none') & (tweet.sentiment != '') & (tweet.sentiment != None))
+        & ((tweet.relevancy_second != 'none') & (tweet.relevancy_second != '') & (tweet.relevancy_second != None)) & ((tweet.sentiment_second != 'none') & (tweet.sentiment_second != '')& (tweet.sentiment_second != None))
+        & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '') & (tweet.relevancy_third != None)) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != '') & (tweet.sentiment_third != None))):
+        tweet.labeled = True
+        tweet.manual_labeled = True
+        x = 0
+        y = 0
+        z = 0
+        if(tweet.relevancy == 'relevant'):
+            x = 1
+        if(tweet.relevancy_second == 'relevant' ):
+            y = 1
+        if(tweet.relevancy_third == 'relevant' ):
+            z = 1
+        tweet.voted_relevancy = ((x & y) | (x & z) | (y & z))
+        #print(tweet.votel_relevancy)
+    tweet.save() 
 
     #tweet.save()
     #retrain()
@@ -1622,7 +1634,7 @@ def runPriceCrawling():
         #print(price)
         try:
             item = StocksPrices()
-            item.stock_name=price_mapping[stockname]
+            item.stock=price_mapping[stockname]
             item.stock_price=price
             item.time=time_in_site
             item.save()
@@ -1659,7 +1671,7 @@ def runNewsCrawling():
     threading.Timer(86400.0, runNewsCrawling).start()
 
 #Crawl the News every 24 hours
-runNewsCrawling()
+#runNewsCrawling()
 
 
 @login_required
@@ -1871,4 +1883,6 @@ def register(request):
             request.session['error'] = user_form.errors
             return redirect("/")
            #return render(request, 'app/site_layout.html', {'error':user_form.errors})
+    else:
+        return redirect("/")
 

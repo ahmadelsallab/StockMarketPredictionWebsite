@@ -4,10 +4,12 @@ Django settings for DjangoWebProject1 project.
 
 from os import path
 from django.conf import global_settings
+#import gc
 PROJECT_ROOT = path.dirname(path.abspath(path.dirname(__file__)))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
+#gc.set_debug(gc.DEBUG_LEAK)
 
 ALLOWED_HOSTS = (
     'localhost',
@@ -18,7 +20,7 @@ ADMINS = (
 )
 
 MANAGERS = ADMINS
-
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
@@ -41,7 +43,7 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-'''
+
 LOGIN_URL = '/'
 
 AUTHENTICATION_BACKENDS = ('app.backends.EmailAuthBackend',)

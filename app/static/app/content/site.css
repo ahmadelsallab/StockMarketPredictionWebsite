@@ -96,6 +96,13 @@ body#index_body{
     width: 220px;
     background-color: #2F3239;
 }
+
+.body-content #side_bar #containerUL {
+    float: left;
+    width: 220px;
+    background-color: #2F3239;
+}
+
 .body-content #main_content{
     float: left;
     background-color: white;
@@ -125,6 +132,44 @@ body#index_body{
 #side_bar_list li.select_list_item{
     background-color: #EEEEEE;
 }
+
+/*
+#containerUL li:hover{
+    background-color: #EEEEEE;
+}
+/************* home *************/
+*/
+
+/*
+#containerUL_selection{
+    width: 160px;
+    margin: 20px;
+}
+*/
+
+#containerUL{
+    padding: 1em;
+    list-style: none;
+}
+
+/*
+#containerUL li{
+    height: 40px;
+    color: #428bca;
+    padding: 0 20px;
+    line-height: 40px;
+    cursor: pointer;
+}
+
+
+
+#containerUL_list li:hover,
+#containerUL_list li.select_list_item{
+    background-color: #EEEEEE;
+}
+*/
+
+
 #main_content{
     padding: 20px 25px;
 }
@@ -282,3 +327,24 @@ body#index_body{
 {
 	display:block
 }
+
+
+.store-btn{
+  height: $btnHeight;
+  display: block;
+  a{  
+    float: left;
+    background-color: $gray-dark;
+    color: white;
+    padding: 0 1.3em;
+    font-size: 1.5em;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+    line-height: $btnHeight;
+    text-decoration: none;
+  }
+}
+.store-btn{
+  margin-left: 1em;
+  min-width: 2em;
+}
+

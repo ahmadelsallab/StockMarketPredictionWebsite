@@ -11,202 +11,292 @@
     <tr class="controller">
     <td style="width:40%; height:30px;"></td>
     <td>
-	<div class="controller" id="controller1" style="width: 700px; height: 30px;">
-	<input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
-	</div>
+    <nav id="primary_nav_wrap">
+    <ul>
+      <li>
+        <input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
+      </li>
+      <li><b>  </b></li>
+      <li>Time
+        <ul id="time_list">
+          <li>1W</li>
+          <li>1M</li>
+          <li>3M</li>
+        </ul>
+      </li>
+      <li>Graph
+        <ul id="graph_list">
+          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/line.png' %}" title="" alt="line"> Line</li>
+          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/mountain.png' %}" title="" alt="mountain"> Mountain</li>
+          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/candle.png' %}" title="" alt="candle"> CandleStick</li>
+        </ul>
+      </li>
+    </ul>
+    </nav>
     </td>
     </tr>
     <tr>
     <td style="width:40%"><div id="stats"></div></td>
-    <!--
-    <td style="width:60%"><div id="curve_chart" style="width: 700px; height: 350px"></div></td>
-    -->
-    <td style="width:60%"><div id="chart_div" style="width: 700px; height: 350px;"></div></td>
+    <td style="width:60%"><div id="price_chart" style="width: 700px; height: 350px"></div></td>
     </tr>
     </table>
     <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
     </div>
-    
+
 </div>
 <div id="side_bar">
-    <input id="side_bar_selection" type="text" placeholder="... بحث" class="form-control" />
-    <ul id="side_bar_list">
-		<li>تاسي</li>
-		<li>الرياض</li>
-		<li>الجزيرة</li>
-		<li>استثمار</li>
-		<li>السعودي الهولندي</li>
-		<li>السعودي الفرنسي</li>
-		<li>ساب</li>
-		<li>العربي الوطني</li>
-		<li>سامبا</li>
-		<li>الراجحي</li>
-		<li>البلاد</li>
-		<li>الإنماء</li>
-                <li>البنك الأهلي</li>
-		<li>كيمانول</li>
-		<li>بتروكيم</li>
-		<li>سابك</li>
-		<li>سافكو</li>
-		<li>التصنيع</li>
-		<li>اللجين</li>
-		<li>نماء للكيماويات</li>
-		<li>المجموعة السعودية</li>
-		<li>الصحراء للبتروكيماويات</li>
-		<li>ينساب</li>
-		<li>سبكيم العالمية</li>
-		<li>المتقدمة</li>
-		<li>كيان</li>
-		<li>بترو رابغ</li>
-		<li>أسمنت حائل</li>
-		<li>أسمنت نجران</li>
-		<li>اسمنت المدينة</li>
-		<li>اسمنت الشمالية</li>
-		<li>اسمنت ام القرى</li>
-		<li>الاسمنت العربية</li>
-		<li>اسمنت اليمامة</li>
-		<li>اسمنت السعوديه</li>
-		<li>اسمنت القصيم</li>
-		<li>اسمنت الجنوبيه</li>
-		<li>اسمنت ينبع</li>
-		<li>اسمنت الشرقية</li>
-		<li>اسمنت تبوك</li>
-		<li>اسمنت الجوف</li>
-		<li>أسواق ع العثيم</li>
-		<li>المواساة</li>
-		<li>إكسترا</li>
-		<li>دله الصحية</li>
-		<li>رعاية</li>
-		<li>أسواق المزرعة</li>
-		<li>الحمادي</li>
-		<li>ساسكو</li>
-		<li>ثمار</li>
-		<li>مجموعة فتيحي</li>
-		<li>جرير</li>
-		<li>الدريس</li>
-		<li>الحكير</li>
-		<li>الخليج للتدريب</li>
-		<li>الغاز والتصنيع</li>
-		<li>كهرباء السعودية</li>
-		<li>مجموعة صافولا</li>
-		<li>الغذائية</li>
-		<li>سدافكو</li>
-		<li>المراعي</li>
-		<li>أنعام القابضة</li>
-		<li>حلواني إخوان</li>
-		<li>هرفي للأغذية</li>
-		<li>التموين</li>
-		<li>نادك</li>
-		<li>القصيم الزراعيه</li>
-		<li>تبوك الزراعيه</li>
-		<li>الأسماك</li>
-		<li>الشرقية للتنمية</li>
-		<li>الجوف الزراعيه</li>
-		<li>بيشة الزراعيه</li>
-		<li>جازان للتنمية</li>
-		<li>الاتصالات</li>
-		<li>اتحاد اتصالات</li>
-		<li>زين السعودية</li>
-		<li>عذيب للاتصالات</li>
-		<li>المتكاملة</li>
-		<li>التعاونية</li>
-		<li>العربي للتأمين</li>
-		<li>جزيرة تكافل</li>
-		<li>ملاذ للتأمين</li>
-		<li>ميدغلف للتأمين</li>
-		<li>أليانز إس إف</li>
-		<li>سلامة</li>
-		<li>ولاء للتأمين</li>
-		<li>الدرع العربي</li>
-		<li>ساب تكافل</li>
-		<li>سند</li>
-		<li>سايكو</li>
-		<li>وفا للتأمين</li>
-		<li>إتحاد الخليج</li>
-		<li>الأهلي للتكافل</li>
-		<li>الأهلية</li>
-		<li>أسيج</li>
-		<li>التأمين العربية</li>
-		<li>الاتحاد التجاري</li>
-		<li>الصقر للتأمين</li>
-		<li>المتحدة للتأمين</li>
-		<li>الإعادة السعودية</li>
-		<li>بوبا العربية</li>
-		<li>وقاية للتكافل</li>
-		<li>تكافل الراجحي</li>
-		<li>ايس</li>
-		<li>اكسا- التعاونية</li>
-		<li>الخليجية العامة</li>
-		<li>بروج للتأمين</li>
-		<li>العالمية</li>
-		<li>سوليدرتي تكافل</li>
-		<li>الوطنية</li>
-		<li>أمانة للتأمين</li>
-		<li>عناية</li>
-		<li>الإنماء طوكيو م</li>
-		<li>المصافي</li>
-		<li>المتطورة</li>
-		<li>الاحساء للتنميه</li>
-		<li>سيسكو</li>
-		<li>عسير</li>
-		<li>الباحة</li>
-		<li>المملكة</li>
-		<li>تكوين</li>
-		<li>بى سى آى</li>
-		<li>معادن</li>
-		<li>أسترا الصناعية</li>
-		<li>مجموعة السريع</li>
-		<li>شاكر</li>
-		<li>الدوائية</li>
-		<li>زجاج</li>
-		<li>فيبكو</li>
-		<li>معدنية</li>
-		<li>الكيميائيه السعوديه</li>
-		<li>صناعة الورق</li>
-		<li>العبداللطيف</li>
-		<li>الصادرات</li>
-		<li>أسلاك</li>
-		<li>بوان</li>
-		<li>الصناعات الكهربائيه</li>
-		<li>مجموعة المعجل</li>
-		<li>الأنابيب السعودية</li>
-		<li>الخضري</li>
-		<li>الخزف</li>
-		<li>الجبس</li>
-		<li>الكابلات</li>
-		<li>صدق</li>
-		<li>اميانتيت</li>
-		<li>أنابيب</li>
-		<li>الزامل للصناعة</li>
-		<li>البابطين</li>
-		<li>الفخارية</li>
-		<li>مسك</li>
-		<li>البحر الأحمر</li>
-		<li>العقارية</li>
-		<li>طيبة للاستثمار</li>
-		<li>مكة للانشاء</li>
-		<li>التعمير</li>
-		<li>إعمار</li>
-		<li>جبل عمر</li>
-		<li>دار الأركان</li>
-		<li>مدينة المعرفة</li>
-		<li>البحري</li>
-		<li>النقل الجماعي</li>
-		<li>مبرد</li>
-		<li>بدجت السعودية</li>
-		<li>تهامه للاعلان</li>
-		<li>الأبحاث و التسويق</li>
-		<li>طباعة وتغليف</li>
-		<li>الطيار</li>
-		<li>مجموعة الحكير</li>
-		<li>دور</li>
-		<li>شمس</li>
-		<li>الشرق الاوسط لصناعه</li>
-		<li>ساكو</li>
+<br>
 
-    </ul>
+<span class="store-btn"><a href="javascript:srch()" style="float: left; display: inline; background-color: #428BCA; color: white; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Go</a>
+<input id="tags" style="direction:RTL; width: 72%; height: 30px; " type="text" placeholder="بحث ..." >
+</span>
+
+<UL style="text-align: right ; direction:rtl; cursor: pointer;" class="accordion" id="containerUL">
+
+<LI style="text-align: right ; direction:rtl " ><span><a style="line-height: 40px;"><b><font color='white' size="3" >تاسي</font></b></a></span>
+<UL style="text-align: right ; direction:rtl" id="side_bar_list">
+<LI style="text-align: right ; direction:rtl" ><span>تاسي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >المصارف والخدمات المالية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>البنك الأهلي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>السعودي الفرنسي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>السعودي الهولندي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>استثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العربي الوطني</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البلاد</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجزيرة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الرياض</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سامبا</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإنماء</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الراجحي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >الصناعات البتروكيماوية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>سبكيم العالمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سابك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتقدمة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بتروكيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المجموعة السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سافكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التصنيع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصحراء للبتروكيماويات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اللجين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بترو رابغ</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>كيان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>كيمانول</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>نماء للكيماويات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ينساب</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاسمنت</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الشمالية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسمنت حائل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسمنت نجران</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الجوف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت القصيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت المدينة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الجنوبيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الشرقية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت اليمامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت ام القرى</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت تبوك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت ينبع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت السعوديه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاسمنت العربية</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التجزئة</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>ساسكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسواق المزرعة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إكسترا</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>رعاية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسواق ع العثيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الحمادي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخليج للتدريب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدريس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المواساة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جرير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دله الصحية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الحكير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة فتيحي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الطاقة والمرافق الخدمية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>كهرباء السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الغاز والتصنيع</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الزراعة والصناعات الغذائية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأسماك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سدافكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الشرقية للتنمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>نادك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>حلواني إخوان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجوف الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التموين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>القصيم الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المراعي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بيشة الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تبوك الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جازان للتنمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أنعام القابضة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>هرفي للأغذية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الغذائية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة صافولا</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاتصالات وتقنية المعلومات</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>اتحاد اتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عذيب للاتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>زين السعودية</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التأمين</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأهلية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخليجية العامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ولاء للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>وفا للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإعادة السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سايكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتحدة للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الوطنية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسيج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بوبا العربية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساب تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أليانز إس إف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أمانة للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ايس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إتحاد الخليج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اكسا- التعاونية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأهلي للتكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإنماء طوكيو م</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاتحاد التجاري</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التأمين العربية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التعاونية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جزيرة تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدرع العربي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تكافل الراجحي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصقر للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العالمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ميدغلف للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بروج للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سلامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سند</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سوليدرتي تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عناية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العربي للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ملاذ للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>وقاية للتكافل</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الأستثمار المتعدد</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>سيسكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتطورة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاحساء للتنميه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الباحة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المصافي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المملكة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عسير</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الأستثمار الصناعي</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>صناعة الورق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصادرات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدوائية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الكيميائيه السعوديه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>معدنية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>معادن</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>شاكر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ميبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>زجاج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بى سى آى</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العبداللطيف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>فيبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تكوين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة السريع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسترا الصناعية</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التشييد والبناء</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأنابيب السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الفخارية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>صدق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أنابيب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخضري</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسلاك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البابطين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البحر الأحمر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجبس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخزف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الزامل للصناعة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مسك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصناعات الكهربائيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الكابلات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اميانتيت</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بوان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة المعجل</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التطوير العقاري</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>إعمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العقارية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التعمير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جبل عمر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دار الأركان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>طيبة للاستثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مدينة المعرفة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مكة للانشاء</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >النقل</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>النقل الجماعي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مبرد</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بدجت السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البحري</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاعلام والنشر</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>طباعة وتغليف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأبحاث و التسويق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تهامه للاعلان</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الفنادق والسياحة</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>شمس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دور</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة الحكير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الطيار</span></LI>
+</UL>
+</LI>
+</ul>
+
 </div>
 {% endblock %}
 
@@ -244,13 +334,109 @@
 //                });
 //      }
 
-  function drawChart_candle(stock,slid) {
+      function drawChart_line(stock,slid,anim) {
+            ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
+        var l_data = [];
+        for (i = 0; i < slid; i++) {
+        l_data[i]=prz_line[i+prz_line.length-slid];
+        }
+        console.debug(l_data.length); 
+        console.debug(l_data); 
+        //console.debug(getBollingerBands(20,2,l_data)); 
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Day');
+        data.addColumn('number', 'Price');
+        data.addRows(l_data);
+
+        var options = {
+          title: '',
+        tooltip: {isHtml: true},
+        legend:'none',
+        backgroundColor:'#F5F5F5',
+        animation: {
+        duration: anim,
+        startup: true,
+        easing: 'inAndOut'
+        },
+        chartArea: {
+        left: 50,
+        width: '90%',
+        height: '65%',
+        },
+        hAxis: {
+        textStyle:{fontSize: 10}
+        },
+        vAxis: {
+        textStyle:{fontSize: 10}
+        },
+        legend: {
+        position: 'right'
+        },
+          curveType: 'none',
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('price_chart'));
+
+        chart.draw(data, options);
+                });
+      }
+
+      function drawChart_mountain(stock,slid,anim) {
+	ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
+        var l_data = [];
+        for (i = 0; i < slid; i++) {
+        l_data[i]=prz_line[i+prz_line.length-slid];
+        }
+        console.debug(l_data.length);
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Day');
+        data.addColumn('number', 'Price');
+        data.addRows(l_data);
+
+        var options = {
+          title: '',
+        tooltip: {isHtml: true},
+        legend:'none',
+        backgroundColor:'#F5F5F5',
+        animation: {
+        duration: anim,
+        startup: true,
+        easing: 'inAndOut'
+        },
+        chartArea: {
+        left: 50,
+        width: '90%',
+        height: '65%',
+        },
+        hAxis: {
+        textStyle:{fontSize: 10}
+        },
+        vAxis: {
+        textStyle:{fontSize: 10}
+        },
+        legend: {
+        position: 'right'
+        },
+        curveType: 'none',
+        legend: 'none'
+        };
+        var chart = new google.visualization.AreaChart(document.getElementById('price_chart'));
+        chart.draw(data, options);
+		});
+      }
+
+
+  function drawChart_candle(stock,slid,anim) {
         ajaxPost('/get_prices_candle', { 'query': stock }, function (prz_candle) {
-	console.debug(prz_candle.length);
 	var l_data = [];
         for (i = 0; i < slid; i++) {
         l_data[i]=prz_candle[i+prz_candle.length-slid];
         }
+	console.debug(l_data.length);
+
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Day');
     data.addColumn('number', 'Low');
@@ -265,7 +451,7 @@
 	legend:'none',
 	backgroundColor:'#F5F5F5',
 	animation: {
-	duration: 2000,
+	duration: anim,
 	startup: true,
 	easing: 'inAndOut'
 	},
@@ -289,11 +475,12 @@
         }
     };
 
-    var chart = new google.visualization.CandlestickChart(document.getElementById('chart_div'));
+    var chart = new google.visualization.CandlestickChart(document.getElementById('price_chart'));
 
     chart.draw(data, options);
                 });
   }
+
 
              
     function findUrls( text )
@@ -325,6 +512,7 @@
 
 	$(".controller").hide()
         $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
+        $("#containerUL").css({ "min-height": (screenHeight - 52) + "px" });
         $("#main_content").width(screenWidth - 270);
 /*        ajaxPost('/get_stocks_weights', {}, function (content) {
             var word_list = []
@@ -352,21 +540,54 @@
 	//console.log(document.getElementById('slider').value);
 	google.setOnLoadCallback(drawChart_candle("ay_haga",document.getElementById('slider').value))
 	});
-    $('#side_bar_list > li').click(function () {
-	console.log($('#slider').value);
+    var graph="candle";
+    var slid;
+    slid=30;
+    $('#graph_list > li').click(function () {
+    if ( $(this).text() == " Line") 
+    {google.setOnLoadCallback(drawChart_line($('.select_list_item').text(),30,0)); graph="line";}
+    else if ( $(this).text() == " Mountain")
+    {google.setOnLoadCallback(drawChart_mountain($('.select_list_item').text(),30,0)); graph="mountain";}
+    else if ( $(this).text() == " CandleStick")
+    {google.setOnLoadCallback(drawChart_candle($('.select_list_item').text(),30,0)); graph="candle";}
+    });
+
+    $('#time_list > li').click(function () {
+
+    if ( $(this).text() == "1W")
+    {slid=7;}
+    else if ( $(this).text() == "1M")
+    {slid=23;}
+    else if ( $(this).text() == "3M")
+    {slid=70;}
+		
+    if (graph == "line")
+    {google.setOnLoadCallback(drawChart_line($('.select_list_item').text(),slid,0));}
+    else if (graph == "mountain")
+    {google.setOnLoadCallback(drawChart_mountain($('.select_list_item').text(),slid,0));}
+    else if (graph == "candle")
+    {google.setOnLoadCallback(drawChart_candle($('.select_list_item').text(),slid,0));}
+
+    });
+
+    $('#side_bar_list > li').click( function () {
+        dosearch($(this).text()); }
+        );
+        function dosearch (stock_name)
+        {
         $('.select_list_item').removeClass('select_list_item');
         $(this).addClass('select_list_item');
-	//google.setOnLoadCallback(drawChart_line($(this).text()));
+
         google.load("visualization", "1", {packages:["corechart"]});
-	google.setOnLoadCallback(drawChart_candle($(this).text(),30));
-	$(".controller").show()
+        google.setOnLoadCallback(drawChart_candle($(this).text(),30,2000));
+        $(".controller").show()
 
         $('#tweets').fadeOut('fast');
         $("#tweets").animate({ scrollTop: 0 }, "fast");
         $('#tweets_loading').fadeIn('fast');
 
-        var stock_name = $(this).text()
-        ajaxPost('/get_tweets', { 'query': $(this).text() }, function (content) {
+        //var stock_name = $(this).text()
+        ajaxPost('/get_tweets', { 'query': stock_name}, function (content) {
             $('#tweets').html('');
             $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
@@ -402,6 +623,8 @@
                 followers_no = content.statuses[i].user_followers_count;
                 tweeter_name =  "\n" + content.statuses[i].tweeter_name;
                 tweeter_sname = '@' + content.statuses[i].tweeter_sname;
+                price_time_then = 'at time: ' +content.statuses[i].price_time_then;
+                price_then = 'the price was: ' + content.statuses[i].price_then;
                 image = content.statuses[i].user_profile_image_url;
                 tweet_id = content.statuses[i].twitter_id;
                 //ele=JSON.stringify(content.statuses[i].shw, null, 4);
@@ -452,19 +675,15 @@
                                 text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
                                 }
 
-                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><div id='+tweet_id+'" >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
-
-                //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>');
-                //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
-                //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>')
-                //$('#tweets').append('<div><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+                $('#tweets').append('<div class="tweet"><table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><div id='+tweet_id+'" >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
             }
 			
             $('#tweets').fadeIn('fast');
             $("#tweets").animate({ scrollTop: 0 }, "fast");
             $('#tweets_loading').fadeOut('fast');
         });
-    });
+    }
+	//);
     var sentEditFlag = []
     var relEditFlag = []
     var EditCounter = 50;
@@ -659,7 +878,231 @@
 
 		});
 	});
-	
+</script>
+
+  <script>
+  $(function() {
+var availableTags = 
+[
+"استثمار: البنك السعودي للاستثمار: 1030",
+"السعودى الهولندى: البنك السعودي الهولندي: 1040",
+"السعودى الفرنسى: البنك السعودي الفرنسي: 1050",
+"ساب: البنك السعودي البريطاني: 1060",
+"العربى الوطنى: البنك العربي الوطني: 1080",
+"سامبا: مجموعة سامبا المالية: 1090",
+"تاسي: تاسي",
+"الرياض: بنك الرياض: 1010",
+"الجزيرة: بنك الجزيرة: 1020",
+"الراجحي: مصرف الراجحي: 1120",
+"البلاد: بنك البلاد: 1140",
+"الإنماء: مصرف الإنماء: 1150",
+"كيمانول: شركة تكوين المتطورة للصناعات: 1201",
+"بتروكيم: شركة الصحراء للبتروكيماويات : 2260",
+"سابك: شركة الصناعات الكيميائية الأساسية: 1210",
+"سافكو: مجموعة أسترا الصناعية: 1212",
+"التصنيع: شركة مجموعة السريع التجارية الصناعية: 1213",
+"اللجين: شركة الحسن غازي إبراهيم شاكر: 1214",
+"نماء للكيماويات: شركة نماء للكيماويات: 2210",
+"المجموعة السعودية: المجموعة السعودية للإستثمار الصناعي: 2250",
+"الصحراء للبتروكيماويات: شركة الصحراء للبتروكيماويات: 2260",
+"ينساب: شركة ينبع الوطنية للبتروكيماويات: 2290",
+"أسمنت حائل: شركة أسمنت حائل: 3001",
+"أسمنت نجران: شركة أسمنت نجران : 3002",
+"اسمنت المدينة: شركة اسمنت المدينة : 3003",
+"اسمنت ام القرى: شركة اسمنت ام القرى: 3005",
+"اسمنت الشمالية: شركة أسمنت المنطقة الشمالية : 3004",
+"الاسمنت العربية: شركة الاسمنت العربية : 3010",
+"اسمنت اليمامة: شركة اسمنت اليمامة : 3020",
+"اسمنت السعوديه: شركة الأسمنت السعودية : 3030",
+"اسمنت القصيم: شركة اسمنت القصيم : 3040",
+"اسمنت الجنوبيه: شركة اسمنت المنطقة الجنوبيه : 3050",
+"اسمنت ينبع: شركة اسمنت ينبع: 3060",
+"اسمنت الشرقية: شركة اسمنت المنطقة الشرقية : 3080",
+"اسمنت تبوك: شركة اسمنت تبوك 3090",
+"اسمنت الجوف: شركة اسمنت الجوف : 3091",
+"أسواق ع العثيم: شركة أسواق عبدالله العثيم : 4001",
+"المواساة: شركة المواساة للخدمات الطبية: 4002",
+"إكسترا: الشركة المتحدة للإلكترونيات: 4003",
+"دله الصحية: شركة دله للخدمات الصحية القابضة: 4004",
+"رعاية: الشركة الوطنية للرعاية الطبية: 4005",
+"أسواق المزرعة: الشركة السعودية للتسويق: 4006",
+"ساسكو: الشركة السعودية لخدمات السيارات والمعدات: 4050",
+"ثمار: الشركة الوطنية للتسويق الزراعي: 4160",
+"مجموعة فتيحي: مجموعة فتيحي القابضة : 4180",
+"جرير: شركة جرير للتسويق: 4190",
+"الدريس: شركة الدريس للخدمات البترولية و النقليات: 4200",
+"الحكير: شركة فواز عبدالعزيز الحكير وشركاه: 4240",
+"الحمادي:شركة الحمادي للتنمية والاستثمار: 4007",
+"الخليج للتدريب: شركة الخليج للتدريب و التعليم : 4290",
+"الغاز والتصنيع: شركة الغاز والتصنيع الاهلية : 2080",
+"كهرباء السعودية: الشركة السعودية للكهرباء : 5110",
+"مجموعة صافولا: مجموعة صافولا: 2050",
+"الغذائية: شركة وفرة للصناعة والتنمية: 6002",
+"سدافكو: الشركة السعودية لمنتجات الألبان والأغذية (سدافكو): 2270 ",
+"المراعي: شركة المراعي: 2280",
+"أنعام القابضة: شركة مجموعة أنعام الدولية القابضة : 4061",
+"حلواني إخوان: حلواني إخوان: 6001",
+"هرفي للأغذية: شركة هرفي للخدمات الغذائية: 6002",
+"التموين: شركة الخطوط السعودية للتموين: 6004",
+"نادك: الشركة الوطنية للتنمية الزراعية: 6010",
+"القصيم الزراعيه: شركة القصيم الزراعية: 6020",
+"تبوك الزراعيه: شركة تبوك للتنمية الزراعية : 6040",
+"الأسماك: الشركة السعودية للأسماك: 6050",
+"الشرقية للتنمية: الشركة الشرقية للتنمية 6060",
+"الجوف الزراعيه: شركة الجوف الزراعية: 6070",
+"بيشة الزراعيه: شركة بيشة للتنمية الزراعية: 6080",
+"جازان للتنمية: شركة جازان للتنمية: 6090",
+"الاتصالات: شركة الاتصالات السعودية: 7010",
+"اتحاد اتصالات: شركة إتحاد إتصالات: 7020",
+"زين السعودية: شركة الاتصالات المتنقلة السعودية: 7030",
+"عذيب للاتصالات: شركة إتحاد عذيب للاتصالات: 7040",
+"المتكاملة: الشركة السعودية للإتصالات المتكاملة ",
+"التعاونية: شركة التعاونية للتأمين : 8010 ",
+"ملاذ للتأمين: ملاذ للتأمين: 8020",
+"ميدغلف للتأمين: شركة المتوسط والخليج للتأمين وإعادة التأمين التعاوني: 8030",
+"أليانز إس إف: شركة أليانز السعودي الفرنسي للتأمين التعاوني : 8040",
+"سلامة: شركة سلامة للتأمين التعاوني: 8050",
+"ولاء للتأمين: الشركة السعودية المتحدة للتأمين التعاوني: 8060",
+"جزيرة تكافل:شركة الجزيرة تكافل تعاوني: 8012",
+"الدرع العربي: شركة الدرع العربي للتأمين التعاوني : 8070",
+"ساب تكافل: ساب للتكافل: 8080",
+"سند: شركة سند للتأمين و إعادة التأمين التعاوني: 8090",
+"سايكو: الشركة العربية السعودية للتأمين التعاوني: 8100",
+"وفا للتأمين: الشركة السعودية الهندية للتأمين التعاوني: 8110 ",
+"إتحاد الخليج: شركة إتحاد الخليج للتأمين التعاوني: 8120",
+"الأهلي للتكافل: شركة الأهلي للتكافل: 8130",
+"العربي للتأمين: شركة متلايف وايه أي جي والبنك العربي للتأمين التعاوني: 8011",
+"الأهلية: الشركة الأهلية للتأمين التعاوني: 8140",
+"أسيج: المجموعة المتحدة للتأمين التعاوني: 8050",
+"التأمين العربية: شركة التأمين العربية التعاونية 8160",
+"الاتحاد التجاري: شركة الاتحاد التجاري للتأمين التعاوني : 8170 ",
+"الصقر للتأمين: شركة الصقر للتأمين التعاوني : 8180",
+"المتحدة للتأمين: المجموعة المتحدة للتأمين التعاوني : 8060",
+"الإعادة السعودية: الشركة السعودية لإعادة التأمين(إعادة) التعاونية : 8200",
+"بوبا العربية: بوبا العربية للتأمين التعاوني : 8210",
+"وقاية للتكافل: شركة وقاية للتأمين و إعادة التأمين التكافلي: 8220",
+"تكافل الراجحي: شركة الراجحي للتأمين التعاوني : 8230",
+"ايس: شركة أيس العربية للتأمين التعاوني: 8240",
+"اكسا- التعاونية: شركة اكسا للتأمين التعاوني: 8250",
+"الخليجية العامة: الشركة الخليجية العامة للتأمين التعاوني: 8260",
+"بروج للتأمين: شركة بروج للتأمين التعاوني: 8270",
+"العالمية: شركة العالمية للتأمين التعاوني: 8280",
+"سوليدرتي تكافل: شركة سوليدرتي السعودية للتكافل: 8290",
+"الوطنية: الشركة الوطنية للتأمين: 8300",
+"أمانة للتأمين: شركة أمانة للتأمين التعاوني",
+"عناية: شركة عناية السعودية للتأمين التعاوني: 8311",
+"الإنماء طوكيو مارين: شركة الإنماء طوكيو مارين: 8312",
+"المصافي: شركة المصافي العربية السعودية: 2030",
+"المتطورة: الشركة السعودية للصناعات المتطورة: 2120",
+"الاحساء للتنميه: شركة الاحساء للتنمية: 2140",
+"سيسكو: الشركة السعودية للخدمات الصناعية: 2190",
+"عسير: شركة عسير للتجارة والسياحة والصناعة: 4080",
+"الباحة: شركة الباحة للإستثمار والتنمية: 4130",
+"المملكة: شركة المملكة القابضة: 4280",
+"تكوين: شركة تكوين المتطورة للصناعات: 1201",
+"بى سى آى: شركة الصناعات الكيميائية الأساسية: 1210",
+"معادن: شركة التعدين العربية السعودية: 1211",
+"أسترا الصناعية: مجموعة أسترا الصناعية: 1212",
+"مجموعة السريع: شركة مجموعة السريع التجارية الصناعية: 1213",
+"شاكر: شركة الحسن غازي إبراهيم شاكر: 1214",
+"الدوائية: الشركة السعودية للصناعات الدوائية والمستلزمات الطبية: 2070",
+"زجاج: شركة الصناعات الزجاجية الوطنية: 2150",
+"فيبكو: شركة تصنيع مواد التعبئة والتغليف: 2180",
+"معدنية: الشركة الوطنية لتصنيع وسبك المعادن: 2220",
+"الكيميائيه السعوديه: الشركة الكيميائية السعودية: 2230",
+"صناعة الورق: الشركة السعودية لصناعة الورق: 2300 ",
+"العبداللطيف: شركة العبداللطيف للاستثمار الصناعي: 2340",
+"الصادرات: الشركة السعودية للصادرات الصناعية: 4140",
+"أسلاك: شركة إتحاد مصانع الأسلاك: 1301",
+"مجموعة المعجل: شركة مجموعة محمد المعجل: 1310",
+"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب: 1310",
+"الخضري: شركة أبناء عبدالله عبدالمحسن الخضري: 1330",
+"الخزف: شركة الخزف السعودي: 2040",
+"الجبس: شركة الجبس الأهلية: 2090",
+"الكابلات: شركة الكابلات السعودية: 2110",
+"صدق: الشركة السعودية للتنمية الصناعية: 2130",
+"اميانتيت: شركة اميانتيت العربية السعودية: 2160",
+"أنابيب: الشركة العربية للأنابيب: 2200",
+"الزامل للصناعة: شركة الزامل للاستثمار الصناعي: 2240",
+"البابطين: شركة البابطين للطاقة و الاتصالات: 2320",
+"الفخارية: الشركة السعودية لإنتاج الأنابيب الفخارية: 2360",
+"مسك: شركة الشرق الأوسط للكابلات المتخصصة: 2370",
+"البحر الأحمر: شركة البحر الأحمر لخدمات الإسكان: 4230",
+"العقارية: الشركة العقارية السعودية: 4020",
+"طيبة للاستثمار:  شركة طيبة القابضة : 4090",
+"مكة للانشاء: شركة مكة للإنشاء والتعمير: 4100",
+"التعمير: شركة الرياض للتعمير: 4150",
+"إعمار: إعمار المدينة الإقتصادية: 4220",
+"جبل عمر: شركة جبل عمر للتطوير: 4250",
+"دار الأركان: شركة دار الأركان للتطوير العقاري: 4300",
+"مدينة المعرفة: شركة مدينة المعرفة الإقتصادية : 4310",
+"البحري: الشركة الوطنية السعودية للنقل البحري: 4030",
+"النقل الجماعي: الشركة السعودية للنقل الجماعي ( سابتكو ): 4040 ",
+"مبرد: الشركة السعودية للنقل والاستثمار: 4110",
+"بدجت السعودية: الشركة المتحدة الدولية للمواصلات: 4260",
+"تهامه للاعلان: شركة تهامه للاعلان والعلاقات العامة: 4070",
+"الأبحاث و التسويق: الأبحاث و التسويق ",
+"طباعة وتغليف: الشركة السعودية للطباعة والتغليف: 4270",
+"الطيار: مجموعة الطيار للسفر ",
+"دور: شركة دور للضيافة: 4010",
+"شمس: شركة المشروعات السياحية: 4170",
+"مجموعة الحكير: شركة مجموعة عبدالمحسن الحكير للسياحة والتنمية: 1820",
+"بوان: شركة بوان: 1302",
+"ميبكو:شركة الشرق الاوسط لصناعة وانتاج الورق: 1202",
+"ساكو: الشركة السعودية للعدد والأدوات: 4008",
+"الشركة السعودية للخدمات الأرضية:الشركة السعودية للخدمات الأرضية",
+"الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية"
+    ];
+
+
+    $( "#tags" ).autocomplete({
+      source: availableTags
+    });
+  });
+  </script>
+<script type="text/javascript">
+$('#containerUL').find('ul').slideUp();
+$(function(){
+$('#containerUL').find('SPAN').click(function(e){
+// $('#containerUL').find('ul').slideUp();  
+if($(this).text() ==  "المصارف والخدمات المالية" ||
+$(this).text() ==  "الاسمنت" ||
+$(this).text() ==  "تاسي" ||
+$(this).text() ==  "الصناعات البتروكيماوية" ||
+$(this).text() ==  "التجزئة" ||
+$(this).text() ==  "الطاقة والمرافق الخدمية" ||
+$(this).text() ==  "الزراعة والصناعات الغذائية" ||
+$(this).text() ==  "الاتصالات وتقنية المعلومات" ||
+$(this).text() ==  "التأمين" ||
+$(this).text() ==  "الأستثمار المتعدد" ||
+$(this).text() ==  "الأستثمار الصناعي" ||
+$(this).text() ==  "التشييد والبناء" ||
+$(this).text() ==  "التطوير العقاري" ||
+$(this).text() ==  "النقل" ||
+$(this).text() ==  "الاعلام والنشر" ||
+$(this).text() ==  "الفنادق والسياحة" )
+{
+$('#containerUL').find('ul').slideUp();
+$("#tweets").animate({ scrollTop: 0 }, "fast");
+}
+$(this).parent().children('UL').toggle();
+});
+});
+
+function srch()
+{
+var  x=document.getElementById('tags').value;
+if(x != "") {
+if(x.indexOf(":") < 0)
+str=x;
+else
+str=x.substr(0,x.indexOf(":") );
+	dosearch(str); 
+var a = document.getElementById("tags");
+a.value = a.defaultValue;
+}
+
+}
 </script>
 
 {% endblock %}
