@@ -1348,7 +1348,7 @@ def get_tweets_proto(request):
         PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
         configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations_Proto.xml')
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
-        #tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
 
     price = 0  
     #price = get_stock_price(stock_name)
@@ -1364,36 +1364,37 @@ def get_tweets_proto(request):
     from django.utils import timezone 
     content_return['price'] = price
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
-##    print('Saving tweets')
-##    for tweet in tweets:
-##        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
-##        if(len(tweet_exist) == 0):
-##            try:
-##                item = Opinion()
-##                item.twitter_id = tweet['id_str']
-##                item.user_id = tweet['user']['id']
-##                item.text = tweet['text']
-##                item.created_at = tweet['created_at']
-##                item.user_followers_count = tweet['user']['followers_count']
-##                item.user_profile_image_url = tweet['user']['profile_image_url']
-##                item.media_url = tweet['entities']
-##                item.tweeter_sname = tweet['user']['screen_name']
-##                item.tweeter_name = tweet['user']['name']
-##                #print('kkkkkkk'+str(tweet['entities']))
-##                item.pub_date = str(timezone.now())
-##                item.stock = stock_name
-##                item.labeled = False
-##                item.source = "twitter.com"
-##                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
-##                    print(tweet['text'])
-##                else:
-##                    item.save()
-##                item.relevancy = 'none'
-##                item.sentiment = 'none'
-##                item.labeled_user = 'none'
-##            except Exception as e: 
-##              pass
-##    print('Tweets saved')
+    print('Saving tweets')
+        
+    for tweet in tweets:
+        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str'])
+        if(len(tweet_exist) == 0):
+            try:
+                item = Opinion()
+                item.twitter_id = tweet['id_str']
+                item.user_id = tweet['user']['id']
+                item.text = tweet['text']
+                item.created_at = tweet['created_at']
+                item.user_followers_count = tweet['user']['followers_count']
+                item.user_profile_image_url = tweet['user']['profile_image_url']
+                item.media_url = tweet['entities']
+                item.tweeter_sname = tweet['user']['screen_name']
+                item.tweeter_name = tweet['user']['name']
+                #print('kkkkkkk'+str(tweet['entities']))
+                item.pub_date = str(timezone.now())
+                item.stock = stock_name
+                item.labeled = False
+                item.source = "twitter.com"
+                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+                    print(tweet['text'])
+                else:
+                    item.save()
+                item.relevancy = 'none'
+                item.sentiment = 'none'
+                item.labeled_user = 'none'
+            except Exception as e: 
+              pass
+    print('Tweets saved')
     tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name).values().order_by('-id')[:20]
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
