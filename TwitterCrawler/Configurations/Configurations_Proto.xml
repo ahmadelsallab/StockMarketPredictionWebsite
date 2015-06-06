@@ -9,19 +9,19 @@
   <ConsumerSecret consumerSecret="oFv4dhBekboNg7pKa2BS0zztHqusr91SIdmKErDaycI"></ConsumerSecret>
   <AccessToken accessToken="1846277677-kGkwIKV6gwERaSTT2YBWb6KKUt8Qb68TxmdtpCy"></AccessToken>
   <AccessTokenSecret accessTokenSecret="hwN7VH7SzMQL7kKCv10I9zfti9ioEtnoosMEAhMTj5V9T"></AccessTokenSecret>
-  
+
   <!--The language of tweets to be captured-->
   <Language language=""></Language>
   <!--The period of acquisition in mins. "forever" will let the script run continously-->
-  <UpdatePeriod updatePeriod="480"></UpdatePeriod>
+  <UpdatePeriod updatePeriod="9"></UpdatePeriod>
   <!--The maximum number of returned results per search-->
-  <ResultsLimit resultsLimit="300"></ResultsLimit>
+  <ResultsLimit resultsLimit="99"></ResultsLimit>
    <!--The desired size of crawled tweets. A negative value means non-stop-->
-  <DesiredDataSize desiredDataSize="300"></DesiredDataSize>
+  <DesiredDataSize desiredDataSize="1000"></DesiredDataSize>
   <!--Inhbit saving to log file-->
-  <InhibitLogFileSaving inhibitLogFileSaving="false"></InhibitLogFileSaving>
+  <InhibitLogFileSaving inhibitLogFileSaving="true"></InhibitLogFileSaving>
   <!--Inhbit saving to local structure-->
-  <InhibitSavingToLocalStruct inhibitSavingToLocalStruct="false"></InhibitSavingToLocalStruct>
+  <InhibitSavingToLocalStruct inhibitSavingToLocalStruct="true"></InhibitSavingToLocalStruct>
   <!--The geocode parameters of the area of tweets to be captured: latitude, longitude, radius. Ex: Saudi Arabia: 23.88589, 45.07933, 100mi-->
   <Geocode>
      <GeocodeItem latitude="24.0"></GeocodeItem>
@@ -30,5 +30,6 @@
   </Geocode>
   <!--The list of query words of tweets-->
   <QueryWords>
+ 
   </QueryWords>
 </Configurations>

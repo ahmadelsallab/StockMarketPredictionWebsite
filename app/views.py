@@ -1345,7 +1345,7 @@ def get_tweets_proto(request):
         tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
     except:        
         PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-        configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+        configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations_Proto.xml')
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
         #tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
 
@@ -1393,7 +1393,7 @@ def get_tweets_proto(request):
 ##            except Exception as e: 
 ##              pass
 ##    print('Tweets saved')
-    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values() 
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values().order_by('-id')[:20]
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
@@ -1441,8 +1441,8 @@ def get_tweets_proto(request):
             if('Twitter sent status 429' in str(e)):
                 # Sleep 15 min, only 180 calls permitted per 15 min
                 time.sleep(900)
-
-    content_return['statuses'] = tweetes_to_render[0:50]
+            x=x+1
+    content_return['statuses'] = tweetes_to_render
     
     print('Start stats')
     # Fill in total number of entries in DB for this stock
