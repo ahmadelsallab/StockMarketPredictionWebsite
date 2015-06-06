@@ -1429,7 +1429,7 @@ def get_tweets_proto(request):
                 if (len(tweetes_to_render_temp) > 50+i):
                     tweetes_to_render.append(tweetes_to_render_temp[49+i])
                     i=i+1
-            elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username):
+            elif(request.user.username != "" and (tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username)):
                 tweetes_to_render.remove(tweet_render)
                 if (len(tweetes_to_render_temp) > 50+i):
                     tweetes_to_render.append(tweetes_to_render_temp[49+i])
@@ -1444,7 +1444,29 @@ def get_tweets_proto(request):
             if('Twitter sent status 429' in str(e)):
                 # Sleep 15 min, only 180 calls permitted per 15 min
                 time.sleep(900)
-            x=x+1
+                x=x+1
+            elif('Twitter sent status 404' in str(e)):
+                # Update the text in the tweet data
+                tweet_text = 'Sorry, this tweet is not available for the free service'
+                tweet_render['text'] = tweet_text
+                if tweet_text.strip() in tweets_dict.keys():
+                    tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
+                    tweet.similarId = tweets_dict[tweet_render['text']]
+                    tweet.save()
+                    tweetes_to_render.pop(x); 
+                    if (len(tweetes_to_render_temp) > 50+i):
+                        tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                        i=i+1
+                elif(request.user.username != "" and (tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username)):
+                    tweetes_to_render.remove(tweet_render)
+                    if (len(tweetes_to_render_temp) > 50+i):
+                        tweetes_to_render.append(tweetes_to_render_temp[49+i])
+                        i=i+1
+                else:
+                    x=x+1
+                    tweets_dict[tweet_render.get('text').strip()] = tweet_render.get('twitter_id')
+            else:
+                x=x+1
     content_return['statuses'] = tweetes_to_render
     
     print('Start stats')
@@ -1453,7 +1475,7 @@ def get_tweets_proto(request):
     content_return['total_entries_in_DB'] = StockCounter.objects.aggregate(Sum('counter'))['counter__sum']
     if(LabledCounter.objects.aggregate(Sum('counter'))['counter__sum'] != None):
         content_return['total_labeled_entries_in_DB'] = LabledCounter.objects.aggregate(Sum('counter'))['counter__sum']
-    else:
+    else    :
         content_return['total_labeled_entries_in_DB'] = 0
     content_return['total_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'relevant' "}).aggregate(Sum('counter'))['counter__sum']
     content_return['total_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'irrelevant' "}).aggregate(Sum('counter'))['counter__sum']

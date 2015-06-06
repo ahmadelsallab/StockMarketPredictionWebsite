@@ -347,7 +347,7 @@ function drawTrendlines(stock,slid) {
         
         google.load("visualization", "1", {packages:["corechart"]});
 		google.setOnLoadCallback(drawTrendlines($(this).text(),30));
-		$(".controller").show()
+		$(".controller").show();
 		
         $('#tweets').fadeOut('fast');
         $("#tweets").animate({ scrollTop: 0 }, "fast");
@@ -356,7 +356,6 @@ function drawTrendlines(stock,slid) {
         var stock_name = $(this).text()
         ajaxPost('/get_tweets_proto', { 'query': $(this).text() }, function (content) {
             $('#tweets').html('');
-
             
             for (var i = 0; i < content.statuses.length; i++) {
 		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
