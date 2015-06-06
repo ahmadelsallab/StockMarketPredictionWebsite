@@ -1113,10 +1113,11 @@ def get_stock_volume(request):
     graph_point = start_point
     end_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 17, 0, 0,)
     one_hour = timezone.timedelta(hours=1)
+    all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
     while(graph_point <= end_point):
         prev_graph_point = graph_point
         graph_point += one_hour
-        all_tweets = Opinion.objects.filter(stock=stock_name).values()
+        
         w = count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point)
         content_return.append([{'v':[prev_graph_point.hour,0,0],'f':str(prev_graph_point.hour)}, w]);
 
@@ -1393,7 +1394,7 @@ def get_tweets_proto(request):
 ##            except Exception as e: 
 ##              pass
 ##    print('Tweets saved')
-    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values().order_by('-id')[:20]
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name).values().order_by('-id')[:20]
     tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
