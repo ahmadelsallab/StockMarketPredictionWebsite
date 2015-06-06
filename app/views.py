@@ -1041,7 +1041,7 @@ def home_proto(request):
     global twitter
     twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
     '''
-    
+    #if(request.user.is_authenticated()):
     # Start the TwitterCrawler      
     PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
     configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
@@ -1058,8 +1058,10 @@ def home_proto(request):
             #'tweets': tweets,
         })
     )
-
-
+    '''
+    else:
+        return redirect('/prototype')
+    '''
 @ajax
 def get_prices_line(request):
     stock_name = request.POST['query']
@@ -1838,7 +1840,7 @@ def twitter_authenticated(request):
         try:
             user = User.objects.get(username=username)
             return redirect('/home_proto') 
-               
+            
         except User.DoesNotExist:
             return render(
                             request,
