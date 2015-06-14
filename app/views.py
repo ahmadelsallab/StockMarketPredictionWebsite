@@ -1418,10 +1418,13 @@ def get_tweets_proto(request):
             tweet_render=tweetes_to_render[x];
                                 
             # Get the tweet by ID 
-            retrievedTweet = dict(twitterCrawler.GetSingleTweetByID(tweet_render.get('twitter_id')))
+            #retrievedTweet = dict(twitterCrawler.GetSingleTweetByID(tweet_render.get('twitter_id')))
+
             
             # Update the text in the tweet data
-            tweet_text = retrievedTweet['text']
+            #tweet_text = retrievedTweet['text']
+            tweet_text = tweet_render['text']
+            
             tweet_render['text'] = tweet_text
             if tweet_text.strip() in tweets_dict.keys():
                 tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
