@@ -1351,7 +1351,7 @@ def get_tweets_proto(request):
         PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
         configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations_Proto.xml')
         twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
-        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+        #tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
 
     price = 0  
     #price = get_stock_price(stock_name)
@@ -1367,6 +1367,7 @@ def get_tweets_proto(request):
     from django.utils import timezone 
     content_return['price'] = price
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
+    '''
     print('Saving tweets')
         
     for tweet in tweets:
@@ -1398,8 +1399,9 @@ def get_tweets_proto(request):
             except Exception as e: 
               pass
     print('Tweets saved')
+    '''
     tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name).values().order_by('-id')[:20]
-    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
+    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:10];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
     #print(json.dumps(my_list[0]))
