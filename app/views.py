@@ -1016,23 +1016,25 @@ def home(request):
     global twitter
     twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
     '''
+    if(request.user.is_authenticated()):
+        # Start the TwitterCrawler      
+        PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+        configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+        global twitterCrawler
+        twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+        #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
     
-    # Start the TwitterCrawler      
-    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-    configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
-    global twitterCrawler
-    twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
-    #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
-
-    return render(
-        request,
-        'app/home.html',
-        context_instance = RequestContext(request,
-        {
-            'title':'Home',
-            #'tweets': tweets,
-        })
-    )
+        return render(
+            request,
+            'app/home.html',
+            context_instance = RequestContext(request,
+            {
+                'title':'Home',
+                #'tweets': tweets,
+            })
+        )
+    else:
+        return redirect('/register')
 
 #@login_required
 def home_proto(request):
@@ -1041,27 +1043,30 @@ def home_proto(request):
     global twitter
     twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
     '''
-    #if(request.user.is_authenticated()):
-    # Start the TwitterCrawler      
-    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-    configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
-    global twitterCrawler
-    twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
-    #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
-
-    return render(
-        request,
-        'app/home_proto.html',
-        context_instance = RequestContext(request,
-        {
-            'title':'Home',
-            #'tweets': tweets,
-        })
-    )
-    '''
-    else:
+    try:
+        if(request.session.get('user_authenticated')):
+        
+            # Start the TwitterCrawler      
+            PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+            configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+            global twitterCrawler
+            twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+            #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
+        
+            return render(
+                request,
+                'app/home_proto.html',
+                context_instance = RequestContext(request,
+                {
+                    'title':'Home',
+                    #'tweets': tweets,
+                })
+            )
+    
+        else:
+            return redirect('/prototype')
+    except:
         return redirect('/prototype')
-    '''
 @ajax
 def get_prices_line(request):
     stock_name = request.POST['query']
@@ -1844,7 +1849,8 @@ def twitter_authenticated(request):
         
         try:
             user = User.objects.get(username=username)
-            return redirect('/home_proto') 
+            request.session['user_authenticated'] = True
+            return redirect('/home_proto')
             
         except User.DoesNotExist:
             return render(
