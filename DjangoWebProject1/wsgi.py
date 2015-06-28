@@ -18,7 +18,7 @@ import os
 
 
 import sys
-path = '/home/ubuntu/DjangoWebProject1_20150523/'
+path = '/home/ubuntu/DjangoWebProject1_20150620/'
 if path not in sys.path:
     sys.path.append(path)
 

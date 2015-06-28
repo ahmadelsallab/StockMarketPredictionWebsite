@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django_ajax.decorators import ajax
-from app.models import Opinion, CorrectionData, StocksPrices, LabledCounter, StockCounter, RelevancyCounter, SentimentCounter
+from app.models import Opinion, CorrectionData, StocksPrices, LabledCounter, StockCounter, RelevancyCounter, SentimentCounter, DailyPrices, WeeklyPrices, UserCounter
 from django.utils import timezone
 from Filter.Filter import Filter
 from bs4 import BeautifulSoup
@@ -56,7 +56,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'كيمانول': 'شركة تكوين المتطورة للصناعات',
 'بتروكيم ': 'شركة الصحراء للبتروكيماويات',
 'سابك': 'شركة الصناعات الكيميائية الأساسية',
-'سافكو': 'مجموعة أسترا الصناعية',
+'سافكو': 'شركة الأسمدة العربية السعودية',
 'التصنيع': 'شركة مجموعة السريع التجارية الصناعية',
 'اللجين': 'شركة الحسن غازي إبراهيم شاكر',
 'نماء للكيماويات': 'شركة نماء للكيماويات',
@@ -207,7 +207,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'بوان': 'بوان',
 'ميبكو':'شركة الشرق الاوسط لصناعة وانتاج الورق',
 'ساكو': 'الشركة السعودية للعدد والأدوات',
-'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
+'مبكو':'شركة الشرق الاوسط لصناعة وانتاج الورق',
 }
 
 
@@ -386,7 +386,7 @@ combination = {
 'مجموعة الحكير': '( ﺎﻠﺤﻜﻳﺭ )',
 'ميبكو': '( الشرق+الاوسط OR الشرق+الورق OR تاسي+الشرق OR الاوسط+تاسي )',
 'ساكو': '( ساكو OR SACO OR عدد+أدوات OR عدد+ادوات )',
-'الشركة السعودية للخدمات الأرضية': 'الشركة السعودية للخدمات الأرضية',
+'مبكو': 'مبكو',
 };
 
 
@@ -554,7 +554,7 @@ stock_prices_names_mapping_tbl = {'تاسي':'تاسي',
 'بوان':'بوان',
 'ميبكو':'ميبكو',
 'ساكو':'ساكو',
-'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
+'مبكو':'مبكو',
 }
 
 
@@ -736,7 +736,7 @@ price_mapping={
 'HSBC Saudi 20': 'none',
 'Falcom 30': 'none',
 'Falcom petrochemical': 'none',
-'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
+'مبكو':'مبكو',
 }
 
 stocks_sectors = {'الاهلي':'المصارف والخدمات المالية', 
@@ -911,7 +911,7 @@ stocks_sectors = {'الاهلي':'المصارف والخدمات المالية
 'HSBC Saudi 20':'صناديق المؤشرات المتداولة', 
 'Falcom 30':'صناديق المؤشرات المتداولة', 
 'Falcom petrochemical':'صناديق المؤشرات المتداولة', 
-'الشركة السعودية للخدمات الأرضية':'الشركة السعودية للخدمات الأرضية',
+'مبكو':'الاستثمار الصناعي',
 }
 
 
@@ -1071,45 +1071,33 @@ def home_proto(request):
 def get_prices_line(request):
     stock_name = request.POST['query']
     content_return = {}
-    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-    f_in = open(os.path.join(PROJECT_DIR, 'app', 'year_prices'), 'r', encoding='utf-8')
-    lines = f_in.readlines()
-    flag=0
+    prices = DailyPrices.objects.filter(stock=stock_name).values()
     content_return = [];
-    for line in reversed(lines):
-        #print(line)
-        l=line.split(',')
-        if(l[0]=='<ticker>'):
-            continue;
-        if(l[0]=='SIBC'):
-            flag=1
-            content_return.append([l[1][:4]+'-'+l[1][5:6]+'-'+l[1][6:],float(l[5])]);
-        elif(flag==1):
-            break
+    for price in prices:
+        l=price['concat'].split(',')
+        close=l[0]
+        content_return.append([price['day'],float(close)]);
 
-    return content_return[0:100];
+    return content_return[-50:];
 
 @ajax
 def get_prices_candle(request):
     stock_name = request.POST['query']
+    #print(stock_name)
     content_return = {}
-    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
-    f_in = open(os.path.join(PROJECT_DIR, 'app', 'year_prices'), 'r', encoding='utf-8')
-    lines = f_in.readlines()
-    flag=0
+    prices = DailyPrices.objects.filter(stock=stock_name).values()
     content_return = [];
-    for line in reversed(lines):
-        #print(line)
-        l=line.split(',')
-        if(l[0]=='<ticker>'):
-            continue;
-        if(l[0]=='SIBC'):
-            flag=1
-            content_return.append([l[1][:4]+'-'+l[1][5:6]+'-'+l[1][6:],float(l[4]),float(l[2]),float(l[5]),float(l[3]),'<b>'+l[1][6:]+'-'+l[1][5:6]+'-'+l[1][:4]+'</b>   O:'+l[2]+' H:'+l[3]+' L:'+l[4]+' C:'+l[5]]);
-        elif(flag==1):
-            break
-    #print(content_return);
-    return content_return[0:100];
+    for price in prices:
+        l=price['concat'].split(',')
+        close=l[0]
+        open=l[-1]
+        #print(price['day'])
+        #print(price['min'])
+        #print(price['max'])
+        #print(open)
+        #print(close)
+        content_return.append([price['day'],float(price['min']),float(open),float(close),float(price['max']),'<b>'+price['day']+'</b>   O:'+open+' H:'+price['max']+' L:'+price['min']+' C:'+close]);
+    return content_return[-50:];
 
 @ajax
 def get_stock_volume(request):
@@ -1181,7 +1169,7 @@ def get_tweets(request):
         #sys.stdout = codecs.getwriter("iso-8859-1")(sys.stdout, 'xmlcharrefreplace')
         #price_list = StocksPrices.objects.filter(stock=""+str(stock_name.encode("utf-8"))+"").order_by('-id')
         price_list = StocksPrices.objects.filter(stock=stock_name).order_by('-id')
-        price = price_list[0].stock_price
+        price = price_list[0].close
         print('Price in DB')
     except:
         price = get_stock_price(stock_name)
@@ -1189,38 +1177,37 @@ def get_tweets(request):
     from django.utils import timezone 
     content_return['price'] = price
     #tweets['price'] = CorrectionData.objects.get(stock_name=query)
-##    print('Saving tweets')
-##    for tweet in tweets:
-##        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
-##        if(len(tweet_exist) == 0):
-##            try:
-##                item = Opinion()
-##                item.twitter_id = tweet['id_str']
-##                item.user_id = tweet['user']['id']
-##                item.text = tweet['text']
-##                item.created_at = tweet['created_at']
-##                item.user_followers_count = tweet['user']['followers_count']
-##                item.user_profile_image_url = tweet['user']['profile_image_url']
-##                item.media_url = tweet['entities']
-##                item.tweeter_sname = tweet['user']['screen_name']
-##                item.tweeter_name = tweet['user']['name']
-##                item.pub_date = str(timezone.now())
-##                item.stock = stock_name
-##                item.labeled = False
-##                item.source = "twitter.com"
-##                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
-##                    print(tweet['text'])
-##                else:
-##                    item.save()
-##                item.relevancy = 'none'
-##                item.sentiment = 'none'
-##                item.labeled_user = 'none'
-##            except Exception as e: 
-##              pass
-##    print('Tweets saved')
-##
-    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False).values().order_by('-id')[:800]
-    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:150];
+    '''
+    print('Saving tweets')
+    for tweet in tweets:
+        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
+        if(len(tweet_exist) == 0):
+            try:
+                item = Opinion()
+                item.twitter_id = tweet['id_str']
+                item.user_id = tweet['user']['id']
+                item.text = tweet['text']
+                item.created_at = tweet['created_at']
+                item.user_followers_count = tweet['user']['followers_count']
+                item.user_profile_image_url = tweet['user']['profile_image_url']
+                item.media_url = tweet['entities']
+                item.tweeter_sname = tweet['user']['screen_name']
+                item.tweeter_name = tweet['user']['name']
+                item.pub_date = str(timezone.now())
+                item.stock = stock_name
+                item.labeled = False
+                item.source = "twitter.com"
+                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+                    print(tweet['text'])
+                else:
+                    item.save()
+            except Exception as e: 
+              pass
+    print('Tweets saved')
+    '''
+
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False, similarId='').values().order_by('-id')[:1000]
+    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:1000];
     #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
     #my_list = list(tweetes_to_render)
     #print(json.dumps(my_list[0]))
@@ -1274,7 +1261,7 @@ def get_tweets(request):
                 #print(price_list[i].time.strftime('%a %b %d %X'))
                 done = True
                 tweetes_to_render[x]['price_time_then']=price_list[i].time.strftime('%a %b %d %I:%M %p')
-                tweetes_to_render[x]['price_then']=price_list[i].stock_price
+                tweetes_to_render[x]['price_then']=price_list[i].close
             i=i+1
     
     content_return['statuses'] = tweetes_to_render[0:50]
@@ -1322,6 +1309,20 @@ def get_tweets(request):
         content_return['stock_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'neutral' "}).values()[0]['counter']
     except:
         content_return['stock_neutral_labeled_entries_in_DB'] = 0
+
+    #user counters
+    try:
+        content_return['user_relevant_for_stock_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username,stock=stock_name,relevancy='relevant').aggregate(Sum('counter'))['counter__sum']
+    except:
+        content_return['user_relevant_for_stock_in_DB'] = 0
+    try:
+        content_return['user_irrelevant_for_stock_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username,stock=stock_name,relevancy='irrelevant').aggregate(Sum('counter'))['counter__sum']
+    except:
+        content_return['user_irrelevant_for_stock_in_DB'] = 0
+    content_return['user_total_labels_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username).aggregate(Sum('counter'))['counter__sum']
+
+
+
     print('Done')
     #gc.collect()
     return content_return 
@@ -1364,7 +1365,7 @@ def get_tweets_proto(request):
         #import sys
         #import codecs
         #sys.stdout = codecs.getwriter("iso-8859-1")(sys.stdout, 'xmlcharrefreplace')
-        price = StocksPrices.objects.filter(stock=""+str(stock_name.encode("utf-8"))+"").order_by('-id')[0].stock_price
+        price = StocksPrices.objects.filter(stock=""+str(stock_name.encode("utf-8"))+"").order_by('-id')[0].close
         print('Price in DB')
     except:
         price = get_stock_price(stock_name)
@@ -1398,9 +1399,6 @@ def get_tweets_proto(request):
                     print(tweet['text'])
                 else:
                     item.save()
-                item.relevancy = 'none'
-                item.sentiment = 'none'
-                item.labeled_user = 'none'
             except Exception as e: 
               pass
     print('Tweets saved')
@@ -1529,12 +1527,14 @@ def get_tweets_proto(request):
 
 
 def getSimilarlabeling():
-    duplicate_tweetes = Opinion.objects.exclude(similarId='').values();
+    duplicate_tweetes = Opinion.objects.exclude(similarId='');
     for tweet in duplicate_tweetes:
-        parent_tweet =  Opinion.objects.filter(twitter_id = tweet.get("similarId"))
-        tweet["voted_relevancy"] = parent_tweet.parent_tweet
-        tweet["voted_sentiment"] = parent_tweet.voted_sentiment
-        tweet.save()
+        parent_tweet =  Opinion.objects.filter(twitter_id = tweet.similarId).values()[0]
+        if parent_tweet['labeled'] == 1:
+            tweet.voted_relevancy = parent_tweet['voted_relevancy']
+            tweet.voted_sentiment = parent_tweet['voted_sentiment']
+            tweet.labeled = True
+            tweet.save()
 
 @ajax
 def get_correction(request):
@@ -1545,6 +1545,10 @@ def get_correction(request):
     print(tweet_id)
     print(request.user.username)
     print(stock_name)
+
+    if(request.user.username == '' or request.user.username == None):
+        print('ERROR: Empty user name')
+        return
     
     tweet = Opinion.objects.filter(twitter_id=tweet_id, stock=stock_name)[0]
     if(relevancy == 'none' or relevancy == None):
@@ -1554,31 +1558,30 @@ def get_correction(request):
         elif(tweet.sentiment_second == 'none' or tweet.sentiment_second == '' or tweet.sentiment_second == None):
             tweet.sentiment_second = sentiment
             if(tweet.sentiment == tweet.sentiment_second):
+                tweet.sentiment_third= 'not_needed'
                 tweet.voted_sentiment = sentiment
         elif(tweet.sentiment_third == 'none' or tweet.sentiment_third == '' or tweet.sentiment_third ==  None):
             tweet.sentiment_third = sentiment
-            if(tweet.voted_sentiment == 'none' or tweet.voted_sentiment =='' or tweet.voted_sentiment == None):
-                if(sentiment == tweet.sentiment):
-                    tweet.voted_sentiment = sentiment
-                elif(sentiment == tweet.sentiment_second):
-                    tweet.voted_sentiment = sentiment
-                else:
-                    tweet.voted_sentiment = None
+            rel_list=[tweet.sentiment,tweet.sentiment_second,tweet.sentiment_third]
+            tweet.voted_sentiment=max(((item, rel_list.count(item)) for item in set(rel_list)), key=lambda a: a[1])[0]
 
         #print('Sentiment')
     elif (sentiment == 'none' or sentiment == None):
         if(tweet.relevancy == 'none' or tweet.relevancy == '' or tweet.relevancy == None):
             tweet.relevancy = relevancy
-            if request.user.is_authenticated():
-                tweet.labeled_user = request.user.username
+            tweet.labeled_user = request.user.username
         elif(tweet.relevancy_second == 'none' or tweet.relevancy_second == '' or tweet.relevancy_second == None):
             tweet.relevancy_second = relevancy
-            if request.user.is_authenticated():
-                tweet.labeled_user_second = request.user.username
+            tweet.labeled_user_second = request.user.username
+            if(tweet.relevancy == tweet.relevancy_second):
+                tweet.labeled_user_third='not_needed'
+                tweet.relevancy_third='not_needed'
+                tweet.voted_relevancy=tweet.relevancy
         elif(tweet.relevancy_third == 'none' or tweet.relevancy_third == '' or tweet.relevancy_third ==  None):
             tweet.relevancy_third = relevancy
-            if request.user.is_authenticated():
-                tweet.labeled_user_third = request.user.username
+            tweet.labeled_user_third = request.user.username
+            rel_list=[tweet.relevancy,tweet.relevancy_second,tweet.relevancy_third]
+            tweet.voted_relevancy=max(((item, rel_list.count(item)) for item in set(rel_list)), key=lambda a: a[1])[0]
         #print('Relevance')
 
     if(((tweet.relevancy != 'none') & (tweet.relevancy != '') & (tweet.relevancy != None)) & ((tweet.sentiment != 'none') & (tweet.sentiment != '') & (tweet.sentiment != None))
@@ -1586,21 +1589,8 @@ def get_correction(request):
         & ((tweet.relevancy_third != 'none') & (tweet.relevancy_third != '') & (tweet.relevancy_third != None)) & ((tweet.sentiment_third != 'none') & (tweet.sentiment_third != '') & (tweet.sentiment_third != None))):
         tweet.labeled = True
         tweet.manual_labeled = True
-        x = 0
-        y = 0
-        z = 0
-        if(tweet.relevancy == 'relevant'):
-            x = 1
-        if(tweet.relevancy_second == 'relevant' ):
-            y = 1
-        if(tweet.relevancy_third == 'relevant' ):
-            z = 1
-        tweet.voted_relevancy = ((x & y) | (x & z) | (y & z))
         #print(tweet.votel_relevancy)
-    tweet.save() 
-
-    #tweet.save()
-    #retrain()
+    tweet.save()
 
 def correction_sentiment(request):
     relevancy = request.POST['relevancy']
@@ -1654,7 +1644,6 @@ def news(request):
         })
     )
 
-
 def runPriceCrawling():
     urlstr = 'http://www.marketstoday.net/markets/%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9/Companies/1/ar/'
     fileHandle = urllib.request.urlopen(urlstr)
@@ -1666,13 +1655,21 @@ def runPriceCrawling():
     time_in_site=localtz.localize(parse(soup.findAll('span', attrs={'class':'tradhour'})[0].text.split('\n', 1)[1].split(" :")[1].replace('(local time)\n','',1)));
     for b in soup.findAll('tr', attrs={'class':'symbolflip'})[1:]:
         stockname=b.find('a', attrs={'class':'jTip'}).text
-        price=b.findAll('td')[1].text
+        close=b.findAll('td')[1].text
+        open=b.findAll('td')[2].text
+        max=b.findAll('td')[3].text
+        min=b.findAll('td')[4].text
+        vol=b.findAll('td')[8].text
         #print(price_mapping[stockname])
         #print(price)
         try:
             item = StocksPrices()
             item.stock=price_mapping[stockname]
-            item.stock_price=price
+            item.close=close
+            item.open=open
+            item.max=max
+            item.min=min
+            item.volume=vol
             item.time=time_in_site
             item.save()
         except:

@@ -49,17 +49,18 @@
 <div id="side_bar">
 <br>
 
-<span class="store-btn"><a href="javascript:srch()" style="float: left; display: inline; background-color: #428BCA; color: white; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Go</a>
+<div><span class="store-btn"><a href="javascript:srch()" style="float: left; display: inline; background-color: #428BCA; color: white; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Go</a>
 <input id="tags" style="direction:RTL; width: 72%; height: 30px; " type="text" placeholder="بحث ..." >
 </span>
+</div>
 
-<UL style="text-align: right ; direction:rtl; cursor: pointer;" class="accordion" id="containerUL">
+<p>
 
-<LI style="text-align: right ; direction:rtl " ><span><a style="line-height: 40px;"><b><font color='white' size="3" >تاسي</font></b></a></span>
-<UL style="text-align: right ; direction:rtl" id="side_bar_list">
-<LI style="text-align: right ; direction:rtl" ><span>تاسي</span></LI>
-</UL>
-</LI>
+</p>
+<UL style="text-align: right ; direction:rtl margin: 0; margin-bottom: 0px;" id="side_bar_list">
+<LI style="text-align: right ; direction:rtl" ><span>تاسي</span></LI></UL>
+
+<UL style="text-align: right ; direction:rtl; cursor: pointer; list-style:none; margin: 0; padding-right: 25px; " class="accordion" id="containerUL">
 
 <LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >المصارف والخدمات المالية</font></b></a></span>
 <UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
@@ -229,7 +230,7 @@
 <LI style="text-align: right ; direction:rtl" ><span>معدنية</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>معادن</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>شاكر</span></LI>
-<LI style="text-align: right ; direction:rtl" ><span>ميبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مبكو</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>زجاج</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>بى سى آى</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>العبداللطيف</span></LI>
@@ -315,7 +316,8 @@
             }]
           }"></script>
 <script type="text/javascript">
-
+var stock_N;
+var stock_fully_lab;
 //      function drawChart_line(stock) {
 //            ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
 //                //console.debug(prz)
@@ -538,18 +540,18 @@
     //$(".slider").on("change", function(){console.debug($(this).value)});
     $(document.getElementById('slider')).on("change", function(){
 	//console.log(document.getElementById('slider').value);
-	google.setOnLoadCallback(drawChart_candle("ay_haga",document.getElementById('slider').value))
+	google.setOnLoadCallback(drawChart_candle(window.stock_N,document.getElementById('slider').value))
 	});
     var graph="candle";
     var slid;
     slid=30;
     $('#graph_list > li').click(function () {
     if ( $(this).text() == " Line") 
-    {google.setOnLoadCallback(drawChart_line($('.select_list_item').text(),30,0)); graph="line";}
+    {google.setOnLoadCallback(drawChart_line(window.stock_N,30,0)); graph="line";}
     else if ( $(this).text() == " Mountain")
-    {google.setOnLoadCallback(drawChart_mountain($('.select_list_item').text(),30,0)); graph="mountain";}
+    {google.setOnLoadCallback(drawChart_mountain(window.stock_N,30,0)); graph="mountain";}
     else if ( $(this).text() == " CandleStick")
-    {google.setOnLoadCallback(drawChart_candle($('.select_list_item').text(),30,0)); graph="candle";}
+    {google.setOnLoadCallback(drawChart_candle(window.stock_N,30,0)); graph="candle";}
     });
 
     $('#time_list > li').click(function () {
@@ -562,16 +564,19 @@
     {slid=70;}
 		
     if (graph == "line")
-    {google.setOnLoadCallback(drawChart_line($('.select_list_item').text(),slid,0));}
+    {google.setOnLoadCallback(drawChart_line(window.stock_N,slid,0));}
     else if (graph == "mountain")
-    {google.setOnLoadCallback(drawChart_mountain($('.select_list_item').text(),slid,0));}
+    {google.setOnLoadCallback(drawChart_mountain(window.stock_N,slid,0));}
     else if (graph == "candle")
-    {google.setOnLoadCallback(drawChart_candle($('.select_list_item').text(),slid,0));}
+    {google.setOnLoadCallback(drawChart_candle(window.stock_N,slid,0));}
 
     });
 
     $('#side_bar_list > li').click( function () {
-        dosearch($(this).text()); }
+	window.stock_N=$(this).text();
+        dosearch($(this).text()); 
+	}
+
         );
         function dosearch (stock_name)
         {
@@ -579,7 +584,7 @@
         $(this).addClass('select_list_item');
 
         google.load("visualization", "1", {packages:["corechart"]});
-        google.setOnLoadCallback(drawChart_candle($(this).text(),30,2000));
+        google.setOnLoadCallback(drawChart_candle(window.stock_N,30,2000));
         $(".controller").show()
 
         $('#tweets').fadeOut('fast');
@@ -596,17 +601,21 @@
             $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
 
 		$('#stats').append('<br></br>')
                 $('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
+	    stock_fully_lab=content.stock_labeled_entries_in_DB
             $('#tweets').append('<div id="stock_rel" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_irel" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB for ' + stock_name + ' is: ' + content.stock_irrelevant_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_pos" class="stat_stock"><font color="black">' + 'Total number of positive entries in DB for ' + stock_name + ' is: ' + content.stock_positive_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_neg" class="stat_stock"><font color="black">' + 'Total number of negative entries in DB for ' + stock_name + ' is: ' + content.stock_negative_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of neutral entries in DB for ' + stock_name + ' is: ' + content.stock_neutral_labeled_entries_in_DB + '</font></div>'); 
+            $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_relevant_for_stock_in_DB + '</font></div>'); 
+            $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_irrelevant_for_stock_in_DB + '</font></div>'); 
             $('#tweets').append('<br></br>')
-            $('#stats').append('<div class="stat"><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
+            $('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
             
             for (var i = 0; i < content.statuses.length; i++) {
 		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
@@ -690,7 +699,7 @@
     $('body').on('click', '.editSentiment', function () {
 	var item = $(this).attr("id").match(/[0-9]+/g)[0];
 	var user_action=$(this).attr("value")
-	var stock = $('.select_list_item').text();
+	var stock = window.stock_N
         $('#negative'+item).show();
         $('#neutral'+item).show();
         editstring="<button id= positive"+item+ " class=sentiment type=button value=positive>Positive</button>"
@@ -743,10 +752,16 @@
 		return;
 	}
 	sentEditFlag[item]=1
-	var stock = $('.select_list_item').text();
+	//var stock = $('.select_list_item').text();
+	var stock = window.stock_N ;
         var user_action = $(this).attr("value")
 	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") ,'tweet_id': item,'stock':stock },function (content) {
         //console.debug($('#positive'+item))
+	if ( stock_fully_lab > 700)
+	{
+	window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");
+	return
+	}
         $('#negative'+item).hide();
         $('#neutral'+item).hide();
         editstring="<button id= editSentLab"+item +" class=editSentiment type=button value="+user_action+">Edit My Label</button>"
@@ -796,7 +811,7 @@
     $('body').on('click', '.editRel', function () {
 	var item = $(this).attr("id").match(/[0-9]+/g)[0];
 	var user_action=$(this).attr("value")
-	var stock = $('.select_list_item').text();
+	var stock = window.stock_N
         $('#corIrrel'+item).show();
         editstring="<button id= corRel"+item+" class=cor type=button value=relevant>Relevant</button>"
         $('#corRel'+item).replaceWith(editstring);
@@ -842,11 +857,15 @@
         //$('#debug').append('<div><font color="black">' + $(this).attr("id").slice(-1)+ '</font></div>')
 	//var item = $(this).attr("id").slice(-1);
         //$('#debug').append('<div><font color="black">' + item + '</font></div>');
-	var stock = $('.select_list_item').text();
+	var stock = window.stock_N
         var user_action = $(this).attr("value")
 	    ajaxPost('/get_correction', { 'relevancy': $(this).attr("value") ,'sentiment': 'none', 'tweet_id': item,'stock':stock },function (content) {
   	    //$('#debug').html('');
             //$('#debug').append('<div>' + item + '</div>')
+        if ( stock_fully_lab > 700)
+        {            window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");        return
+        } 
+
             $('#corIrrel'+item).hide();
             editstring="<button id= editRelLab"+item +" class=editRel type=button value="+user_action+">Edit My Label</button>"
        	    $('#corRel'+item).replaceWith(editstring);
@@ -884,7 +903,7 @@
   $(function() {
 var availableTags = 
 [
-"استثمار: البنك السعودي للاستثمار: 1030",
+"استثمار: البنك السعودي للاستثمار(أستثمار): 1030",
 "السعودى الهولندى: البنك السعودي الهولندي: 1040",
 "السعودى الفرنسى: البنك السعودي الفرنسي: 1050",
 "ساب: البنك السعودي البريطاني: 1060",
@@ -895,40 +914,40 @@ var availableTags =
 "الجزيرة: بنك الجزيرة: 1020",
 "الراجحي: مصرف الراجحي: 1120",
 "البلاد: بنك البلاد: 1140",
-"الإنماء: مصرف الإنماء: 1150",
+"الإنماء: مصرف الإنماء(انماء): 1150",
 "كيمانول: شركة تكوين المتطورة للصناعات: 1201",
 "بتروكيم: شركة الصحراء للبتروكيماويات : 2260",
 "سابك: شركة الصناعات الكيميائية الأساسية: 1210",
-"سافكو: مجموعة أسترا الصناعية: 1212",
+"سافكو: شركة الأسمدة العربية السعودية: 2020",
 "التصنيع: شركة مجموعة السريع التجارية الصناعية: 1213",
 "اللجين: شركة الحسن غازي إبراهيم شاكر: 1214",
 "نماء للكيماويات: شركة نماء للكيماويات: 2210",
 "المجموعة السعودية: المجموعة السعودية للإستثمار الصناعي: 2250",
 "الصحراء للبتروكيماويات: شركة الصحراء للبتروكيماويات: 2260",
 "ينساب: شركة ينبع الوطنية للبتروكيماويات: 2290",
-"أسمنت حائل: شركة أسمنت حائل: 3001",
-"أسمنت نجران: شركة أسمنت نجران : 3002",
-"اسمنت المدينة: شركة اسمنت المدينة : 3003",
-"اسمنت ام القرى: شركة اسمنت ام القرى: 3005",
-"اسمنت الشمالية: شركة أسمنت المنطقة الشمالية : 3004",
-"الاسمنت العربية: شركة الاسمنت العربية : 3010",
-"اسمنت اليمامة: شركة اسمنت اليمامة : 3020",
-"اسمنت السعوديه: شركة الأسمنت السعودية : 3030",
-"اسمنت القصيم: شركة اسمنت القصيم : 3040",
-"اسمنت الجنوبيه: شركة اسمنت المنطقة الجنوبيه : 3050",
-"اسمنت ينبع: شركة اسمنت ينبع: 3060",
-"اسمنت الشرقية: شركة اسمنت المنطقة الشرقية : 3080",
-"اسمنت تبوك: شركة اسمنت تبوك 3090",
-"اسمنت الجوف: شركة اسمنت الجوف : 3091",
-"أسواق ع العثيم: شركة أسواق عبدالله العثيم : 4001",
+"أسمنت حائل: شركة أسمنت حائل(اسمنت حائل): 3001",
+"أسمنت نجران: شركة أسمنت نجران(اسمنت نجران) : 3002",
+"اسمنت المدينة: شركة اسمنت المدينة(أسمنت المدينه) : 3003",
+"اسمنت ام القرى: شركة اسمنت ام القرى(أسمنت ام القرى): 3005",
+"اسمنت الشمالية: شركة أسمنت المنطقة الشمالية(أسمنت الشماليه) : 3004",
+"الاسمنت العربية: شركة الاسمنت العربية(اسمنت العربيه) : 3010",
+"اسمنت اليمامة: شركة اسمنت اليمامة(أسمنت اليمامه) : 3020",
+"اسمنت السعوديه: شركة الأسمنت السعودية(أسمنت السعوديه) : 3030",
+"اسمنت القصيم: شركة اسمنت القصيم (أسمنت القصيم): 3040",
+"اسمنت الجنوبيه: شركة اسمنت المنطقة الجنوبيه(أسمنت الجنوبية) : 3050",
+"اسمنت ينبع: شركة اسمنت ينبع(أسمنت ينبع) : 3060",
+"اسمنت الشرقية: شركة اسمنت المنطقة الشرقية(أسمنت الشرقيه) : 3080",
+"اسمنت تبوك: شركة اسمنت تبوك(أسمنت تبوك) : 3090",
+"اسمنت الجوف: شركة اسمنت الجوف(أسمنت الجوف) : 3091",
+"أسواق ع العثيم: شركة أسواق عبدالله العثيم(اسواق ع العثيم) : 4001",
 "المواساة: شركة المواساة للخدمات الطبية: 4002",
-"إكسترا: الشركة المتحدة للإلكترونيات: 4003",
+"إكسترا: الشركة المتحدة للإلكترونيات(اكسترا): 4003",
 "دله الصحية: شركة دله للخدمات الصحية القابضة: 4004",
 "رعاية: الشركة الوطنية للرعاية الطبية: 4005",
-"أسواق المزرعة: الشركة السعودية للتسويق: 4006",
+"أسواق المزرعة: الشركة السعودية للتسويق(اسواق المزرعه): 4006",
 "ساسكو: الشركة السعودية لخدمات السيارات والمعدات: 4050",
 "ثمار: الشركة الوطنية للتسويق الزراعي: 4160",
-"مجموعة فتيحي: مجموعة فتيحي القابضة : 4180",
+"مجموعة فتيحي: مجموعة فتيحي القابضة(مجموعه فتيحي) : 4180",
 "جرير: شركة جرير للتسويق: 4190",
 "الدريس: شركة الدريس للخدمات البترولية و النقليات: 4200",
 "الحكير: شركة فواز عبدالعزيز الحكير وشركاه: 4240",
@@ -936,11 +955,11 @@ var availableTags =
 "الخليج للتدريب: شركة الخليج للتدريب و التعليم : 4290",
 "الغاز والتصنيع: شركة الغاز والتصنيع الاهلية : 2080",
 "كهرباء السعودية: الشركة السعودية للكهرباء : 5110",
-"مجموعة صافولا: مجموعة صافولا: 2050",
+"مجموعة صافولا: مجموعة صافولا(مجموعه صافولا): 2050",
 "الغذائية: شركة وفرة للصناعة والتنمية: 6002",
 "سدافكو: الشركة السعودية لمنتجات الألبان والأغذية (سدافكو): 2270 ",
 "المراعي: شركة المراعي: 2280",
-"أنعام القابضة: شركة مجموعة أنعام الدولية القابضة : 4061",
+"أنعام القابضة: شركة مجموعة أنعام الدولية القابضة(انعام) : 4061",
 "حلواني إخوان: حلواني إخوان: 6001",
 "هرفي للأغذية: شركة هرفي للخدمات الغذائية: 6002",
 "التموين: شركة الخطوط السعودية للتموين: 6004",
@@ -960,7 +979,7 @@ var availableTags =
 "التعاونية: شركة التعاونية للتأمين : 8010 ",
 "ملاذ للتأمين: ملاذ للتأمين: 8020",
 "ميدغلف للتأمين: شركة المتوسط والخليج للتأمين وإعادة التأمين التعاوني: 8030",
-"أليانز إس إف: شركة أليانز السعودي الفرنسي للتأمين التعاوني : 8040",
+"أليانز إس إف: شركة أليانز السعودي الفرنسي للتأمين التعاوني(اليانز) : 8040",
 "سلامة: شركة سلامة للتأمين التعاوني: 8050",
 "ولاء للتأمين: الشركة السعودية المتحدة للتأمين التعاوني: 8060",
 "جزيرة تكافل:شركة الجزيرة تكافل تعاوني: 8012",
@@ -969,16 +988,16 @@ var availableTags =
 "سند: شركة سند للتأمين و إعادة التأمين التعاوني: 8090",
 "سايكو: الشركة العربية السعودية للتأمين التعاوني: 8100",
 "وفا للتأمين: الشركة السعودية الهندية للتأمين التعاوني: 8110 ",
-"إتحاد الخليج: شركة إتحاد الخليج للتأمين التعاوني: 8120",
-"الأهلي للتكافل: شركة الأهلي للتكافل: 8130",
+"إتحاد الخليج: شركة إتحاد الخليج للتأمين التعاوني(اتحاد الخليج) : 8120",
+"الأهلي للتكافل: شركة الأهلي للتكافل(الاهلى) : 8130",
 "العربي للتأمين: شركة متلايف وايه أي جي والبنك العربي للتأمين التعاوني: 8011",
-"الأهلية: الشركة الأهلية للتأمين التعاوني: 8140",
-"أسيج: المجموعة المتحدة للتأمين التعاوني: 8050",
-"التأمين العربية: شركة التأمين العربية التعاونية 8160",
-"الاتحاد التجاري: شركة الاتحاد التجاري للتأمين التعاوني : 8170 ",
+"الأهلية: الشركة الأهلية للتأمين التعاوني(الاهليه) : 8140",
+"أسيج: المجموعة المتحدة للتأمين التعاوني (اسيج): 8050",
+"التأمين العربية: شركة التأمين العربية التعاونية(التامين العربيه) : 8160",
+"الاتحاد التجاري: شركة الاتحاد التجاري للتأمين التعاوني(الأتحاد) : 8170 ",
 "الصقر للتأمين: شركة الصقر للتأمين التعاوني : 8180",
 "المتحدة للتأمين: المجموعة المتحدة للتأمين التعاوني : 8060",
-"الإعادة السعودية: الشركة السعودية لإعادة التأمين(إعادة) التعاونية : 8200",
+"الإعادة السعودية: الشركة السعودية لإعادة التأمين(الاعادة) التعاونية : 8200",
 "بوبا العربية: بوبا العربية للتأمين التعاوني : 8210",
 "وقاية للتكافل: شركة وقاية للتأمين و إعادة التأمين التكافلي: 8220",
 "تكافل الراجحي: شركة الراجحي للتأمين التعاوني : 8230",
@@ -989,9 +1008,9 @@ var availableTags =
 "العالمية: شركة العالمية للتأمين التعاوني: 8280",
 "سوليدرتي تكافل: شركة سوليدرتي السعودية للتكافل: 8290",
 "الوطنية: الشركة الوطنية للتأمين: 8300",
-"أمانة للتأمين: شركة أمانة للتأمين التعاوني",
+"أمانة للتأمين: شركة أمانة للتأمين التعاوني(امانه) : 8310",
 "عناية: شركة عناية السعودية للتأمين التعاوني: 8311",
-"الإنماء طوكيو مارين: شركة الإنماء طوكيو مارين: 8312",
+"الإنماء طوكيو مارين: شركة الإنماء طوكيو مارين(الانماء) : 8312",
 "المصافي: شركة المصافي العربية السعودية: 2030",
 "المتطورة: الشركة السعودية للصناعات المتطورة: 2120",
 "الاحساء للتنميه: شركة الاحساء للتنمية: 2140",
@@ -1002,7 +1021,7 @@ var availableTags =
 "تكوين: شركة تكوين المتطورة للصناعات: 1201",
 "بى سى آى: شركة الصناعات الكيميائية الأساسية: 1210",
 "معادن: شركة التعدين العربية السعودية: 1211",
-"أسترا الصناعية: مجموعة أسترا الصناعية: 1212",
+"أسترا الصناعية: مجموعة أسترا الصناعية(استرا) : 1212",
 "مجموعة السريع: شركة مجموعة السريع التجارية الصناعية: 1213",
 "شاكر: شركة الحسن غازي إبراهيم شاكر: 1214",
 "الدوائية: الشركة السعودية للصناعات الدوائية والمستلزمات الطبية: 2070",
@@ -1013,26 +1032,26 @@ var availableTags =
 "صناعة الورق: الشركة السعودية لصناعة الورق: 2300 ",
 "العبداللطيف: شركة العبداللطيف للاستثمار الصناعي: 2340",
 "الصادرات: الشركة السعودية للصادرات الصناعية: 4140",
-"أسلاك: شركة إتحاد مصانع الأسلاك: 1301",
+"أسلاك: شركة إتحاد مصانع الأسلاك(اسلاك) : 1301",
 "مجموعة المعجل: شركة مجموعة محمد المعجل: 1310",
-"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب: 1310",
+"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1310",
 "الخضري: شركة أبناء عبدالله عبدالمحسن الخضري: 1330",
 "الخزف: شركة الخزف السعودي: 2040",
 "الجبس: شركة الجبس الأهلية: 2090",
 "الكابلات: شركة الكابلات السعودية: 2110",
 "صدق: الشركة السعودية للتنمية الصناعية: 2130",
 "اميانتيت: شركة اميانتيت العربية السعودية: 2160",
-"أنابيب: الشركة العربية للأنابيب: 2200",
+"أنابيب: الشركة العربية للأنابيب(انابيب) : 2200",
 "الزامل للصناعة: شركة الزامل للاستثمار الصناعي: 2240",
 "البابطين: شركة البابطين للطاقة و الاتصالات: 2320",
 "الفخارية: الشركة السعودية لإنتاج الأنابيب الفخارية: 2360",
 "مسك: شركة الشرق الأوسط للكابلات المتخصصة: 2370",
 "البحر الأحمر: شركة البحر الأحمر لخدمات الإسكان: 4230",
 "العقارية: الشركة العقارية السعودية: 4020",
-"طيبة للاستثمار:  شركة طيبة القابضة : 4090",
-"مكة للانشاء: شركة مكة للإنشاء والتعمير: 4100",
+"طيبة للاستثمار:  شركة طيبه القابضة : 4090",
+"مكة للانشاء: شركة مكه للإنشاء والتعمير: 4100",
 "التعمير: شركة الرياض للتعمير: 4150",
-"إعمار: إعمار المدينة الإقتصادية: 4220",
+"إعمار: إعمار المدينة الإقتصادية(اعمار) : 4220",
 "جبل عمر: شركة جبل عمر للتطوير: 4250",
 "دار الأركان: شركة دار الأركان للتطوير العقاري: 4300",
 "مدينة المعرفة: شركة مدينة المعرفة الإقتصادية : 4310",
@@ -1041,14 +1060,14 @@ var availableTags =
 "مبرد: الشركة السعودية للنقل والاستثمار: 4110",
 "بدجت السعودية: الشركة المتحدة الدولية للمواصلات: 4260",
 "تهامه للاعلان: شركة تهامه للاعلان والعلاقات العامة: 4070",
-"الأبحاث و التسويق: الأبحاث و التسويق ",
+"الأبحاث و التسويق: الابحاث و التسويق ",
 "طباعة وتغليف: الشركة السعودية للطباعة والتغليف: 4270",
 "الطيار: مجموعة الطيار للسفر ",
 "دور: شركة دور للضيافة: 4010",
 "شمس: شركة المشروعات السياحية: 4170",
 "مجموعة الحكير: شركة مجموعة عبدالمحسن الحكير للسياحة والتنمية: 1820",
 "بوان: شركة بوان: 1302",
-"ميبكو:شركة الشرق الاوسط لصناعة وانتاج الورق: 1202",
+"مبكو:شركة الشرق الاوسط لصناعة وانتاج الورق: 1202",
 "ساكو: الشركة السعودية للعدد والأدوات: 4008",
 "الشركة السعودية للخدمات الأرضية:الشركة السعودية للخدمات الأرضية",
 "الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية"
@@ -1067,7 +1086,6 @@ $('#containerUL').find('SPAN').click(function(e){
 // $('#containerUL').find('ul').slideUp();  
 if($(this).text() ==  "المصارف والخدمات المالية" ||
 $(this).text() ==  "الاسمنت" ||
-$(this).text() ==  "تاسي" ||
 $(this).text() ==  "الصناعات البتروكيماوية" ||
 $(this).text() ==  "التجزئة" ||
 $(this).text() ==  "الطاقة والمرافق الخدمية" ||
@@ -1097,6 +1115,7 @@ if(x.indexOf(":") < 0)
 str=x;
 else
 str=x.substr(0,x.indexOf(":") );
+stock_N=str;
 	dosearch(str); 
 var a = document.getElementById("tags");
 a.value = a.defaultValue;

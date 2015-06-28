@@ -41,7 +41,11 @@ class Opinion(models.Model):
 class StocksPrices(models.Model):
     stock = models.CharField(max_length=40)
     from django.core.validators import MaxValueValidator, MinValueValidator
-    stock_price = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
+    close = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
+    max = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
+    min = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
+    open = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000.0)])
+    volume = models.FloatField(validators = [MinValueValidator(0.0), MaxValueValidator(1000000.0)])
     time = models.DateTimeField()
     '''
     def __str__(self):
@@ -70,12 +74,31 @@ class RelevancyCounter(models.Model):
     relevancy = models.CharField(max_length=200)
     counter = models.BigIntegerField(max_length=21)
 
-
 class SentimentCounter(models.Model):
     stock = models.CharField(max_length=40)
     sentiment = models.CharField(max_length=200)
     counter = models.BigIntegerField(max_length=21)
-    
+
+class DailyPrices(models.Model):
+    stock = models.CharField(max_length=40)
+    day = models.CharField(max_length=20) 
+    min = models.CharField(max_length=20)
+    max = models.CharField(max_length=20)
+    concat = models.CharField(max_length=800)
+
+class WeeklyPrices(models.Model):
+    stock = models.CharField(max_length=40)
+    week = models.CharField(max_length=20) 
+    min = models.CharField(max_length=20)
+    max = models.CharField(max_length=20)
+    concat = models.CharField(max_length=3500)
+
+class UserCounter(models.Model):
+    stock = models.CharField(max_length=40)
+    labeled_user = models.CharField(max_length=40)
+    relevancy = models.CharField(max_length=200)
+    counter = models.BigIntegerField(max_length=21)
+
 class User(models.Model):
     username = models.CharField(max_length=200)
     email = models.CharField(max_length=200)
