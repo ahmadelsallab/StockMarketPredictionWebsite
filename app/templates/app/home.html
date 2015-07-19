@@ -48,14 +48,27 @@
     </td>
     <td style="width:60%"><div id="price_chart" style="width: 700px; height: 350px"></div></td>
     </tr>
- 
-    <!--tr>
-		<td style="width:40%"><div id="overall_pie_chart"></div></td>
-	</tr>
-    <tr>
-		<td style="width:40%"><div id="stats"></div></td>
-	</tr-->
     </table>
+    
+        
+     <div>
+	    <table>
+		    <tr>
+		    	<td><div id="stock_rel_pie_chart" style="width: 500px; height: 500px;"></div></td>
+		    	<td><div id="stock_sent_pie_chart" style="width: 500px; height: 500px;"></div></td>
+
+		    </tr>
+
+		    <tr>
+		    	<td><div id="stock_rel_col_chart" style="width: 500px; height: 500px;"></div></td>
+		    	<td><div id="stock_sent_col_chart" style="width: 500px; height: 500px;"></div></td>
+
+		    </tr>
+		    
+	    </table>
+    </div>
+    
+    
     <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
@@ -328,7 +341,7 @@
             'modules':[{
               'name':'visualization',
               'version':'1',
-              'packages':['corechart']
+              'packages':['corechart', 'bar']
             }]
           }"></script>
 <script type="text/javascript">
@@ -388,8 +401,130 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
 	
 	    chart.draw(data, options);
 	  }
+	function drawPieChart_Rel_Stock() {
+		
+	    var data = google.visualization.arrayToDataTable([
+	      ['Task', 'Hours per Day'],
+	      ['Work',     11],
+	      ['Eat',      2],
+	      ['Commute',  2],
+	      ['Watch TV', 2],
+	      ['Sleep',    7]
+	    ]);
+	
+	    var options = {
+	      title: 'Sentiment chart',
+	        is3D: true
+	    };
+	
+	    $('#stats').html('<br></br>');
+	    var chart = new google.visualization.PieChart(document.getElementById('stock_rel_pie_chart'));
+	
+	    chart.draw(data, options);
+	  }
 
 	
+	function drawPieChart_Sent_Stock() {
+		
+	    var data = google.visualization.arrayToDataTable([
+	      ['Task', 'Hours per Day'],
+	      ['Work',     11],
+	      ['Eat',      2],
+	      ['Commute',  2],
+	      ['Watch TV', 2],
+	      ['Sleep',    7]
+	    ]);
+	
+	    var options = {
+	      title: 'Sentiment chart',
+	        is3D: true
+	    };
+	
+	    $('#stats').html('<br></br>');
+	    var chart = new google.visualization.PieChart(document.getElementById('stock_sent_pie_chart'));
+	
+	    chart.draw(data, options);
+	  }
+	function drawColChart_Rel_Stock() {
+		
+	      var data = new google.visualization.DataTable();
+	      data.addColumn('timeofday', 'Time of Day');
+	      data.addColumn('number', 'Motivation Level');
+	      data.addColumn('number', 'Energy Level');
+
+	      data.addRows([
+	        [{v: [8, 0, 0], f: '8 am'}, 1, .25],
+	        [{v: [9, 0, 0], f: '9 am'}, 2, .5],
+	        [{v: [10, 0, 0], f:'10 am'}, 3, 1],
+	        [{v: [11, 0, 0], f: '11 am'}, 4, 2.25],
+	        [{v: [12, 0, 0], f: '12 pm'}, 5, 2.25],
+	        [{v: [13, 0, 0], f: '1 pm'}, 6, 3],
+	        [{v: [14, 0, 0], f: '2 pm'}, 7, 4],
+	        [{v: [15, 0, 0], f: '3 pm'}, 8, 5.25],
+	        [{v: [16, 0, 0], f: '4 pm'}, 9, 7.5],
+	        [{v: [17, 0, 0], f: '5 pm'}, 10, 10],
+	      ]);
+
+	      var options = {
+	        title: 'Motivation and Energy Level Throughout the Day',
+	        isStacked: true,
+	        hAxis: {
+	          title: 'Time of Day',
+	          format: 'h:mm a',
+	          viewWindow: {
+	            min: [7, 30, 0],
+	            max: [17, 30, 0]
+	          }
+	        },
+	        vAxis: {
+	          title: 'Rating (scale of 1-10)'
+	        }
+	      };
+
+	      var chart = new google.visualization.ColumnChart(document.getElementById('stock_rel_col_chart'));
+	      chart.draw(data, options);
+	  }
+
+	function drawColChart_Sent_Stock() {
+		
+	      var data = new google.visualization.DataTable();
+	      data.addColumn('timeofday', 'Time of Day');
+	      data.addColumn('number', 'Motivation Level');
+	      data.addColumn('number', 'Energy Level');
+
+	      data.addRows([
+	        [{v: [8, 0, 0], f: '8 am'}, 1, .25],
+	        [{v: [9, 0, 0], f: '9 am'}, 2, .5],
+	        [{v: [10, 0, 0], f:'10 am'}, 3, 1],
+	        [{v: [11, 0, 0], f: '11 am'}, 4, 2.25],
+	        [{v: [12, 0, 0], f: '12 pm'}, 5, 2.25],
+	        [{v: [13, 0, 0], f: '1 pm'}, 6, 3],
+	        [{v: [14, 0, 0], f: '2 pm'}, 7, 4],
+	        [{v: [15, 0, 0], f: '3 pm'}, 8, 5.25],
+	        [{v: [16, 0, 0], f: '4 pm'}, 9, 7.5],
+	        [{v: [17, 0, 0], f: '5 pm'}, 10, 10],
+	      ]);
+
+	      var options = {
+	        title: 'Motivation and Energy Level Throughout the Day',
+	        isStacked: true,
+	        hAxis: {
+	          title: 'Time of Day',
+	          format: 'h:mm a',
+	          viewWindow: {
+	            min: [7, 30, 0],
+	            max: [17, 30, 0]
+	          }
+	        },
+	        vAxis: {
+	          title: 'Rating (scale of 1-10)'
+	        }
+	      };
+
+	      var chart = new google.visualization.ColumnChart(document.getElementById('stock_sent_col_chart'));
+	      chart.draw(data, options);
+	   }
+
 var stock_N;
 var stock_fully_lab;
 //      function drawChart_line(stock) {
@@ -651,17 +786,18 @@ var stock_fully_lab;
     });
 
     $('#side_bar_list > li').click( function () {
-	window.stock_N=$(this).text();
-        dosearch($(this).text()); 
-	}
+			window.stock_N=$(this).text();
+	        dosearch($(this).text()); 
+		}
 
         );
-        function dosearch (stock_name)
+        
+    	function dosearch (stock_name)
         {
         $('.select_list_item').removeClass('select_list_item');
         $(this).addClass('select_list_item');
 
-        google.load("visualization", "1", {packages:["corechart"]});
+        google.load("visualization", "1", {packages:["corechart", "bar"]});
         google.setOnLoadCallback(drawChart_candle(window.stock_N,30,2000));
         $(".controller").show()
 
@@ -674,6 +810,11 @@ var stock_fully_lab;
             $('#tweets').html('');
             google.setOnLoadCallback(drawPieChart_Rel_Overall);
             google.setOnLoadCallback(drawPieChart_Sent_Overall);
+            google.setOnLoadCallback(drawPieChart_Rel_Stock);
+            google.setOnLoadCallback(drawPieChart_Sent_Stock);
+            google.setOnLoadCallback(drawColChart_Rel_Stock);
+            google.setOnLoadCallback(drawColChart_Sent_Stock);
+
             $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
