@@ -1114,7 +1114,10 @@ def get_stock_volume(request):
         graph_point += one_hour
         
         w = count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point)
-        content_return.append([{'v':[prev_graph_point.hour,0,0],'f':str(prev_graph_point.hour)}, w]);
+        # FIX: convert the prev_graph_point into the Saudi timezone. See http://stackoverflow.com/questions/1398674/python-display-the-time-in-a-different-time-zone
+        # All timezones names can be found at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        # Saudi is: 'Asia/Riyadh'
+        content_return.append([{'v':[prev_graph_point.hour,0,0],'f':str(prev_graph_point.hour)}, w])
 
     return content_return;
 

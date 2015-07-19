@@ -413,7 +413,7 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
 	    ]);
 	
 	    var options = {
-	      title: 'Sentiment chart',
+	      title: 'Relevance chart',
 	        is3D: true
 	    };
 	
@@ -799,6 +799,11 @@ var stock_fully_lab;
 
         google.load("visualization", "1", {packages:["corechart", "bar"]});
         google.setOnLoadCallback(drawChart_candle(window.stock_N,30,2000));
+        google.setOnLoadCallback(drawPieChart_Rel_Stock);
+        google.setOnLoadCallback(drawPieChart_Sent_Stock);
+        google.setOnLoadCallback(drawColChart_Rel_Stock);
+        google.setOnLoadCallback(drawColChart_Sent_Stock);
+
         $(".controller").show()
 
         $('#tweets').fadeOut('fast');
