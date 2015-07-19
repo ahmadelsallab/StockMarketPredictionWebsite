@@ -6,8 +6,11 @@
 
 <div id="debug"></div>
 <div id="main_content">
+
     <h1 class="page-header" align="right">التغريدات</h1>
-    <table style="width:100%">
+    <div id="overall_pie_chart" style="width: 900px; height: 500px;"></div>
+    <div id="stats"></div>
+    <table>
     <tr class="controller">
     <td style="width:40%; height:30px;"></td>
     <td>
@@ -34,11 +37,15 @@
     </ul>
     </nav>
     </td>
-    </tr>
-    <tr>
-    <td style="width:40%"><div id="stats"></div></td>
     <td style="width:60%"><div id="price_chart" style="width: 700px; height: 350px"></div></td>
     </tr>
+ 
+    <!--tr>
+		<td style="width:40%"><div id="overall_pie_chart"></div></td>
+	</tr>
+    <tr>
+		<td style="width:40%"><div id="stats"></div></td>
+	</tr-->
     </table>
     <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
@@ -316,6 +323,28 @@
             }]
           }"></script>
 <script type="text/javascript">
+google.setOnLoadCallback(drawPieChart_Overall);
+	function drawPieChart_Overall() {
+	
+	    var data = google.visualization.arrayToDataTable([
+	      ['Task', 'Hours per Day'],
+	      ['Work',     11],
+	      ['Eat',      2],
+	      ['Commute',  2],
+	      ['Watch TV', 2],
+	      ['Sleep',    7]
+	    ]);
+	
+	    var options = {
+	      title: 'My Daily Activities',
+	        is3D: true
+	    };
+	
+	    $('#stats').html('<br></br>');
+	    var chart = new google.visualization.PieChart(document.getElementById('overall_pie_chart'));
+	
+	    chart.draw(data, options);
+	  }
 var stock_N;
 var stock_fully_lab;
 //      function drawChart_line(stock) {
@@ -509,6 +538,7 @@ var stock_fully_lab;
     }
     
     $(window).load(function () {
+    	
         var screenWidth = document.documentElement.clientWidth;
         var screenHeight = document.documentElement.clientHeight;
 
@@ -523,7 +553,8 @@ var stock_fully_lab;
             $("#word_cloud_container").jQCloud(word_list,{width:screenWidth,height:500});    
             
         });
-*/        
+*/      
+        //google.setOnLoadCallback(drawPieChart_Overall);
     });
 
     $('#side_bar_selection').keyup(function () {
@@ -537,9 +568,11 @@ var stock_fully_lab;
         });
     });
 
+    
     //$(".slider").on("change", function(){console.debug($(this).value)});
     $(document.getElementById('slider')).on("change", function(){
-	//console.log(document.getElementById('slider').value);
+    	
+    	//console.log(document.getElementById('slider').value);
 	google.setOnLoadCallback(drawChart_candle(window.stock_N,document.getElementById('slider').value))
 	});
     var graph="candle";
@@ -594,6 +627,7 @@ var stock_fully_lab;
         //var stock_name = $(this).text()
         ajaxPost('/get_tweets', { 'query': stock_name}, function (content) {
             $('#tweets').html('');
+            google.setOnLoadCallback(drawPieChart_Overall);
             $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');

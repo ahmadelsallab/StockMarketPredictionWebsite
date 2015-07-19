@@ -5,3 +5,4 @@ encoding/crawl_price_thread.py=UTF-8
 encoding/crawl_thread.py=UTF-8
 encoding/crawl_twitter.py=UTF-8
 encoding/get_all_stocks_prices.py=UTF-8
+encoding/remove_duplicates.py=UTF-8
