@@ -798,11 +798,14 @@ var stock_fully_lab;
         $(this).addClass('select_list_item');
 
         google.load("visualization", "1", {packages:["corechart", "bar"]});
+        /*
+        drawPieChart_Rel_Stock();
+        drawPieChart_Rel_Stock();
+        drawPieChart_Sent_Stock();
+        drawColChart_Rel_Stock();
+        drawColChart_Sent_Stock();
+		*/
         google.setOnLoadCallback(drawChart_candle(window.stock_N,30,2000));
-        google.setOnLoadCallback(drawPieChart_Rel_Stock);
-        google.setOnLoadCallback(drawPieChart_Sent_Stock);
-        google.setOnLoadCallback(drawColChart_Rel_Stock);
-        google.setOnLoadCallback(drawColChart_Sent_Stock);
 
         $(".controller").show()
 
@@ -813,13 +816,13 @@ var stock_fully_lab;
         //var stock_name = $(this).text()
         ajaxPost('/get_tweets', { 'query': stock_name}, function (content) {
             $('#tweets').html('');
-            google.setOnLoadCallback(drawPieChart_Rel_Overall);
-            google.setOnLoadCallback(drawPieChart_Sent_Overall);
-            google.setOnLoadCallback(drawPieChart_Rel_Stock);
-            google.setOnLoadCallback(drawPieChart_Sent_Stock);
-            google.setOnLoadCallback(drawColChart_Rel_Stock);
-            google.setOnLoadCallback(drawColChart_Sent_Stock);
-
+            drawPieChart_Rel_Overall();
+            drawPieChart_Sent_Overall();
+            drawPieChart_Rel_Stock();
+            drawPieChart_Rel_Stock();
+            drawPieChart_Sent_Stock();
+            drawColChart_Rel_Stock();
+            drawColChart_Sent_Stock();
             $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
