@@ -8,7 +8,8 @@
 <div id="main_content">
 
     <h1 class="page-header" align="right">التغريدات</h1>
-    <div>
+    <h2 class="page-header" align="right">Overall statistics</h2>
+    <div id="overall_pie_stats">
 	    <table>
 		    <tr>
 		    	<td><div id="overall_rel_pie_chart" style="width: 500px; height: 500px;"></div></td>
@@ -18,6 +19,8 @@
 
 	    </table>
     </div>
+    <div id="overall_stats_table"></div>
+    <h2 class="page-header" align="right">Stock statistics</h2>
     <div id="stats"></div>
     <table>
     <tr class="controller">
@@ -341,12 +344,51 @@
             'modules':[{
               'name':'visualization',
               'version':'1',
-              'packages':['corechart', 'bar']
+              'packages':['corechart', 'bar', 'table']
             }]
           }"></script>
 <script type="text/javascript">
 google.setOnLoadCallback(drawPieChart_Rel_Overall);
 google.setOnLoadCallback(drawPieChart_Sent_Overall);
+
+	function drawOverallStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_labeled) {
+	    var data = new google.visualization.DataTable();
+	    data.addColumn('string', '');
+	    data.addColumn('number', 'Value');
+        /*
+	    $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
+		*/
+	    data.addRows([
+	      ['Total number of entries',  {v: total, f: total.toString()}],
+	      ['Total number of fully labeled entries',  {v: labeled, f: labeled.toString()}],
+	      ['Total number of relevant entries',   {v:rel,   f: rel.toString()}],
+	      ['Total number of irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+	      ['Total number of positive entries', {v: pos, f: pos.toString()}],
+	      ['Total number of negative entries', {v: neg, f: neg.toString()}],
+	      ['Total number of neutral entries',   {v: neu,  f: neu.toString()}]
+	      
+	    ]);
+		if(user_labeled !== null)
+		{
+			data.addRow(['Total number of labeled tweets entries by this user',   {v: user_labeled,  f: user_labeled.toString()}]);
+			
+		}
+		else
+		{
+			data.addRow(['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]);
+		}
+	
+	    var table = new google.visualization.Table(document.getElementById('overall_stats_table'));
+	
+	    table.draw(data, {showRowNumber: true, width: '1000px'});
+	  }
 	function drawPieChart_Rel_Overall() {
 	
 	    var data = google.visualization.arrayToDataTable([
@@ -396,7 +438,7 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
 	        is3D: true
 	    };
 	
-	    $('#stats').html('<br></br>');
+	    //$('#stats').html('<br></br>');
 	    var chart = new google.visualization.PieChart(document.getElementById('overall_sent_pie_chart'));
 	
 	    chart.draw(data, options);
@@ -417,7 +459,7 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
 	        is3D: true
 	    };
 	
-	    $('#stats').html('<br></br>');
+	    //$('#stats').html('<br></br>');
 	    var chart = new google.visualization.PieChart(document.getElementById('stock_rel_pie_chart'));
 	
 	    chart.draw(data, options);
@@ -440,7 +482,7 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
 	        is3D: true
 	    };
 	
-	    $('#stats').html('<br></br>');
+	    //$('#stats').html('<br></br>');
 	    var chart = new google.visualization.PieChart(document.getElementById('stock_sent_pie_chart'));
 	
 	    chart.draw(data, options);
@@ -809,6 +851,7 @@ var stock_fully_lab;
 
         $(".controller").show()
 
+        $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + '</font></div>');
         $('#tweets').fadeOut('fast');
         $("#tweets").animate({ scrollTop: 0 }, "fast");
         $('#tweets_loading').fadeIn('fast');
@@ -823,7 +866,7 @@ var stock_fully_lab;
             drawPieChart_Sent_Stock();
             drawColChart_Rel_Stock();
             drawColChart_Sent_Stock();
-            $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+            /*$('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
@@ -831,11 +874,15 @@ var stock_fully_lab;
             $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
-
-		$('#stats').append('<br></br>')
-                $('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
+            
+			$('#stats').append('<br></br>')
+           	*/
+			// FIX: To be called again at the beginning of the script with Ajax POST added inside to get the DB counts
+			drawOverallStatsTable(content.total_entries_in_DB, content.total_relevant_labeled_entries_in_DB, content.total_irrelevant_labeled_entries_in_DB, content.total_positive_labeled_entries_in_DB, content.total_negative_labeled_entries_in_DB, content.total_neutral_labeled_entries_in_DB, content.total_labeled_entries_in_DB, content.user_total_labels_in_DB)
+			
+			$('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
-	    stock_fully_lab=content.stock_labeled_entries_in_DB
+	    	stock_fully_lab=content.stock_labeled_entries_in_DB
             $('#tweets').append('<div id="stock_rel" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_irel" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB for ' + stock_name + ' is: ' + content.stock_irrelevant_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_pos" class="stat_stock"><font color="black">' + 'Total number of positive entries in DB for ' + stock_name + ' is: ' + content.stock_positive_labeled_entries_in_DB + '</font></div>');
@@ -844,7 +891,8 @@ var stock_fully_lab;
             $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_relevant_for_stock_in_DB + '</font></div>'); 
             $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_irrelevant_for_stock_in_DB + '</font></div>'); 
             $('#tweets').append('<br></br>')
-            $('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
+            //$('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
+            $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>');
             
             for (var i = 0; i < content.statuses.length; i++) {
 		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
