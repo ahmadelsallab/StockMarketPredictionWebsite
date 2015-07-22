@@ -1255,7 +1255,8 @@ def get_tweets(request):
 
     print('adding the prices')
     from datetime import datetime, timedelta
-    for x in range(0,50):
+    x = 0
+    while x < min(50, len(tweetes_to_render)):
         tweet_time=datetime.strptime(tweetes_to_render[x]['created_at'],'%a %b %d %X %z %Y')+timedelta(hours=3)
         done = False
         i=0
@@ -1266,6 +1267,7 @@ def get_tweets(request):
                 tweetes_to_render[x]['price_time_then']=price_list[i].time.strftime('%a %b %d %I:%M %p')
                 tweetes_to_render[x]['price_then']=price_list[i].close
             i=i+1
+        x = x + 1
     
     content_return['statuses'] = tweetes_to_render[0:50]
     

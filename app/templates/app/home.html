@@ -878,7 +878,8 @@ var stock_fully_lab;
 			$('#stats').append('<br></br>')
            	*/
 			// FIX: To be called again at the beginning of the script with Ajax POST added inside to get the DB counts
-			drawOverallStatsTable(content.total_entries_in_DB, content.total_relevant_labeled_entries_in_DB, content.total_irrelevant_labeled_entries_in_DB, content.total_positive_labeled_entries_in_DB, content.total_negative_labeled_entries_in_DB, content.total_neutral_labeled_entries_in_DB, content.total_labeled_entries_in_DB, content.user_total_labels_in_DB)
+			
+            drawOverallStatsTable(content.total_entries_in_DB, content.total_relevant_labeled_entries_in_DB, content.total_irrelevant_labeled_entries_in_DB, content.total_positive_labeled_entries_in_DB, content.total_negative_labeled_entries_in_DB, content.total_neutral_labeled_entries_in_DB, content.total_labeled_entries_in_DB, content.user_total_labels_in_DB);
 			
 			$('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
