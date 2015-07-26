@@ -1121,6 +1121,25 @@ def get_stock_volume(request):
 
     return content_return;
 
+@ajax
+def get_stock_rel_info(request):
+    stock_name = request.POST['query']
+    content_return = []
+    all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
+    try:
+        rel_count = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'relevant' "}).values()[0]['counter']
+    except:
+        rel_count = 10
+    try:
+        irrel_count = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'irrelevant' "}).values()[0]['counter']
+    except:
+        irrel_count = 10
+    
+    content_return.append(['Relevant', rel_count])
+    content_return.append(['Irrelevant', irrel_count])
+
+    return content_return;
+    
 def count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point):
     w = 0
     for tweet in all_tweets:

@@ -350,6 +350,7 @@
 <script type="text/javascript">
 google.setOnLoadCallback(drawPieChart_Rel_Overall);
 google.setOnLoadCallback(drawPieChart_Sent_Overall);
+google.setOnLoadCallback(drawOverallStatsTable);
 
 	function drawOverallStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_labeled) {
 	    var data = new google.visualization.DataTable();
@@ -365,26 +366,42 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
         $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
         $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
 		*/
-	    data.addRows([
-	      ['Total number of entries',  {v: total, f: total.toString()}],
-	      ['Total number of fully labeled entries',  {v: labeled, f: labeled.toString()}],
-	      ['Total number of relevant entries',   {v:rel,   f: rel.toString()}],
-	      ['Total number of irrelevant entries',   {v:irrel,   f: irrel.toString()}],
-	      ['Total number of positive entries', {v: pos, f: pos.toString()}],
-	      ['Total number of negative entries', {v: neg, f: neg.toString()}],
-	      ['Total number of neutral entries',   {v: neu,  f: neu.toString()}]
-	      
-	    ]);
-		if(user_labeled !== null)
+		try
 		{
-			data.addRow(['Total number of labeled tweets entries by this user',   {v: user_labeled,  f: user_labeled.toString()}]);
-			
+		    data.addRows([
+		      ['Total number of entries',  {v: total, f: total.toString()}],
+		      ['Total number of fully labeled entries',  {v: labeled, f: labeled.toString()}],
+		      ['Total number of relevant entries',   {v:rel,   f: rel.toString()}],
+		      ['Total number of irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+		      ['Total number of positive entries', {v: pos, f: pos.toString()}],
+		      ['Total number of negative entries', {v: neg, f: neg.toString()}],
+		      ['Total number of neutral entries',   {v: neu,  f: neu.toString()}]
+		      
+		    ]);
+			if(user_labeled !== null)
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: user_labeled,  f: user_labeled.toString()}]);
+				
+			}
+			else
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]);
+			}
 		}
-		else
+		catch(e)
 		{
-			data.addRow(['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]);
+		    data.addRows([
+		    		      ['Total number of entries', {v: 0,  f: '0'}],
+		    		      ['Total number of fully labeled entries', {v: 0,  f: '0'}],
+		    		      ['Total number of relevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of irrelevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of positive entries', {v: 0,  f: '0'}],
+		    		      ['Total number of negative entries', {v: 0,  f: '0'}],
+		    		      ['Total number of neutral entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]
+		    		      
+		    		    ]);
 		}
-	
 	    var table = new google.visualization.Table(document.getElementById('overall_stats_table'));
 	
 	    table.draw(data, {showRowNumber: true, width: '1000px'});
@@ -443,26 +460,36 @@ google.setOnLoadCallback(drawPieChart_Sent_Overall);
 	
 	    chart.draw(data, options);
 	  }
-	function drawPieChart_Rel_Stock() {
+	function drawPieChart_Rel_Stock(stock) {
+		ajaxPost('/get_stock_rel_info', { 'query': stock }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Relevancy');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
 		
-	    var data = google.visualization.arrayToDataTable([
-	      ['Task', 'Hours per Day'],
-	      ['Work',     11],
-	      ['Eat',      2],
-	      ['Commute',  2],
-	      ['Watch TV', 2],
-	      ['Sleep',    7]
-	    ]);
-	
-	    var options = {
-	      title: 'Relevance chart',
-	        is3D: true
-	    };
-	
-	    //$('#stats').html('<br></br>');
-	    var chart = new google.visualization.PieChart(document.getElementById('stock_rel_pie_chart'));
-	
-	    chart.draw(data, options);
+		    var options = {
+		      title: 'Relevance chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('stock_rel_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
 	  }
 
 	
@@ -861,8 +888,7 @@ var stock_fully_lab;
             $('#tweets').html('');
             drawPieChart_Rel_Overall();
             drawPieChart_Sent_Overall();
-            drawPieChart_Rel_Stock();
-            drawPieChart_Rel_Stock();
+            drawPieChart_Rel_Stock(stock_name);
             drawPieChart_Sent_Stock();
             drawColChart_Rel_Stock();
             drawColChart_Sent_Stock();
@@ -877,10 +903,10 @@ var stock_fully_lab;
             
 			$('#stats').append('<br></br>')
            	*/
-			// FIX: To be called again at the beginning of the script with Ajax POST added inside to get the DB counts
-			
+
             drawOverallStatsTable(content.total_entries_in_DB, content.total_relevant_labeled_entries_in_DB, content.total_irrelevant_labeled_entries_in_DB, content.total_positive_labeled_entries_in_DB, content.total_negative_labeled_entries_in_DB, content.total_neutral_labeled_entries_in_DB, content.total_labeled_entries_in_DB, content.user_total_labels_in_DB);
 			
+			// FIX: To be moved to a table outside the #tweets area 
 			$('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
 	    	stock_fully_lab=content.stock_labeled_entries_in_DB
