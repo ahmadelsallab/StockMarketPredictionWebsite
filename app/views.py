@@ -1122,10 +1122,101 @@ def get_stock_volume(request):
     return content_return;
 
 @ajax
+def get_stock_col_rel_info(request):
+    stock_name = request.POST['query']
+    content_return = []
+    now_time = timezone.now()
+    start_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 8, 0, 0,)
+    graph_point = start_point
+    end_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 17, 0, 0,)
+    one_hour = timezone.timedelta(hours=1)
+    rel_tweets = Opinion.objects.filter(stock=stock_name, voted_relevancy='Relevant').values().order_by('-id')
+    irrel_tweets = Opinion.objects.filter(stock=stock_name, voted_relevancy='Irrelevant').values().order_by('-id')
+    while(graph_point <= end_point):
+        prev_graph_point = graph_point
+        graph_point += one_hour
+        
+        rel_count = count_number_tweets_in_range(rel_tweets, prev_graph_point, graph_point)
+        irrel_count = count_number_tweets_in_range(irrel_tweets, prev_graph_point, graph_point)
+        # FIX: convert the prev_graph_point into the Saudi timezone. See http://stackoverflow.com/questions/1398674/python-display-the-time-in-a-different-time-zone
+        # All timezones names can be found at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        # Saudi is: 'Asia/Riyadh'
+        content_return.append([{'v':[prev_graph_point.hour,0,0],'f':str(prev_graph_point.hour)}, rel_count, irrel_count])
+
+    return content_return;
+
+@ajax
+def get_stock_col_sent_info(request):
+    stock_name = request.POST['query']
+    content_return = []
+    now_time = timezone.now()
+    start_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 8, 0, 0,)
+    graph_point = start_point
+    end_point = timezone.datetime(now_time.year, now_time.month, now_time.day, 17, 0, 0,)
+    one_hour = timezone.timedelta(hours=1)
+    pos_tweets = Opinion.objects.filter(stock=stock_name, voted_sentiment='Positive').values().order_by('-id')
+    neg_tweets = Opinion.objects.filter(stock=stock_name, voted_sentiment='Negative').values().order_by('-id')
+    neu_tweets = Opinion.objects.filter(stock=stock_name, voted_sentiment='Neutral').values().order_by('-id')
+    while(graph_point <= end_point):
+        prev_graph_point = graph_point
+        graph_point += one_hour
+        
+        pos_count = count_number_tweets_in_range(pos_tweets, prev_graph_point, graph_point)
+        neg_count = count_number_tweets_in_range(neg_tweets, prev_graph_point, graph_point)
+        neu_count = count_number_tweets_in_range(neu_tweets, prev_graph_point, graph_point)
+        # FIX: convert the prev_graph_point into the Saudi timezone. See http://stackoverflow.com/questions/1398674/python-display-the-time-in-a-different-time-zone
+        # All timezones names can be found at: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+        # Saudi is: 'Asia/Riyadh'
+        content_return.append([{'v':[prev_graph_point.hour,0,0],'f':str(prev_graph_point.hour)}, pos_count, neg_count, neu_count])
+
+    return content_return;
+
+@ajax
+def get_overall_rel_info(request):
+
+    content_return = []
+    #all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
+    try:
+        rel_count = RelevancyCounter.objects.extra(where={"`relevancy` = 'relevant' "}).values()[0]['counter']
+    except:
+        rel_count = 10
+    try:
+        irrel_count = RelevancyCounter.objects.extra(where={"`relevancy` = 'irrelevant' "}).values()[0]['counter']
+    except:
+        irrel_count = 10
+    
+    content_return.append(['Relevant', rel_count])
+    content_return.append(['Irrelevant', irrel_count])
+
+    return content_return;
+@ajax
+def get_overall_sent_info(request):
+    content_return = []
+    #all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
+    try:
+        pos_count = SentimentCounter.objects.extra(where={"`sentiment` = 'positive' "}).values()[0]['counter']
+    except:
+        pos_count = 10
+    try:
+        neg_count = SentimentCounter.objects.extra(where={"`sentiment` = 'negative' "}).values()[0]['counter']
+    except:
+        neg_count = 10
+    try:
+        neu_count = SentimentCounter.objects.extra(where={"`sentiment` = 'neutral' "}).values()[0]['counter']
+    except:
+        neu_count = 10
+    
+    content_return.append(['Positive', pos_count])
+    content_return.append(['Negative', neg_count])
+    content_return.append(['Neutral', neu_count])
+
+    return content_return;  
+
+@ajax
 def get_stock_rel_info(request):
     stock_name = request.POST['query']
     content_return = []
-    all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
+    #all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
     try:
         rel_count = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'relevant' "}).values()[0]['counter']
     except:
@@ -1139,7 +1230,30 @@ def get_stock_rel_info(request):
     content_return.append(['Irrelevant', irrel_count])
 
     return content_return;
+@ajax
+def get_stock_sent_info(request):
+    stock_name = request.POST['query']
+    content_return = []
+    #all_tweets = Opinion.objects.filter(stock=stock_name).values().order_by('-id')
+    try:
+        pos_count = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'positive' "}).values()[0]['counter']
+    except:
+        pos_count = 10
+    try:
+        neg_count = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'negative' "}).values()[0]['counter']
+    except:
+        neg_count = 10
+    try:
+        neu_count = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'neutral' "}).values()[0]['counter']
+    except:
+        neu_count = 10
     
+    content_return.append(['Positive', pos_count])
+    content_return.append(['Negative', neg_count])
+    content_return.append(['Neutral', neu_count])
+
+    return content_return;    
+
 def count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point):
     w = 0
     for tweet in all_tweets:

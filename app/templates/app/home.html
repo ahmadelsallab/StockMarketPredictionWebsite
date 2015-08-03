@@ -69,6 +69,7 @@
 		    </tr>
 		    
 	    </table>
+	    <div id="stock_stats_table"></div>
     </div>
     
     
@@ -406,24 +407,12 @@ google.setOnLoadCallback(drawOverallStatsTable);
 	
 	    table.draw(data, {showRowNumber: true, width: '1000px'});
 	  }
-	function drawPieChart_Rel_Overall() {
-	
-	    var data = google.visualization.arrayToDataTable([
-	      ['Task', 'Hours per Day'],
-	      ['Work',     11],
-	      ['Eat',      2],
-	      ['Commute',  2],
-	      ['Watch TV', 2],
-	      ['Sleep',    7]
-	    ]);
-	
-	    var options = {
-	      title: 'Relevance chart',
-	        is3D: true
-	    };
-	
-	    /*
-        $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+	function drawStockStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_rel, user_irrel) {
+	    var data = new google.visualization.DataTable();
+	    data.addColumn('string', '');
+	    data.addColumn('number', 'Value');
+        /*
+	    $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
         $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
         $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
         $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
@@ -431,37 +420,120 @@ google.setOnLoadCallback(drawOverallStatsTable);
         $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
         $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
         $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
-
-		$('#stats').append('<br></br>');
 		*/
-	    var chart = new google.visualization.PieChart(document.getElementById('overall_rel_pie_chart'));
+		try
+		{
+		    data.addRows([
+		      ['Total number of stock entries',  {v: total, f: total.toString()}],
+		      ['Total number of stock fully labeled entries',  {v: labeled, f: labeled.toString()}],
+		      ['Total number of stock relevant entries',   {v:rel,   f: rel.toString()}],
+		      ['Total number of stock irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+		      ['Total number of stock positive entries', {v: pos, f: pos.toString()}],
+		      ['Total number of stock negative entries', {v: neg, f: neg.toString()}],
+		      ['Total number of stock neutral entries',   {v: neu,  f: neu.toString()}]
+		      
+		    ]);
+			if((user_rel !== null) && (user_irrel !== null))
+			{
+				data.addRow(['Total number of labeled relevant tweets entries by this user',   {v: user_rel,  f: user_rel.toString()}]);
+				data.addRow(['Total number of labeled irrelevant tweets entries by this user',   {v: user_irrel,  f: user_irrel.toString()}]);
+				
+			}
+			else
+			{
+				data.addRow(['Total number of labeled relevant tweets entries by this user',   {v: 0,  f: '0'}]);
+				data.addRow(['Total number of labeled irrelevant tweets entries by this user',   {v: 0,  f: '0'}]);
+			}
+		}
+		catch(e)
+		{
+			/*
+		    data.addRows([
+		    		      ['Total number of stock entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock fully labeled entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock relevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock irrelevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock positive entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock negative entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock neutral entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock relevant labeled tweets entries by this user',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock irrelevant labeled tweets entries by this user',   {v: 0,  f: '0'}]
+		    		      
+		    		    ]);
+			*/
+		}
+	    var table = new google.visualization.Table(document.getElementById('stock_stats_table'));
 	
-	    chart.draw(data, options);
+	    table.draw(data, {showRowNumber: true, width: '1000px'});
+	  }
+
+	function drawPieChart_Rel_Overall() {
+	
+		ajaxPost('/get_overall_rel_info', {  }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Relevancy');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
+		
+		    var options = {
+		      title: 'Relevance chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('overall_rel_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
 	  }
 
 	function drawPieChart_Sent_Overall() {
 		
-	    var data = google.visualization.arrayToDataTable([
-	      ['Task', 'Hours per Day'],
-	      ['Work',     11],
-	      ['Eat',      2],
-	      ['Commute',  2],
-	      ['Watch TV', 2],
-	      ['Sleep',    7]
-	    ]);
-	
-	    var options = {
-	      title: 'Sentiment chart',
-	        is3D: true
-	    };
-	
-	    //$('#stats').html('<br></br>');
-	    var chart = new google.visualization.PieChart(document.getElementById('overall_sent_pie_chart'));
-	
-	    chart.draw(data, options);
+		ajaxPost('/get_overall_sent_info', { }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Sentiment');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
+		
+		    var options = {
+		      title: 'Relevance chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('overall_sent_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
 	  }
 	function drawPieChart_Rel_Stock(stock) {
-		ajaxPost('/get_stock_rel_info', { 'query': stock }, function (content) {
+		ajaxPost('/get_stock_rel_info', {'query': stock }, function (content) {
 			/*
 		    var data = google.visualization.arrayToDataTable([
 		      ['Task', 'Hours per Day'],
@@ -493,49 +565,58 @@ google.setOnLoadCallback(drawOverallStatsTable);
 	  }
 
 	
-	function drawPieChart_Sent_Stock() {
+	function drawPieChart_Sent_Stock(stock) {
+		ajaxPost('/get_stock_sent_info', { 'query': stock }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Sentiment');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
 		
-	    var data = google.visualization.arrayToDataTable([
-	      ['Task', 'Hours per Day'],
-	      ['Work',     11],
-	      ['Eat',      2],
-	      ['Commute',  2],
-	      ['Watch TV', 2],
-	      ['Sleep',    7]
-	    ]);
-	
-	    var options = {
-	      title: 'Sentiment chart',
-	        is3D: true
-	    };
-	
-	    //$('#stats').html('<br></br>');
-	    var chart = new google.visualization.PieChart(document.getElementById('stock_sent_pie_chart'));
-	
-	    chart.draw(data, options);
+		    var options = {
+		      title: 'Relevance chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('stock_sent_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
 	  }
-	function drawColChart_Rel_Stock() {
-		
-	      var data = new google.visualization.DataTable();
-	      data.addColumn('timeofday', 'Time of Day');
-	      data.addColumn('number', 'Motivation Level');
-	      data.addColumn('number', 'Energy Level');
-
-	      data.addRows([
-	        [{v: [8, 0, 0], f: '8 am'}, 1, .25],
-	        [{v: [9, 0, 0], f: '9 am'}, 2, .5],
-	        [{v: [10, 0, 0], f:'10 am'}, 3, 1],
-	        [{v: [11, 0, 0], f: '11 am'}, 4, 2.25],
-	        [{v: [12, 0, 0], f: '12 pm'}, 5, 2.25],
-	        [{v: [13, 0, 0], f: '1 pm'}, 6, 3],
-	        [{v: [14, 0, 0], f: '2 pm'}, 7, 4],
-	        [{v: [15, 0, 0], f: '3 pm'}, 8, 5.25],
-	        [{v: [16, 0, 0], f: '4 pm'}, 9, 7.5],
-	        [{v: [17, 0, 0], f: '5 pm'}, 10, 10],
-	      ]);
+	function drawColChart_Rel_Stock(stock) {
+		ajaxPost('/get_stock_col_rel_info', { 'query': stock }, function (content) {
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Irrelevant');
+		      data.addColumn('number', 'Relevant');
+			  data.addRows(content);
 
 	      var options = {
-	        title: 'Motivation and Energy Level Throughout the Day',
+	        title: 'Trend of tweets volume over the day',
 	        isStacked: true,
 	        hAxis: {
 	          title: 'Time of Day',
@@ -552,30 +633,34 @@ google.setOnLoadCallback(drawOverallStatsTable);
 
 	      var chart = new google.visualization.ColumnChart(document.getElementById('stock_rel_col_chart'));
 	      chart.draw(data, options);
+		});
 	  }
 
-	function drawColChart_Sent_Stock() {
+	function drawColChart_Sent_Stock(stock) {
 		
-	      var data = new google.visualization.DataTable();
-	      data.addColumn('timeofday', 'Time of Day');
-	      data.addColumn('number', 'Motivation Level');
-	      data.addColumn('number', 'Energy Level');
-
-	      data.addRows([
-	        [{v: [8, 0, 0], f: '8 am'}, 1, .25],
-	        [{v: [9, 0, 0], f: '9 am'}, 2, .5],
-	        [{v: [10, 0, 0], f:'10 am'}, 3, 1],
-	        [{v: [11, 0, 0], f: '11 am'}, 4, 2.25],
-	        [{v: [12, 0, 0], f: '12 pm'}, 5, 2.25],
-	        [{v: [13, 0, 0], f: '1 pm'}, 6, 3],
-	        [{v: [14, 0, 0], f: '2 pm'}, 7, 4],
-	        [{v: [15, 0, 0], f: '3 pm'}, 8, 5.25],
-	        [{v: [16, 0, 0], f: '4 pm'}, 9, 7.5],
-	        [{v: [17, 0, 0], f: '5 pm'}, 10, 10],
-	      ]);
+		ajaxPost('/get_stock_col_sent_info', { 'query': stock }, function (content) {
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Neutral');
+		      data.addColumn('number', 'Negative');
+		      data.addColumn('number', 'Positive');
+		      
+		      
+			  data.addRows(content);
 
 	      var options = {
-	        title: 'Motivation and Energy Level Throughout the Day',
+	        title: 'Trend of tweets sentiment over the day',
 	        isStacked: true,
 	        hAxis: {
 	          title: 'Time of Day',
@@ -592,7 +677,9 @@ google.setOnLoadCallback(drawOverallStatsTable);
 
 	      var chart = new google.visualization.ColumnChart(document.getElementById('stock_sent_col_chart'));
 	      chart.draw(data, options);
-	   }
+		});
+	  }
+
 
 var stock_N;
 var stock_fully_lab;
@@ -889,9 +976,9 @@ var stock_fully_lab;
             drawPieChart_Rel_Overall();
             drawPieChart_Sent_Overall();
             drawPieChart_Rel_Stock(stock_name);
-            drawPieChart_Sent_Stock();
-            drawColChart_Rel_Stock();
-            drawColChart_Sent_Stock();
+            drawPieChart_Sent_Stock(stock_name);
+            drawColChart_Rel_Stock(stock_name);
+            drawColChart_Sent_Stock(stock_name);
             /*$('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
@@ -907,10 +994,13 @@ var stock_fully_lab;
             drawOverallStatsTable(content.total_entries_in_DB, content.total_relevant_labeled_entries_in_DB, content.total_irrelevant_labeled_entries_in_DB, content.total_positive_labeled_entries_in_DB, content.total_negative_labeled_entries_in_DB, content.total_neutral_labeled_entries_in_DB, content.total_labeled_entries_in_DB, content.user_total_labels_in_DB);
 			
 			// FIX: To be moved to a table outside the #tweets area 
+			/*
 			$('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
+            */
 	    	stock_fully_lab=content.stock_labeled_entries_in_DB
-            $('#tweets').append('<div id="stock_rel" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
+            /*
+	    	$('#tweets').append('<div id="stock_rel" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_irel" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB for ' + stock_name + ' is: ' + content.stock_irrelevant_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_pos" class="stat_stock"><font color="black">' + 'Total number of positive entries in DB for ' + stock_name + ' is: ' + content.stock_positive_labeled_entries_in_DB + '</font></div>');
             $('#tweets').append('<div id="stock_neg" class="stat_stock"><font color="black">' + 'Total number of negative entries in DB for ' + stock_name + ' is: ' + content.stock_negative_labeled_entries_in_DB + '</font></div>');
@@ -918,6 +1008,18 @@ var stock_fully_lab;
             $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_relevant_for_stock_in_DB + '</font></div>'); 
             $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_irrelevant_for_stock_in_DB + '</font></div>'); 
             $('#tweets').append('<br></br>')
+            */
+            //drawStockStatsTable(content.stock_entries_in_DB, content.stock_relevant_labeled_entries_in_DB, content.stock_irrelevant_labeled_entries_in_DB, content.stock_positive_labeled_entries_in_DB, content.stock_negative_labeled_entries_in_DB, content.stock_neutral_labeled_entries_in_DB, content.user_relevant_for_stock_in_DB, content.user_relevant_for_stock_in_DB);
+            
+            drawStockStatsTable(content.stock_entries_in_DB,
+            					content.stock_relevant_labeled_entries_in_DB,
+            					content.stock_irrelevant_labeled_entries_in_DB,
+            					content.stock_positive_labeled_entries_in_DB,
+            					content.stock_negative_labeled_entries_in_DB,
+            					content.stock_neutral_labeled_entries_in_DB,
+            					content.stock_labeled_entries_in_DB,
+            					content.user_relevant_for_stock_in_DB,
+            					content.user_irrelevant_for_stock_in_DB);
             //$('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
             $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>');
             
