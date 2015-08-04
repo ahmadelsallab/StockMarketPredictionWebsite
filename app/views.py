@@ -1264,6 +1264,23 @@ def count_number_tweets_in_range(all_tweets, prev_graph_point, graph_point):
             w += 1
     return w
 
+@ajax
+def get_overall_stats(request):
+    content_return  = {}
+    # Fill in total number of entries in DB for this stock
+    # Full DB
+    content_return['total_entries_in_DB'] = StockCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    if(LabledCounter.objects.aggregate(Sum('counter'))['counter__sum'] != None):
+        content_return['total_labeled_entries_in_DB'] = LabledCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    else:
+        content_return['total_labeled_entries_in_DB'] = 0
+    content_return['total_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'relevant' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'irrelevant' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_positive_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'positive' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_negative_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'negative' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'neutral' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['user_total_labels_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username).aggregate(Sum('counter'))['counter__sum']
+    return content_return
 
 #@login_required
 @ajax

@@ -12,8 +12,8 @@
     <div id="overall_pie_stats">
 	    <table>
 		    <tr>
-		    	<td><div id="overall_rel_pie_chart" style="width: 500px; height: 500px;"></div></td>
-		    	<td><div id="overall_sent_pie_chart" style="width: 500px; height: 500px;"></div></td>
+		    	<td><div id="overall_rel_pie_chart" style="width: 500px;"></div></td>
+		    	<td><div id="overall_sent_pie_chart" style="width: 500px;"></div></td>
 
 		    </tr>
 
@@ -57,18 +57,23 @@
      <div>
 	    <table>
 		    <tr>
-		    	<td><div id="stock_rel_pie_chart" style="width: 500px; height: 500px;"></div></td>
-		    	<td><div id="stock_sent_pie_chart" style="width: 500px; height: 500px;"></div></td>
+		    	<td><div id="stock_rel_pie_chart" style="width: 500px;"></div></td>
+		    	<td><div id="stock_sent_pie_chart" style="width: 500px;"></div></td>
 
 		    </tr>
+		    <!--tr>		    	
+		    	<td><div id="stock_volume_chart" style="width: 500px; height: 500px;"></div></td>
+
+		    </tr-->
 
 		    <tr>
-		    	<td><div id="stock_rel_col_chart" style="width: 500px; height: 500px;"></div></td>
-		    	<td><div id="stock_sent_col_chart" style="width: 500px; height: 500px;"></div></td>
+		    	<td><div id="stock_rel_col_chart" style="width: 500px;"></div></td>
+		    	<td><div id="stock_sent_col_chart" style="width: 500px;"></div></td>
 
 		    </tr>
 		    
 	    </table>
+	    <div id="stock_volume_chart"></div>
 	    <div id="stock_stats_table"></div>
     </div>
     
@@ -349,10 +354,74 @@
             }]
           }"></script>
 <script type="text/javascript">
+google.setOnLoadCallback(drawOverallStatsTablePost);
 google.setOnLoadCallback(drawPieChart_Rel_Overall);
 google.setOnLoadCallback(drawPieChart_Sent_Overall);
-google.setOnLoadCallback(drawOverallStatsTable);
 
+function drawOverallStatsTablePost() {
+	ajaxPost('/get_overall_stats', {  }, function (content) {
+	    var data = new google.visualization.DataTable();
+	    data.addColumn('string', '');
+	    data.addColumn('number', 'Value');
+	    /*
+	    $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
+		*/
+		total = content.total_entries_in_DB;
+		labeled = content.total_labeled_entries_in_DB;
+		rel = content.total_relevant_labeled_entries_in_DB;
+		irrel = content.total_irrelevant_labeled_entries_in_DB;
+		pos = content.total_positive_labeled_entries_in_DB;
+		neg = content.total_negative_labeled_entries_in_DB;
+		neu = content.total_neutral_labeled_entries_in_DB;
+		user_labeled = content.user_total_labels_in_DB;
+		try
+		{
+		    data.addRows([
+		      ['Total number of entries',  {v: total, f: total.toString()}],
+		      ['Total number of fully labeled entries',  {v: labeled, f: labeled.toString()}],
+		      ['Total number of relevant entries',   {v:rel,   f: rel.toString()}],
+		      ['Total number of irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+		      ['Total number of positive entries', {v: pos, f: pos.toString()}],
+		      ['Total number of negative entries', {v: neg, f: neg.toString()}],
+		      ['Total number of neutral entries',   {v: neu,  f: neu.toString()}]
+		      
+		    ]);
+			if(user_labeled !== null)
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: user_labeled,  f: user_labeled.toString()}]);
+				
+			}
+			else
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]);
+			}
+		}
+		catch(e)
+		{
+		    data.addRows([
+		    		      ['Total number of entries', {v: 0,  f: '0'}],
+		    		      ['Total number of fully labeled entries', {v: 0,  f: '0'}],
+		    		      ['Total number of relevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of irrelevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of positive entries', {v: 0,  f: '0'}],
+		    		      ['Total number of negative entries', {v: 0,  f: '0'}],
+		    		      ['Total number of neutral entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]
+		    		      
+		    		    ]);
+		}
+	    var table = new google.visualization.Table(document.getElementById('overall_stats_table'));
+	
+	    table.draw(data, {showRowNumber: true, width: '1000px'});
+		});
+  	}
 	function drawOverallStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_labeled) {
 	    var data = new google.visualization.DataTable();
 	    data.addColumn('string', '');
@@ -522,7 +591,7 @@ google.setOnLoadCallback(drawOverallStatsTable);
 			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
 		
 		    var options = {
-		      title: 'Relevance chart',
+		      title: 'Sentiment chart',
 		        is3D: true
 		    };
 		
@@ -586,7 +655,7 @@ google.setOnLoadCallback(drawOverallStatsTable);
 			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
 		
 		    var options = {
-		      title: 'Relevance chart',
+		      title: 'Sentiment chart',
 		        is3D: true
 		    };
 		
@@ -596,6 +665,64 @@ google.setOnLoadCallback(drawOverallStatsTable);
 		    chart.draw(data, options);
 		});
 	  }
+	function drawVolumeChart(stock,slid) {
+		
+        ajaxPost('/get_stock_volume', { 'query': stock }, function (content) {
+
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Number of tweets');
+			  data.addRows(content);
+			  
+			  /*
+		      data.addRows([
+		        [{v: [8, 0, 0], f: '8 am'}, getRandomInt(1, 10)],
+		        [{v: [9, 0, 0], f: '9 am'}, getRandomInt(1, 10)],
+		        [{v: [10, 0, 0], f:'10 am'}, getRandomInt(1, 10)],
+		        [{v: [11, 0, 0], f: '11 am'}, getRandomInt(1, 10)],
+		        [{v: [12, 0, 0], f: '12 pm'}, getRandomInt(1, 10)],
+		        [{v: [13, 0, 0], f: '1 pm'}, getRandomInt(1, 10)],
+		        [{v: [14, 0, 0], f: '2 pm'}, getRandomInt(1, 10)],
+		        [{v: [15, 0, 0], f: '3 pm'}, getRandomInt(1, 10)],
+		        [{v: [16, 0, 0], f: '4 pm'}, getRandomInt(1, 10)],
+		        [{v: [17, 0, 0], f: '5 pm'}, getRandomInt(1, 10)],
+		      ]);
+			  */
+		      
+		      var options = {
+		        title: 'Trend of tweets volume over the day',
+		        trendlines: {
+		          0: {type: 'polynomial', degree: 3, lineWidth: 5, opacity: .3}
+		        },
+		        hAxis: {
+		          title: 'Time of Day',
+		          format: 'h:mm a',
+		          viewWindow: {
+		            min: [7, 30, 0],
+		            max: [17, 30, 0]
+		          }
+		        },
+		        vAxis: {
+		          title: 'Number of tweets'
+		        }
+		      };
+		
+		      var chart = new google.visualization.ColumnChart(document.getElementById('stock_volume_chart'));
+		      chart.draw(data, options);
+      	});
+	
+    }
 	function drawColChart_Rel_Stock(stock) {
 		ajaxPost('/get_stock_col_rel_info', { 'query': stock }, function (content) {
 			  var l_data = [];
@@ -977,6 +1104,7 @@ var stock_fully_lab;
             drawPieChart_Sent_Overall();
             drawPieChart_Rel_Stock(stock_name);
             drawPieChart_Sent_Stock(stock_name);
+            drawVolumeChart(stock_name, 30);
             drawColChart_Rel_Stock(stock_name);
             drawColChart_Sent_Stock(stock_name);
             /*$('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
