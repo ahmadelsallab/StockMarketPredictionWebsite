@@ -313,6 +313,7 @@
 </LI>
 <LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >النقل</font></b></a></span>
 <UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الخدمات الأرضية</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>النقل الجماعي</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>مبرد</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>بدجت السعودية</span></LI>
@@ -834,8 +835,8 @@ var stock_fully_lab;
         for (i = 0; i < slid; i++) {
         l_data[i]=prz_line[i+prz_line.length-slid];
         }
-        console.debug(l_data.length); 
-        console.debug(l_data); 
+        //console.debug(l_data.length); 
+        //console.debug(l_data); 
         //console.debug(getBollingerBands(20,2,l_data)); 
 
         var data = new google.visualization.DataTable();
@@ -883,7 +884,7 @@ var stock_fully_lab;
         for (i = 0; i < slid; i++) {
         l_data[i]=prz_line[i+prz_line.length-slid];
         }
-        console.debug(l_data.length);
+        //console.debug(l_data.length);
 
         var data = new google.visualization.DataTable();
         data.addColumn('string', 'Day');
@@ -926,10 +927,22 @@ var stock_fully_lab;
   function drawChart_candle(stock,slid,anim) {
         ajaxPost('/get_prices_candle', { 'query': stock }, function (prz_candle) {
 	var l_data = [];
+	//console.debug(slid);
+	//console.debug(prz_candle.length);
+	
+	if ( prz_candle.length > slid )
+		{
         for (i = 0; i < slid; i++) {
         l_data[i]=prz_candle[i+prz_candle.length-slid];
         }
-	console.debug(l_data.length);
+		}
+	else
+		{
+	for (i = 0; i < prz_candle.length; i++) {
+        l_data[i]=prz_candle[i];
+	}
+		}
+	//console.debug(l_data.length);
 
     var data = new google.visualization.DataTable();
     data.addColumn('string', 'Day');
@@ -1001,7 +1014,6 @@ var stock_fully_lab;
     }
     
     $(window).load(function () {
-    	
         var screenWidth = document.documentElement.clientWidth;
         var screenHeight = document.documentElement.clientHeight;
 
@@ -1016,8 +1028,7 @@ var stock_fully_lab;
             $("#word_cloud_container").jQCloud(word_list,{width:screenWidth,height:500});    
             
         });
-*/      
-        //google.setOnLoadCallback(drawPieChart_Overall);
+*/        
     });
 
     $('#side_bar_selection').keyup(function () {
@@ -1031,11 +1042,9 @@ var stock_fully_lab;
         });
     });
 
-    
     //$(".slider").on("change", function(){console.debug($(this).value)});
     $(document.getElementById('slider')).on("change", function(){
-    	
-    	//console.log(document.getElementById('slider').value);
+	//console.log(document.getElementById('slider').value);
 	google.setOnLoadCallback(drawChart_candle(window.stock_N,document.getElementById('slider').value))
 	});
     var graph="candle";
@@ -1150,8 +1159,83 @@ var stock_fully_lab;
             					content.user_irrelevant_for_stock_in_DB);
             //$('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
             $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>');
-            
-            for (var i = 0; i < content.statuses.length; i++) {
+             var number_of_replies=0
+            for (var i = 0; i < Math.min(49,content.statuses.length)+number_of_replies; i++) {
+		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+                //text = content.statuses[i]['text'];
+                date = content.statuses[i].created_at;
+                diff=(new Date()).getTimezoneOffset()*60*1000;
+                date=Date.parse(content.statuses[i]['created_at']);
+                date=new Date(date);
+                date1=date.toLocaleDateString();
+                currDate=date1;
+                date2=date.toLocaleTimeString();
+                date=date1+' '+date2;
+                followers_no = content.statuses[i].user_followers_count;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = '@' + content.statuses[i].tweeter_sname;
+                price_time_then = 'at time: ' +content.statuses[i].price_time_then;
+                price_then = 'the price was: ' + content.statuses[i].price_then;
+                image = content.statuses[i].user_profile_image_url;
+                tweet_id = content.statuses[i].twitter_id;
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+				media_url1='';
+				try{
+				media_url=content.statuses[i].media_url;
+				media_url=media_url.replace(/'/g, '"');
+				media_url1=JSON.parse(media_url);
+				media_url=(media_url1.media[0]).media_url;
+				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+				}catch(err){
+				try{
+				media_url=(media_url1.urls[0]).expanded_url;
+				if(media_url.indexOf("youtu.be")>-1)
+				{
+				startindex=media_url.lastIndexOf('\/');
+				media_url=media_url.substr(startindex);
+                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
+				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+				}
+				else media_url='';
+				}
+				catch(err){media_url='';}
+
+				}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                                url1='';
+                                try{
+                                url1=findUrls(text); 
+                                }
+                                catch(err){}
+                                if(url1!='')
+                                for (var ii = 0; ii < url1.length; ii++)
+                                {
+                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                                }
+
+		head='<div class="tweet">'
+                head=head.concat('<table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><div id='+tweet_id+' >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br/>' + media_url + '<br/>');
+
+		tail='<button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>'
+           
+		while ( content.statuses[i]['conversation_reply'] == content.statuses[i+1]['twitter_id'] )
+		{
+		i++;
+		number_of_replies++;
+            		//console.debug(number_of_replies);
 		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
                 //text = content.statuses[i]['text'];
                 date = content.statuses[i].created_at;
@@ -1217,8 +1301,12 @@ var stock_fully_lab;
                                 {
                                 text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
                                 }
+                head=head.concat('<table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><div id='+tweet_id+' >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br />' + media_url + '<br />');
+		}
 
-                $('#tweets').append('<div class="tweet"><table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><div id='+tweet_id+'" >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /><button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
+		head=head.concat(tail)
+		$('#tweets').append(head)
+
             }
 			
             $('#tweets').fadeIn('fast');

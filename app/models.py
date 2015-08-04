@@ -33,6 +33,7 @@ class Opinion(models.Model):
     labeled = models.BooleanField(default=False)
     manual_labeled = models.BooleanField(default=False)
     similarId = models.CharField(max_length=40)
+    conversation_reply = models.CharField(max_length=40)
     '''
     def render_to_response(self, context, **response_kwargs):
         #return HttpResponse(json.dumps(list(self.get_queryset().values_list('code', flat=True))),mimetype="application/json")

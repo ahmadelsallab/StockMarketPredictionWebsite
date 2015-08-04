@@ -41,6 +41,7 @@ accessTokenSecret="Yu4lZdbebuO3tpof6xYzi4Qy7HZL4aL3YQiCYgsro"
 resource_owner_key = ""
 resource_owner_secret = ""
 
+
 synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'السعودى الهولندى': 'البنك السعودي الهولندي',
 'السعودى الفرنسى': 'البنك السعودي الفرنسي',
@@ -208,6 +209,7 @@ synonyms = {'استثمار': 'البنك السعودي للاستثمار',
 'ميبكو':'شركة الشرق الاوسط لصناعة وانتاج الورق',
 'ساكو': 'الشركة السعودية للعدد والأدوات',
 'مبكو':'شركة الشرق الاوسط لصناعة وانتاج الورق',
+'الخدمات الأرضية': 'الخدمات الأرضية',
 }
 
 
@@ -387,6 +389,7 @@ combination = {
 'ميبكو': '( الشرق+الاوسط OR الشرق+الورق OR تاسي+الشرق OR الاوسط+تاسي )',
 'ساكو': '( ساكو OR SACO OR عدد+أدوات OR عدد+ادوات )',
 'مبكو': 'مبكو',
+'الخدمات الأرضية':'الخدمات الأرضية',
 };
 
 
@@ -555,6 +558,7 @@ stock_prices_names_mapping_tbl = {'تاسي':'تاسي',
 'ميبكو':'ميبكو',
 'ساكو':'ساكو',
 'مبكو':'مبكو',
+'الخدمات الأرضية':'الخدمات الأرضية',
 }
 
 
@@ -737,6 +741,7 @@ price_mapping={
 'Falcom 30': 'none',
 'Falcom petrochemical': 'none',
 'مبكو':'مبكو',
+'الخدمات الأرضية':'الخدمات الأرضية',
 }
 
 stocks_sectors = {'الاهلي':'المصارف والخدمات المالية', 
@@ -912,9 +917,8 @@ stocks_sectors = {'الاهلي':'المصارف والخدمات المالية
 'Falcom 30':'صناديق المؤشرات المتداولة', 
 'Falcom petrochemical':'صناديق المؤشرات المتداولة', 
 'مبكو':'الاستثمار الصناعي',
+'الخدمات الأرضية':'النقل',
 }
-
-
 
 class NewsItem:
     title = ""
@@ -1373,7 +1377,7 @@ def get_tweets(request):
     i = 1
     x = 0
     print('Handling duplicates')
-    while x < min(50, len(tweetes_to_render)):
+    while x < min(150, len(tweetes_to_render)):
         tweet_render=tweetes_to_render[x];
         tweet_render_text=tweet_render.get('text').strip()
         tweet_render_text=re.sub(r"RT @\w*\w: ", '', tweet_render_text, flags=re.MULTILINE)
@@ -1391,22 +1395,29 @@ def get_tweets(request):
             tweet.similarId = tweets_dict[tweet_render_text]
             tweet.save()
             tweetes_to_render.pop(x); 
-            if (len(tweetes_to_render_temp) > 50+i):
-                tweetes_to_render.append(tweetes_to_render_temp[49+i])
+            if (len(tweetes_to_render_temp) > 150+i):
+                tweetes_to_render.append(tweetes_to_render_temp[149+i])
                 i=i+1
         elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username) and request.user.username != '':
             tweetes_to_render.remove(tweet_render)
-            if (len(tweetes_to_render_temp) > 50+i):
-                tweetes_to_render.append(tweetes_to_render_temp[49+i])
+            if (len(tweetes_to_render_temp) > 150+i):
+                tweetes_to_render.append(tweetes_to_render_temp[149+i])
                 i=i+1
         else:
-            x=x+1
+            try:
+                if tweetes_to_render[x]['conversation_reply'] != '' and tweetes_to_render[x]['conversation_reply'] != None:
+                    #print(tweetes_to_render[x]['conversation_reply'])
+                    tweet = Opinion.objects.filter(twitter_id=tweetes_to_render[x]['conversation_reply']).values()[0]
+                    tweetes_to_render.insert(x+1,tweet);    
+                x=x+1
+            except:
+                pass
             tweets_dict[tweet_render_text] = tweet_render.get('twitter_id')
+            
 
     print('adding the prices')
     from datetime import datetime, timedelta
-    x = 0
-    while x < min(50, len(tweetes_to_render)):
+    for x in range(0,min(150, len(tweetes_to_render))):
         tweet_time=datetime.strptime(tweetes_to_render[x]['created_at'],'%a %b %d %X %z %Y')+timedelta(hours=3)
         done = False
         i=0
@@ -1417,9 +1428,8 @@ def get_tweets(request):
                 tweetes_to_render[x]['price_time_then']=price_list[i].time.strftime('%a %b %d %I:%M %p')
                 tweetes_to_render[x]['price_then']=price_list[i].close
             i=i+1
-        x = x + 1
-    
-    content_return['statuses'] = tweetes_to_render[0:50]
+
+    content_return['statuses'] = tweetes_to_render[0:150]
     
     print('Start stats')
     # Fill in total number of entries in DB for this stock
@@ -1805,18 +1815,18 @@ def runPriceCrawling():
     html = fileHandle.read()
     soup = BeautifulSoup(html)
     #print(soup)
-    from pytz import timezone 
+    from pytz import timezone
     localtz = timezone('UTC')
     time_in_site=localtz.localize(parse(soup.findAll('span', attrs={'class':'tradhour'})[0].text.split('\n', 1)[1].split(" :")[1].replace('(local time)\n','',1)));
     for b in soup.findAll('tr', attrs={'class':'symbolflip'})[1:]:
         stockname=b.find('a', attrs={'class':'jTip'}).text
-        close=b.findAll('td')[1].text
-        open=b.findAll('td')[2].text
-        max=b.findAll('td')[3].text
-        min=b.findAll('td')[4].text
-        vol=b.findAll('td')[8].text
-        #print(price_mapping[stockname])
-        #print(price)
+        close=b.findAll('td')[1].text.replace(',','')
+        open=b.findAll('td')[2].text.replace(',','')
+        max=b.findAll('td')[3].text.replace(',','')
+        min=b.findAll('td')[4].text.replace(',','')
+        vol=b.findAll('td')[8].text.replace(',','')
+        print(price_mapping[stockname])
+        print(close)
         try:
             item = StocksPrices()
             item.stock=price_mapping[stockname]
