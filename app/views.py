@@ -1071,6 +1071,32 @@ def home_proto(request):
             return redirect('/prototype')
     except:
         return redirect('/prototype')
+
+#@login_required
+def home_filtered(request):
+    '''
+    from twython import Twython
+    global twitter
+    twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
+    '''
+    # Start the TwitterCrawler      
+    PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+    configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+    global twitterCrawler
+    twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+    #results = twitterCrawler.SearchQueryAPI(query, -1, -1)
+
+    return render(
+        request,
+        'app/home_filtered.html',
+        context_instance = RequestContext(request,
+        {
+            'title':'Home filtered',
+            #'tweets': tweets,
+        })
+    )
+
+
 @ajax
 def get_prices_line(request):
     stock_name = request.POST['query']
@@ -1690,6 +1716,219 @@ def get_tweets_proto(request):
     print('Done')
     return content_return 
 
+@ajax
+def get_tweets_filtered(request):
+    #gc.collect()
+    stock_name = request.POST['query']
+    content_return = {}
+    #query = stock_name
+    #query = synonyms[query]
+
+    #remove the adult content
+    #naughty_words=" AND ( -ﺰﺑ -ﻂﻳﺯ -ﻂﻴﻇ -ﺲﻜﺳ -ﺲﻜﺴﻳ -ﺲﺣﺎﻗ -ﺞﻨﺳ -ﻦﻴﻛ -ﺞﻨﺳ -ﺏﺯ -ﺏﺯﺍﺯ -ﻚﺳ -ﻒﺤﻟ -ﻒﺣﻮﻠﻫ -ﺬﺑ )"
+
+    query = combination[stock_name] + " AND (سهم OR اسهم OR أسهم OR تداول OR ارتفع OR ارتفاع OR انخفض OR انخفاض OR هدف OR دعم OR ارتداد OR نسبة OR % OR %)" 
+    
+    '''
+    #tweets = twitter.search(q= query + 'OR ' + synonyms[query], result_type='recent')
+    try:
+        tweets = twitter.search(q=query, result_type='recent')
+    except:
+        from twython import Twython
+        twitter = Twython("MGMeNEK5bEqADjJRDJmQ8Yy1f", "eVR1kjrTdHPEiFuLoAEA6pPGSnuZ1NnAa1EwtqBi4wVA1tbRHo", "91079548-uhlRrwtgVQcavlf3lv4Dy1ZFCq5CXvBQFvc5A1l0n", "V6vLsqzqrdfs2YX4I1NVG2gP845gjTrBSDNxHVz496g66")
+        tweets = twitter.search(q=query, result_type='recent')
+    '''
+    
+    try:
+        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+    except:        
+        PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+        configFileCrawler = os.path.join(PROJECT_DIR, 'TwitterCrawler','Configurations', 'Configurations.xml')
+        twitterCrawler = TwitterCrawler(configFileCrawler, None, None, None)
+##        tweets = twitterCrawler.SearchQueryAPI(query, -1, -1)
+
+    price = 0  
+    #price = get_stock_price(stock_name)
+    try:
+        #import sys
+        #import codecs
+        #sys.stdout = codecs.getwriter("iso-8859-1")(sys.stdout, 'xmlcharrefreplace')
+        #price_list = StocksPrices.objects.filter(stock=""+str(stock_name.encode("utf-8"))+"").order_by('-id')
+        price_list = StocksPrices.objects.filter(stock=stock_name).order_by('-id')
+        price = price_list[0].close
+        print('Price in DB')
+    except:
+        price = get_stock_price(stock_name)
+        print('Getting price')
+    from django.utils import timezone 
+    content_return['price'] = price
+    #tweets['price'] = CorrectionData.objects.get(stock_name=query)
+    '''
+    print('Saving tweets')
+    for tweet in tweets:
+        tweet_exist = Opinion.objects.filter(twitter_id=tweet['id_str']);
+        if(len(tweet_exist) == 0):
+            try:
+                item = Opinion()
+                item.twitter_id = tweet['id_str']
+                item.user_id = tweet['user']['id']
+                item.text = tweet['text']
+                item.created_at = tweet['created_at']
+                item.user_followers_count = tweet['user']['followers_count']
+                item.user_profile_image_url = tweet['user']['profile_image_url']
+                item.media_url = tweet['entities']
+                item.tweeter_sname = tweet['user']['screen_name']
+                item.tweeter_name = tweet['user']['name']
+                item.pub_date = str(timezone.now())
+                item.stock = stock_name
+                item.labeled = False
+                item.source = "twitter.com"
+                if ' ﺰﺑ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻴﻇ ' in tweet['text'] and ' ﺲﻜﺳ ' in tweet['text'] and ' ﺲﻜﺴﻳ ' in tweet['text'] and ' ﺲﺣﺎﻗ ' in tweet['text'] and ' ﺞﻨﺳ ' in tweet['text'] and ' ﺏﺯ ' in tweet['text'] and ' ﺏﺯﺍﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻂﻳﺯ ' in tweet['text'] and ' ﻚﺳ ' in tweet['text'] and ' ﻒﺤﻟ ' in tweet['text'] and ' ﻒﺣﻮﻠﻫ ' in tweet['text'] and ' ﺬﺑ ' in tweet['text']:
+                    print(tweet['text'])
+                else:
+                    item.save()
+            except Exception as e: 
+              pass
+    print('Tweets saved')
+    '''
+
+    tweetes_to_render_temp = Opinion.objects.filter(stock=stock_name, labeled = False, similarId='').values().order_by('-id')[:1000]
+    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True)[0:1000];
+    #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
+    #my_list = list(tweetes_to_render)
+    #print(json.dumps(my_list[0]))
+    #tweetes_to_render_temp = Opview.objects.filter(stock=stock_name, labeled = False).values();
+    #tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'), reverse=True);
+
+    #prevent Duplicate 
+    tweets_dict = {}
+    tweets_dict[''] = ''
+    i = 1
+    x = 0
+    print('Handling duplicates')
+    while x < min(150, len(tweetes_to_render)):
+        tweet_render=tweetes_to_render[x];
+        tweet_render_text=tweet_render.get('text').strip()
+        tweet_render_text=re.sub(r"RT @\w*\w: ", '', tweet_render_text, flags=re.MULTILINE)
+        tweet_render_text=re.sub(r'\.\.\.', '', tweet_render_text, flags=re.MULTILINE)
+        try:
+            urls=re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', tweet_render_text);
+            for i in range(0,len(urls)):
+                rep='r\''+urls[i]+'\''
+                tweet_render_text=re.sub(r""+urls[i]+"", '', tweet_render_text, flags=re.MULTILINE)
+        except:
+            pass
+
+        # Classify the tweet
+        PROJECT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
+        filter = Filter(PROJECT_DIR, 'tasnee3', False)
+        text = []
+        text.append(tweet_render_text)
+        labels = filter.Classify(text)
+        label = labels[0]
+        if label == 1: # If irrelevant remove it
+            tweetes_to_render.remove(tweet_render)
+        elif tweet_render_text in tweets_dict.keys():
+            tweet = Opinion.objects.filter(twitter_id=tweet_render.get('twitter_id'))[0]
+            tweet.similarId = tweets_dict[tweet_render_text]
+            tweet.save()
+            tweetes_to_render.pop(x); 
+            if (len(tweetes_to_render_temp) > 150+i):
+                tweetes_to_render.append(tweetes_to_render_temp[149+i])
+                i=i+1
+        elif(tweet_render.get('labeled_user') == request.user.username or tweet_render.get('labeled_user_second') == request.user.username) and request.user.username != '':
+            tweetes_to_render.remove(tweet_render)
+            if (len(tweetes_to_render_temp) > 150+i):
+                tweetes_to_render.append(tweetes_to_render_temp[149+i])
+                i=i+1
+        else:
+            try:
+                if tweetes_to_render[x]['conversation_reply'] != '' and tweetes_to_render[x]['conversation_reply'] != None:
+                    #print(tweetes_to_render[x]['conversation_reply'])
+                    tweet = Opinion.objects.filter(twitter_id=tweetes_to_render[x]['conversation_reply']).values()[0]
+                    tweetes_to_render.insert(x+1,tweet);    
+                x=x+1
+            except:
+                pass
+            tweets_dict[tweet_render_text] = tweet_render.get('twitter_id')
+            
+
+    print('adding the prices')
+    from datetime import datetime, timedelta
+    for x in range(0,min(150, len(tweetes_to_render))):
+        tweet_time=datetime.strptime(tweetes_to_render[x]['created_at'],'%a %b %d %X %z %Y')+timedelta(hours=3)
+        done = False
+        i=0
+        while i < len(price_list) and not done:
+            if(tweet_time > datetime.strptime(price_list[i].time.strftime('%a %b %d %X %z %Y'),'%a %b %d %X %z %Y')):
+                #print(price_list[i].time.strftime('%a %b %d %X'))
+                done = True
+                tweetes_to_render[x]['price_time_then']=price_list[i].time.strftime('%a %b %d %I:%M %p')
+                tweetes_to_render[x]['price_then']=price_list[i].close
+            i=i+1
+
+    content_return['statuses'] = tweetes_to_render[0:150]
+    
+    print('Start stats')
+    # Fill in total number of entries in DB for this stock
+    # Full DB
+    content_return['total_entries_in_DB'] = StockCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    if(LabledCounter.objects.aggregate(Sum('counter'))['counter__sum'] != None):
+        content_return['total_labeled_entries_in_DB'] = LabledCounter.objects.aggregate(Sum('counter'))['counter__sum']
+    else:
+        content_return['total_labeled_entries_in_DB'] = 0
+    content_return['total_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'relevant' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`relevancy` = 'irrelevant' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_positive_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'positive' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_negative_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'negative' "}).aggregate(Sum('counter'))['counter__sum']
+    content_return['total_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`sentiment` = 'neutral' "}).aggregate(Sum('counter'))['counter__sum']
+
+    # Stock DB
+    try:
+        content_return['stock_entries_in_DB'] = StockCounter.objects.extra(where={"`stock` = '"+stock_name+"' "}).values()[0]['counter']
+    except:
+        content_return['stock_entries_in_DB'] = 0
+    try:
+        content_return['stock_labeled_entries_in_DB'] = LabledCounter.objects.extra(where={"`stock` = '"+stock_name+"' "}).values()[0]['counter']
+    except:
+        content_return['stock_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_relevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'relevant' "}).values()[0]['counter']
+    except:
+        content_return['stock_relevant_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_irrelevant_labeled_entries_in_DB'] = RelevancyCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `relevancy` = 'irrelevant' "}).values()[0]['counter']
+    except:
+        content_return['stock_irrelevant_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_positive_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'positive' "}).values()[0]['counter']
+    except:
+        content_return['stock_positive_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_negative_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'negative' "}).values()[0]['counter']
+    except:
+        content_return['stock_negative_labeled_entries_in_DB'] = 0
+    try:
+        content_return['stock_neutral_labeled_entries_in_DB'] = SentimentCounter.objects.extra(where={"`stock` = '"+stock_name+"' and `sentiment` = 'neutral' "}).values()[0]['counter']
+    except:
+        content_return['stock_neutral_labeled_entries_in_DB'] = 0
+
+    #user counters
+    try:
+        content_return['user_relevant_for_stock_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username,stock=stock_name,relevancy='relevant').aggregate(Sum('counter'))['counter__sum']
+    except:
+        content_return['user_relevant_for_stock_in_DB'] = 0
+    try:
+        content_return['user_irrelevant_for_stock_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username,stock=stock_name,relevancy='irrelevant').aggregate(Sum('counter'))['counter__sum']
+    except:
+        content_return['user_irrelevant_for_stock_in_DB'] = 0
+    content_return['user_total_labels_in_DB'] = UserCounter.objects.filter(labeled_user=request.user.username).aggregate(Sum('counter'))['counter__sum']
+
+
+
+    print('Done')
+    #gc.collect()
+    return content_return 
 
 def getSimilarlabeling():
     duplicate_tweetes = Opinion.objects.exclude(similarId='');

@@ -210,6 +210,75 @@ class Classifier(object):
             
         else:
             print("Not supported classifier type")
+    # Method to classsify new examples
+    def Classify(self):        
+        # Check classifier type
+        if(self.classifierType == "SVM"):
+            if(self.packageType == "liblinear"):
+                
+                from liblinearutil import predict
+                label, acc, val = predict(None, self.testFeatures, self.classifierModel)
+                return label
+            elif(self.packageType == "libsvm"):            
+                from svmutil import svm_predict
+                label, acc, val = svm_predict([], self.testFeatures, self.classifierModel)
+                return label  
+        elif(self.classifierType == "DecisionTree"):
+            if(self.packageType == "nltk"):
+                label = []
+                acc  = 0
+                rel = 0
+                irrel = 0;
+                i = 0;
+                for test in self.testFeatures:
+                    res = self.classifierModel.classify(test)
+                    label.append(res)
+                    
+                return label
+            elif(self.packageType == "sklearn"):
+                label = []
+                acc  = 0
+                rel = 0
+                irrel = 0;
+                i = 0;
+                for test in self.testFeatures:
+                    res = self.classifierModel.predict(list(test.values()))
+                    label.append(res)
+                    
+                return label
+                    
+        elif(self.classifierType == "AdaBoost"):                
+            if(self.packageType == "sklearn"):
+                if(self.baseClassifierType == "DecisionTree"):              
+                    label = []
+                    acc  = 0
+                    rel = 0
+                    irrel = 0;
+                    i = 0;
+                    for test in self.testFeatures:
+                        res = self.classifierModel.predict(list(test.values()))
+                        label.append(res)
+                        
+                    return label
+                else:
+                    print("Only DecisionTree is supported as base classifier")
+            else:
+                print("Only sklearn is supported for AdaBoost")
+        elif(self.classifierType == "Lexicon"):
+            acc = 0
+            i = 0
+            labels = []
+            for caseFeatures in self.testFeatures:
+                # Predict case by case
+                label = self.LexiconPredict(caseFeatures)
+                
+                labels.append(label)
+                
+            return labels
+            
+        else:
+            print("Not supported classifier type")
+
           
     # Predict funciton for lexicon classifier
     def LexiconPredict(self, caseFeatures):

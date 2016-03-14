@@ -41,6 +41,7 @@ urlpatterns = patterns('',
     url(r'^twitter_register', 'app.views.twitter_register', name='twitter_register'),
     url(r'^logout$', 'django.contrib.auth.views.logout', {'next_page': '/prototype',}, name='logout'),
     url(r'^news', 'app.views.news', name='news'),
+    url(r'^filtered$', 'app.views.home_filtered', name='filtered'),
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
 

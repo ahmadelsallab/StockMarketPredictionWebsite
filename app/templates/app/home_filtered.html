@@ -1,0 +1,1749 @@
+﻿{% extends "app/layout.html" %}
+
+{% block content %}
+{% load static %}
+
+
+<div id="debug"></div>
+<div id="main_content">
+
+    <h1 class="page-header" align="right">التغريدات</h1>
+    <h2 class="page-header" align="right">Overall statistics</h2>
+    <div id="overall_pie_stats">
+	    <table>
+		    <tr>
+		    	<td><div id="overall_rel_pie_chart" style="width: 500px;"></div></td>
+		    	<td><div id="overall_sent_pie_chart" style="width: 500px;"></div></td>
+
+		    </tr>
+
+	    </table>
+    </div>
+    <div id="overall_stats_table"></div>
+    <h2 class="page-header" align="right">Stock statistics</h2>
+    <div id="stats"></div>
+    <table>
+    <tr class="controller">
+    <td style="width:40%; height:30px;"></td>
+    <td>
+    <nav id="primary_nav_wrap">
+    <ul>
+      <li>
+        <input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
+      </li>
+      <li><b>  </b></li>
+      <li>Time
+        <ul id="time_list">
+          <li>1W</li>
+          <li>1M</li>
+          <li>3M</li>
+        </ul>
+      </li>
+      <li>Graph
+        <ul id="graph_list">
+          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/line.png' %}" title="" alt="line"> Line</li>
+          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/mountain.png' %}" title="" alt="mountain"> Mountain</li>
+          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/candle.png' %}" title="" alt="candle"> CandleStick</li>
+        </ul>
+      </li>
+    </ul>
+    </nav>
+    </td>
+    <td style="width:60%"><div id="price_chart" style="width: 700px; height: 350px"></div></td>
+    </tr>
+    </table>
+    
+        
+     <div>
+	    <table>
+		    <tr>
+		    	<td><div id="stock_rel_pie_chart" style="width: 500px;"></div></td>
+		    	<td><div id="stock_sent_pie_chart" style="width: 500px;"></div></td>
+
+		    </tr>
+		    <!--tr>		    	
+		    	<td><div id="stock_volume_chart" style="width: 500px; height: 500px;"></div></td>
+
+		    </tr-->
+
+		    <tr>
+		    	<td><div id="stock_rel_col_chart" style="width: 500px;"></div></td>
+		    	<td><div id="stock_sent_col_chart" style="width: 500px;"></div></td>
+
+		    </tr>
+		    
+	    </table>
+	    <div id="stock_volume_chart"></div>
+	    <div id="stock_stats_table"></div>
+    </div>
+    
+    
+    <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
+    <div id="tweets_loading">
+        <img src="{% static 'app/images/loading.gif' %}" />
+    </div>
+
+</div>
+<div id="side_bar">
+<br>
+
+<div><span class="store-btn"><a href="javascript:srch()" style="float: left; display: inline; background-color: #428BCA; color: white; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Go</a>
+<input id="tags" style="direction:RTL; width: 72%; height: 30px; " type="text" placeholder="بحث ..." >
+</span>
+</div>
+
+<p>
+
+</p>
+<UL style="text-align: right ; direction:rtl margin: 0; margin-bottom: 0px;" id="side_bar_list">
+<LI style="text-align: right ; direction:rtl" ><span>تاسي</span></LI></UL>
+
+<UL style="text-align: right ; direction:rtl; cursor: pointer; list-style:none; margin: 0; padding-right: 25px; " class="accordion" id="containerUL">
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >المصارف والخدمات المالية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>البنك الأهلي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>السعودي الفرنسي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>السعودي الهولندي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>استثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العربي الوطني</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البلاد</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجزيرة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الرياض</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سامبا</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإنماء</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الراجحي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >الصناعات البتروكيماوية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>سبكيم العالمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سابك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتقدمة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بتروكيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المجموعة السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سافكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التصنيع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصحراء للبتروكيماويات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اللجين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بترو رابغ</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>كيان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>كيمانول</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>نماء للكيماويات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ينساب</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاسمنت</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الشمالية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسمنت حائل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسمنت نجران</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الجوف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت القصيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت المدينة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الجنوبيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الشرقية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت اليمامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت ام القرى</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت تبوك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت ينبع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت السعوديه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاسمنت العربية</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التجزئة</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>ساسكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسواق المزرعة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إكسترا</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>رعاية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسواق ع العثيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الحمادي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخليج للتدريب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدريس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المواساة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جرير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دله الصحية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الحكير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة فتيحي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الطاقة والمرافق الخدمية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>كهرباء السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الغاز والتصنيع</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الزراعة والصناعات الغذائية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأسماك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سدافكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الشرقية للتنمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>نادك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>حلواني إخوان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجوف الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التموين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>القصيم الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المراعي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بيشة الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تبوك الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جازان للتنمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أنعام القابضة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>هرفي للأغذية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الغذائية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة صافولا</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاتصالات وتقنية المعلومات</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>اتحاد اتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عذيب للاتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>زين السعودية</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التأمين</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأهلية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخليجية العامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ولاء للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>وفا للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإعادة السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سايكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتحدة للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الوطنية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسيج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بوبا العربية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساب تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أليانز إس إف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أمانة للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ايس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إتحاد الخليج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اكسا- التعاونية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأهلي للتكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإنماء طوكيو م</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاتحاد التجاري</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التأمين العربية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التعاونية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جزيرة تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدرع العربي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تكافل الراجحي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصقر للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العالمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ميدغلف للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بروج للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سلامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سند</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سوليدرتي تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عناية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العربي للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ملاذ للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>وقاية للتكافل</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الأستثمار المتعدد</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>سيسكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتطورة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاحساء للتنميه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الباحة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المصافي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المملكة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عسير</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الأستثمار الصناعي</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>صناعة الورق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصادرات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدوائية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الكيميائيه السعوديه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>معدنية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>معادن</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>شاكر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>زجاج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بى سى آى</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العبداللطيف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>فيبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تكوين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة السريع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسترا الصناعية</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التشييد والبناء</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأنابيب السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الفخارية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>صدق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أنابيب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخضري</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسلاك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البابطين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البحر الأحمر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجبس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخزف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الزامل للصناعة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مسك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصناعات الكهربائيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الكابلات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اميانتيت</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بوان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة المعجل</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التطوير العقاري</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>إعمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العقارية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التعمير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جبل عمر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دار الأركان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>طيبة للاستثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مدينة المعرفة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مكة للانشاء</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >النقل</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الخدمات الأرضية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>النقل الجماعي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مبرد</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بدجت السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البحري</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاعلام والنشر</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>طباعة وتغليف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأبحاث و التسويق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تهامه للاعلان</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الفنادق والسياحة</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>شمس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دور</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة الحكير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الطيار</span></LI>
+</UL>
+</LI>
+</ul>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% load static %}
+<script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+<script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart', 'bar', 'table']
+            }]
+          }"></script>
+<script type="text/javascript">
+google.setOnLoadCallback(drawOverallStatsTablePost);
+google.setOnLoadCallback(drawPieChart_Rel_Overall);
+google.setOnLoadCallback(drawPieChart_Sent_Overall);
+
+function drawOverallStatsTablePost() {
+	ajaxPost('/get_overall_stats', {  }, function (content) {
+	    var data = new google.visualization.DataTable();
+	    data.addColumn('string', '');
+	    data.addColumn('number', 'Value');
+	    /*
+	    $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+	    $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
+		*/
+		total = content.total_entries_in_DB;
+		labeled = content.total_labeled_entries_in_DB;
+		rel = content.total_relevant_labeled_entries_in_DB;
+		irrel = content.total_irrelevant_labeled_entries_in_DB;
+		pos = content.total_positive_labeled_entries_in_DB;
+		neg = content.total_negative_labeled_entries_in_DB;
+		neu = content.total_neutral_labeled_entries_in_DB;
+		user_labeled = content.user_total_labels_in_DB;
+		try
+		{
+		    data.addRows([
+		      ['Total number of entries',  {v: total, f: total.toString()}],
+		      ['Total number of fully labeled entries',  {v: labeled, f: labeled.toString()}],
+		      ['Total number of relevant entries',   {v:rel,   f: rel.toString()}],
+		      ['Total number of irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+		      ['Total number of positive entries', {v: pos, f: pos.toString()}],
+		      ['Total number of negative entries', {v: neg, f: neg.toString()}],
+		      ['Total number of neutral entries',   {v: neu,  f: neu.toString()}]
+		      
+		    ]);
+			if(user_labeled !== null)
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: user_labeled,  f: user_labeled.toString()}]);
+				
+			}
+			else
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]);
+			}
+		}
+		catch(e)
+		{
+		    data.addRows([
+		    		      ['Total number of entries', {v: 0,  f: '0'}],
+		    		      ['Total number of fully labeled entries', {v: 0,  f: '0'}],
+		    		      ['Total number of relevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of irrelevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of positive entries', {v: 0,  f: '0'}],
+		    		      ['Total number of negative entries', {v: 0,  f: '0'}],
+		    		      ['Total number of neutral entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]
+		    		      
+		    		    ]);
+		}
+	    var table = new google.visualization.Table(document.getElementById('overall_stats_table'));
+	
+	    table.draw(data, {showRowNumber: true, width: '1000px'});
+		});
+  	}
+	function drawOverallStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_labeled) {
+	    var data = new google.visualization.DataTable();
+	    data.addColumn('string', '');
+	    data.addColumn('number', 'Value');
+        /*
+	    $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
+		*/
+		try
+		{
+		    data.addRows([
+		      ['Total number of entries',  {v: total, f: total.toString()}],
+		      ['Total number of fully labeled entries',  {v: labeled, f: labeled.toString()}],
+		      ['Total number of relevant entries',   {v:rel,   f: rel.toString()}],
+		      ['Total number of irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+		      ['Total number of positive entries', {v: pos, f: pos.toString()}],
+		      ['Total number of negative entries', {v: neg, f: neg.toString()}],
+		      ['Total number of neutral entries',   {v: neu,  f: neu.toString()}]
+		      
+		    ]);
+			if(user_labeled !== null)
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: user_labeled,  f: user_labeled.toString()}]);
+				
+			}
+			else
+			{
+				data.addRow(['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]);
+			}
+		}
+		catch(e)
+		{
+		    data.addRows([
+		    		      ['Total number of entries', {v: 0,  f: '0'}],
+		    		      ['Total number of fully labeled entries', {v: 0,  f: '0'}],
+		    		      ['Total number of relevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of irrelevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of positive entries', {v: 0,  f: '0'}],
+		    		      ['Total number of negative entries', {v: 0,  f: '0'}],
+		    		      ['Total number of neutral entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of labeled tweets entries by this user',   {v: 0,  f: '0'}]
+		    		      
+		    		    ]);
+		}
+	    var table = new google.visualization.Table(document.getElementById('overall_stats_table'));
+	
+	    table.draw(data, {showRowNumber: true, width: '1000px'});
+	  }
+	function drawStockStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_rel, user_irrel) {
+	    var data = new google.visualization.DataTable();
+	    data.addColumn('string', '');
+	    data.addColumn('number', 'Value');
+        /*
+	    $('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+        $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
+		*/
+		try
+		{
+		    data.addRows([
+		      ['Total number of stock entries',  {v: total, f: total.toString()}],
+		      ['Total number of stock fully labeled entries',  {v: labeled, f: labeled.toString()}],
+		      ['Total number of stock relevant entries',   {v:rel,   f: rel.toString()}],
+		      ['Total number of stock irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+		      ['Total number of stock positive entries', {v: pos, f: pos.toString()}],
+		      ['Total number of stock negative entries', {v: neg, f: neg.toString()}],
+		      ['Total number of stock neutral entries',   {v: neu,  f: neu.toString()}]
+		      
+		    ]);
+			if((user_rel !== null) && (user_irrel !== null))
+			{
+				data.addRow(['Total number of labeled relevant tweets entries by this user',   {v: user_rel,  f: user_rel.toString()}]);
+				data.addRow(['Total number of labeled irrelevant tweets entries by this user',   {v: user_irrel,  f: user_irrel.toString()}]);
+				
+			}
+			else
+			{
+				data.addRow(['Total number of labeled relevant tweets entries by this user',   {v: 0,  f: '0'}]);
+				data.addRow(['Total number of labeled irrelevant tweets entries by this user',   {v: 0,  f: '0'}]);
+			}
+		}
+		catch(e)
+		{
+			/*
+		    data.addRows([
+		    		      ['Total number of stock entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock fully labeled entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock relevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock irrelevant entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock positive entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock negative entries', {v: 0,  f: '0'}],
+		    		      ['Total number of stock neutral entries',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock relevant labeled tweets entries by this user',   {v: 0,  f: '0'}],
+		    		      ['Total number of stock irrelevant labeled tweets entries by this user',   {v: 0,  f: '0'}]
+		    		      
+		    		    ]);
+			*/
+		}
+	    var table = new google.visualization.Table(document.getElementById('stock_stats_table'));
+	
+	    table.draw(data, {showRowNumber: true, width: '1000px'});
+	  }
+
+	function drawPieChart_Rel_Overall() {
+	
+		ajaxPost('/get_overall_rel_info', {  }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Relevancy');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
+		
+		    var options = {
+		      title: 'Relevance chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('overall_rel_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
+	  }
+
+	function drawPieChart_Sent_Overall() {
+		
+		ajaxPost('/get_overall_sent_info', { }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Sentiment');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
+		
+		    var options = {
+		      title: 'Sentiment chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('overall_sent_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
+	  }
+	function drawPieChart_Rel_Stock(stock) {
+		ajaxPost('/get_stock_rel_info', {'query': stock }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Relevancy');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
+		
+		    var options = {
+		      title: 'Relevance chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('stock_rel_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
+	  }
+
+	
+	function drawPieChart_Sent_Stock(stock) {
+		ajaxPost('/get_stock_sent_info', { 'query': stock }, function (content) {
+			/*
+		    var data = google.visualization.arrayToDataTable([
+		      ['Task', 'Hours per Day'],
+		      ['Work',     11],
+		      ['Eat',      2],
+		      ['Commute',  2],
+		      ['Watch TV', 2],
+		      ['Sleep',    7]
+		    ]);
+			*/
+			var data = new google.visualization.DataTable();
+		    data.addColumn('string', 'Sentiment');		     
+		    data.addColumn('number', 'Number of tweets');
+		    data.addRows(content);
+			//var data = google.visualization.arrayToDataTable(content);
+			//data.addRows(content);
+			//data.addRows(google.visualization.arrayToDataTable([['Work',     11], ['Watch TV', 2]]));
+		
+		    var options = {
+		      title: 'Sentiment chart',
+		        is3D: true
+		    };
+		
+		    //$('#stats').html('<br></br>');
+		    var chart = new google.visualization.PieChart(document.getElementById('stock_sent_pie_chart'));
+		
+		    chart.draw(data, options);
+		});
+	  }
+	function drawVolumeChart(stock,slid) {
+		
+        ajaxPost('/get_stock_volume', { 'query': stock }, function (content) {
+
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Number of tweets');
+			  data.addRows(content);
+			  
+			  /*
+		      data.addRows([
+		        [{v: [8, 0, 0], f: '8 am'}, getRandomInt(1, 10)],
+		        [{v: [9, 0, 0], f: '9 am'}, getRandomInt(1, 10)],
+		        [{v: [10, 0, 0], f:'10 am'}, getRandomInt(1, 10)],
+		        [{v: [11, 0, 0], f: '11 am'}, getRandomInt(1, 10)],
+		        [{v: [12, 0, 0], f: '12 pm'}, getRandomInt(1, 10)],
+		        [{v: [13, 0, 0], f: '1 pm'}, getRandomInt(1, 10)],
+		        [{v: [14, 0, 0], f: '2 pm'}, getRandomInt(1, 10)],
+		        [{v: [15, 0, 0], f: '3 pm'}, getRandomInt(1, 10)],
+		        [{v: [16, 0, 0], f: '4 pm'}, getRandomInt(1, 10)],
+		        [{v: [17, 0, 0], f: '5 pm'}, getRandomInt(1, 10)],
+		      ]);
+			  */
+		      
+		      var options = {
+		        title: 'Trend of tweets volume over the day',
+		        trendlines: {
+		          0: {type: 'polynomial', degree: 3, lineWidth: 5, opacity: .3}
+		        },
+		        hAxis: {
+		          title: 'Time of Day',
+		          format: 'h:mm a',
+		          viewWindow: {
+		            min: [7, 30, 0],
+		            max: [17, 30, 0]
+		          }
+		        },
+		        vAxis: {
+		          title: 'Number of tweets'
+		        }
+		      };
+		
+		      var chart = new google.visualization.ColumnChart(document.getElementById('stock_volume_chart'));
+		      chart.draw(data, options);
+      	});
+	
+    }
+	function drawColChart_Rel_Stock(stock) {
+		ajaxPost('/get_stock_col_rel_info', { 'query': stock }, function (content) {
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Irrelevant');
+		      data.addColumn('number', 'Relevant');
+			  data.addRows(content);
+
+	      var options = {
+	        title: 'Trend of tweets volume over the day',
+	        isStacked: true,
+	        hAxis: {
+	          title: 'Time of Day',
+	          format: 'h:mm a',
+	          viewWindow: {
+	            min: [7, 30, 0],
+	            max: [17, 30, 0]
+	          }
+	        },
+	        vAxis: {
+	          title: 'Rating (scale of 1-10)'
+	        }
+	      };
+
+	      var chart = new google.visualization.ColumnChart(document.getElementById('stock_rel_col_chart'));
+	      chart.draw(data, options);
+		});
+	  }
+
+	function drawColChart_Sent_Stock(stock) {
+		
+		ajaxPost('/get_stock_col_sent_info', { 'query': stock }, function (content) {
+			  var l_data = [];
+			  /*
+		        for (i = 0; i < slid; i++) {
+		        l_data[i]=content[i+content.length-slid];//l_data[i] = [{v: [8, 0, 0], f: '8 am'}, 10]
+		        }
+		      */  
+		      var data = new google.visualization.DataTable();
+		        
+		      //data.addColumn('string', 'Day');
+		     
+		      //data.addColumn('number', 'Number of tweets');
+		      
+		      data.addColumn('timeofday', 'Time of Day');
+		      data.addColumn('number', 'Neutral');
+		      data.addColumn('number', 'Negative');
+		      data.addColumn('number', 'Positive');
+		      
+		      
+			  data.addRows(content);
+
+	      var options = {
+	        title: 'Trend of tweets sentiment over the day',
+	        isStacked: true,
+	        hAxis: {
+	          title: 'Time of Day',
+	          format: 'h:mm a',
+	          viewWindow: {
+	            min: [7, 30, 0],
+	            max: [17, 30, 0]
+	          }
+	        },
+	        vAxis: {
+	          title: 'Rating (scale of 1-10)'
+	        }
+	      };
+
+	      var chart = new google.visualization.ColumnChart(document.getElementById('stock_sent_col_chart'));
+	      chart.draw(data, options);
+		});
+	  }
+
+
+var stock_N;
+var stock_fully_lab;
+//      function drawChart_line(stock) {
+//            ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
+//                //console.debug(prz)
+//        var data = google.visualization.arrayToDataTable(prz_line
+//        );
+//
+//        var options = {
+//          title: '',
+//          curveType: 'none',
+//          legend: { position: 'bottom' }
+//        };
+//
+//        var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+//
+//        chart.draw(data, options);
+//                });
+//      }
+
+      function drawChart_line(stock,slid,anim) {
+            ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
+        var l_data = [];
+        for (i = 0; i < slid; i++) {
+        l_data[i]=prz_line[i+prz_line.length-slid];
+        }
+        //console.debug(l_data.length); 
+        //console.debug(l_data); 
+        //console.debug(getBollingerBands(20,2,l_data)); 
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Day');
+        data.addColumn('number', 'Price');
+        data.addRows(l_data);
+
+        var options = {
+          title: '',
+        tooltip: {isHtml: true},
+        legend:'none',
+        backgroundColor:'#F5F5F5',
+        animation: {
+        duration: anim,
+        startup: true,
+        easing: 'inAndOut'
+        },
+        chartArea: {
+        left: 50,
+        width: '90%',
+        height: '65%',
+        },
+        hAxis: {
+        textStyle:{fontSize: 10}
+        },
+        vAxis: {
+        textStyle:{fontSize: 10}
+        },
+        legend: {
+        position: 'right'
+        },
+          curveType: 'none',
+          legend: 'none'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('price_chart'));
+
+        chart.draw(data, options);
+                });
+      }
+
+      function drawChart_mountain(stock,slid,anim) {
+	ajaxPost('/get_prices_line', { 'query': stock }, function (prz_line) {
+        var l_data = [];
+        for (i = 0; i < slid; i++) {
+        l_data[i]=prz_line[i+prz_line.length-slid];
+        }
+        //console.debug(l_data.length);
+
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Day');
+        data.addColumn('number', 'Price');
+        data.addRows(l_data);
+
+        var options = {
+          title: '',
+        tooltip: {isHtml: true},
+        legend:'none',
+        backgroundColor:'#F5F5F5',
+        animation: {
+        duration: anim,
+        startup: true,
+        easing: 'inAndOut'
+        },
+        chartArea: {
+        left: 50,
+        width: '90%',
+        height: '65%',
+        },
+        hAxis: {
+        textStyle:{fontSize: 10}
+        },
+        vAxis: {
+        textStyle:{fontSize: 10}
+        },
+        legend: {
+        position: 'right'
+        },
+        curveType: 'none',
+        legend: 'none'
+        };
+        var chart = new google.visualization.AreaChart(document.getElementById('price_chart'));
+        chart.draw(data, options);
+		});
+      }
+
+
+  function drawChart_candle(stock,slid,anim) {
+        ajaxPost('/get_prices_candle', { 'query': stock }, function (prz_candle) {
+	var l_data = [];
+	//console.debug(slid);
+	//console.debug(prz_candle.length);
+	
+	if ( prz_candle.length > slid )
+		{
+        for (i = 0; i < slid; i++) {
+        l_data[i]=prz_candle[i+prz_candle.length-slid];
+        }
+		}
+	else
+		{
+	for (i = 0; i < prz_candle.length; i++) {
+        l_data[i]=prz_candle[i];
+	}
+		}
+	//console.debug(l_data.length);
+
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Day');
+    data.addColumn('number', 'Low');
+    data.addColumn('number', 'Open');
+    data.addColumn('number', 'Close');
+    data.addColumn('number', 'High');
+    data.addColumn({type: 'string', role: 'tooltip', 'p': {'html': true}});
+    data.addRows(l_data);
+
+    var options = {
+	tooltip: {isHtml: true},
+	legend:'none',
+	backgroundColor:'#F5F5F5',
+	animation: {
+	duration: anim,
+	startup: true,
+	easing: 'inAndOut'
+	},
+	chartArea: {
+	left: 50,
+	width: '90%',
+	height: '65%',
+	},
+	hAxis: {
+	textStyle:{fontSize: 10}
+	},
+        vAxis: {
+        textStyle:{fontSize: 10}
+        },
+	legend: {
+	position: 'right'
+	},
+        candlestick: {
+        fallingColor: { strokeWidth: 0, fill: '#a52714' }, // red
+        risingColor: { strokeWidth: 0, fill: '#0f9d58' }   // green
+        }
+    };
+
+    var chart = new google.visualization.CandlestickChart(document.getElementById('price_chart'));
+
+    chart.draw(data, options);
+                });
+  }
+
+
+             
+    function findUrls( text )
+    {
+        var source = (text || '').toString();
+        var urlArray = [];
+        var url;
+        var matchArray;
+    
+        // Regular expression to find FTP, HTTP(S) and email URLs.
+        var regexToken = /(((ftp|https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)|((mailto:)?[_.\w-]+@([\w][\w\-]+\.)+[a-zA-Z]{2,3})/g;
+    
+        // Iterate through any URLs in the text.
+        while( (matchArray = regexToken.exec( source )) !== null )
+        {
+            var token = matchArray[0];
+	    if (token.indexOf("twemoji") < 0) 
+             {urlArray.push(token);}
+            //console.debug(token)
+            //console.debug(token.indexOf("twemoji"))
+        }
+    
+        return urlArray;
+    }
+    
+    $(window).load(function () {
+        var screenWidth = document.documentElement.clientWidth;
+        var screenHeight = document.documentElement.clientHeight;
+
+	$(".controller").hide()
+        $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
+        $("#containerUL").css({ "min-height": (screenHeight - 52) + "px" });
+        $("#main_content").width(screenWidth - 270);
+/*        ajaxPost('/get_stocks_weights', {}, function (content) {
+            var word_list = []
+            word_list = content
+            //console.debug(word_list)
+            $("#word_cloud_container").jQCloud(word_list,{width:screenWidth,height:500});    
+            
+        });
+*/        
+    });
+
+    $('#side_bar_selection').keyup(function () {
+        var value = $(this).val();
+        $("#side_bar_list > li").each(function () {
+            if ($(this).text().indexOf(value) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    //$(".slider").on("change", function(){console.debug($(this).value)});
+    $(document.getElementById('slider')).on("change", function(){
+	//console.log(document.getElementById('slider').value);
+	google.setOnLoadCallback(drawChart_candle(window.stock_N,document.getElementById('slider').value))
+	});
+    var graph="candle";
+    var slid;
+    slid=30;
+    $('#graph_list > li').click(function () {
+    if ( $(this).text() == " Line") 
+    {google.setOnLoadCallback(drawChart_line(window.stock_N,30,0)); graph="line";}
+    else if ( $(this).text() == " Mountain")
+    {google.setOnLoadCallback(drawChart_mountain(window.stock_N,30,0)); graph="mountain";}
+    else if ( $(this).text() == " CandleStick")
+    {google.setOnLoadCallback(drawChart_candle(window.stock_N,30,0)); graph="candle";}
+    });
+
+    $('#time_list > li').click(function () {
+
+    if ( $(this).text() == "1W")
+    {slid=7;}
+    else if ( $(this).text() == "1M")
+    {slid=23;}
+    else if ( $(this).text() == "3M")
+    {slid=70;}
+		
+    if (graph == "line")
+    {google.setOnLoadCallback(drawChart_line(window.stock_N,slid,0));}
+    else if (graph == "mountain")
+    {google.setOnLoadCallback(drawChart_mountain(window.stock_N,slid,0));}
+    else if (graph == "candle")
+    {google.setOnLoadCallback(drawChart_candle(window.stock_N,slid,0));}
+
+    });
+
+    $('#side_bar_list > li').click( function () {
+			window.stock_N=$(this).text();
+	        dosearch($(this).text()); 
+		}
+
+        );
+        
+    	function dosearch (stock_name)
+        {
+        $('.select_list_item').removeClass('select_list_item');
+        $(this).addClass('select_list_item');
+
+        google.load("visualization", "1", {packages:["corechart", "bar"]});
+        /*
+        drawPieChart_Rel_Stock();
+        drawPieChart_Rel_Stock();
+        drawPieChart_Sent_Stock();
+        drawColChart_Rel_Stock();
+        drawColChart_Sent_Stock();
+		*/
+        google.setOnLoadCallback(drawChart_candle(window.stock_N,30,2000));
+
+        $(".controller").show()
+
+        $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + '</font></div>');
+        $('#tweets').fadeOut('fast');
+        $("#tweets").animate({ scrollTop: 0 }, "fast");
+        $('#tweets_loading').fadeIn('fast');
+
+        //var stock_name = $(this).text()
+        ajaxPost('/get_tweets_filtered', { 'query': stock_name}, function (content) {
+            $('#tweets').html('');
+            drawPieChart_Rel_Overall();
+            drawPieChart_Sent_Overall();
+            drawPieChart_Rel_Stock(stock_name);
+            drawPieChart_Sent_Stock(stock_name);
+            drawVolumeChart(stock_name, 30);
+            drawColChart_Rel_Stock(stock_name);
+            drawColChart_Sent_Stock(stock_name);
+            /*$('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_irel" class="stat_total"><font color="black">' + 'Total number of irrelevant entries in DB is: ' + content.total_irrelevant_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_pos" class="stat_total"><font color="black">' + 'Total number of positive entries in DB is: ' + content.total_positive_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_neg" class="stat_total"><font color="black">' + 'Total number of negative entries in DB is: ' + content.total_negative_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of neutral entries in DB is: ' + content.total_neutral_labeled_entries_in_DB + '</font></div>');
+            $('#stats').append('<div id="total_neu" class="stat_total"><font color="black">' + 'Total number of labeled tweets entries in DB by this user is: ' + content.user_total_labels_in_DB + '</font></div>');
+            
+			$('#stats').append('<br></br>')
+           	*/
+
+            drawOverallStatsTable(content.total_entries_in_DB, content.total_relevant_labeled_entries_in_DB, content.total_irrelevant_labeled_entries_in_DB, content.total_positive_labeled_entries_in_DB, content.total_negative_labeled_entries_in_DB, content.total_neutral_labeled_entries_in_DB, content.total_labeled_entries_in_DB, content.user_total_labels_in_DB);
+			
+			// FIX: To be moved to a table outside the #tweets area 
+			/*
+			$('#tweets').append('<div id="stock_all" class="stat_stock"><font color="black">' + 'Total number of entries in DB for ' + stock_name + ' is: ' + content.stock_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div id="stock_lab" class="stat_stock"><font color="black">' + 'Total number of fully labeled entries in DB for ' + stock_name + ' is: ' + content.stock_labeled_entries_in_DB + '</font></div>');
+            */
+	    	stock_fully_lab=content.stock_labeled_entries_in_DB
+            /*
+	    	$('#tweets').append('<div id="stock_rel" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB for ' + stock_name + ' is: ' + content.stock_relevant_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div id="stock_irel" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB for ' + stock_name + ' is: ' + content.stock_irrelevant_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div id="stock_pos" class="stat_stock"><font color="black">' + 'Total number of positive entries in DB for ' + stock_name + ' is: ' + content.stock_positive_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div id="stock_neg" class="stat_stock"><font color="black">' + 'Total number of negative entries in DB for ' + stock_name + ' is: ' + content.stock_negative_labeled_entries_in_DB + '</font></div>');
+            $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of neutral entries in DB for ' + stock_name + ' is: ' + content.stock_neutral_labeled_entries_in_DB + '</font></div>'); 
+            $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of relevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_relevant_for_stock_in_DB + '</font></div>'); 
+            $('#tweets').append('<div id="stock_neu" class="stat_stock"><font color="black">' + 'Total number of irrelevant entries in DB labeled by this user for ' + stock_name + ' is: ' + content.user_irrelevant_for_stock_in_DB + '</font></div>'); 
+            $('#tweets').append('<br></br>')
+            */
+            //drawStockStatsTable(content.stock_entries_in_DB, content.stock_relevant_labeled_entries_in_DB, content.stock_irrelevant_labeled_entries_in_DB, content.stock_positive_labeled_entries_in_DB, content.stock_negative_labeled_entries_in_DB, content.stock_neutral_labeled_entries_in_DB, content.user_relevant_for_stock_in_DB, content.user_relevant_for_stock_in_DB);
+            
+            drawStockStatsTable(content.stock_entries_in_DB,
+            					content.stock_relevant_labeled_entries_in_DB,
+            					content.stock_irrelevant_labeled_entries_in_DB,
+            					content.stock_positive_labeled_entries_in_DB,
+            					content.stock_negative_labeled_entries_in_DB,
+            					content.stock_neutral_labeled_entries_in_DB,
+            					content.stock_labeled_entries_in_DB,
+            					content.user_relevant_for_stock_in_DB,
+            					content.user_irrelevant_for_stock_in_DB);
+            //$('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
+            $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>');
+             var number_of_replies=0
+            for (var i = 0; i < Math.min(49,content.statuses.length)+number_of_replies; i++) {
+		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+                //text = content.statuses[i]['text'];
+                date = content.statuses[i].created_at;
+                diff=(new Date()).getTimezoneOffset()*60*1000;
+                date=Date.parse(content.statuses[i]['created_at']);
+                date=new Date(date);
+                date1=date.toLocaleDateString();
+                currDate=date1;
+                date2=date.toLocaleTimeString();
+                date=date1+' '+date2;
+                followers_no = content.statuses[i].user_followers_count;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = '@' + content.statuses[i].tweeter_sname;
+                price_time_then = 'at time: ' +content.statuses[i].price_time_then;
+                price_then = 'the price was: ' + content.statuses[i].price_then;
+                image = content.statuses[i].user_profile_image_url;
+                tweet_id = content.statuses[i].twitter_id;
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+				media_url1='';
+				try{
+				media_url=content.statuses[i].media_url;
+				media_url=media_url.replace(/'/g, '"');
+				media_url1=JSON.parse(media_url);
+				media_url=(media_url1.media[0]).media_url;
+				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+				}catch(err){
+				try{
+				media_url=(media_url1.urls[0]).expanded_url;
+				if(media_url.indexOf("youtu.be")>-1)
+				{
+				startindex=media_url.lastIndexOf('\/');
+				media_url=media_url.substr(startindex);
+                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
+				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+				}
+				else media_url='';
+				}
+				catch(err){media_url='';}
+
+				}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                                url1='';
+                                try{
+                                url1=findUrls(text); 
+                                }
+                                catch(err){}
+                                if(url1!='')
+                                for (var ii = 0; ii < url1.length; ii++)
+                                {
+                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                                }
+
+		head='<div class="tweet">'
+                head=head.concat('<table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><div id='+tweet_id+' >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br/>' + media_url + '<br/>');
+
+		tail='<button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>'
+           
+		while ( content.statuses[i]['conversation_reply'] == content.statuses[i+1]['twitter_id'] )
+		{
+		i++;
+		number_of_replies++;
+            		//console.debug(number_of_replies);
+		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+                //text = content.statuses[i]['text'];
+                date = content.statuses[i].created_at;
+                diff=(new Date()).getTimezoneOffset()*60*1000;
+                date=Date.parse(content.statuses[i]['created_at']);
+
+                date=new Date(date);
+                date1=date.toLocaleDateString();
+                currDate=date1;
+                date2=date.toLocaleTimeString();
+                date=date1+' '+date2;
+                followers_no = content.statuses[i].user_followers_count;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = '@' + content.statuses[i].tweeter_sname;
+                price_time_then = 'at time: ' +content.statuses[i].price_time_then;
+                price_then = 'the price was: ' + content.statuses[i].price_then;
+                image = content.statuses[i].user_profile_image_url;
+                tweet_id = content.statuses[i].twitter_id;
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+				media_url1='';
+				try{
+				media_url=content.statuses[i].media_url;
+				media_url=media_url.replace(/'/g, '"');
+				media_url1=JSON.parse(media_url);
+				media_url=(media_url1.media[0]).media_url;
+				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+				}catch(err){
+				try{
+				media_url=(media_url1.urls[0]).expanded_url;
+				if(media_url.indexOf("youtu.be")>-1)
+				{
+				startindex=media_url.lastIndexOf('\/');
+				media_url=media_url.substr(startindex);
+                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
+				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+				}
+				else media_url='';
+				}
+				catch(err){media_url='';}
+
+				}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                                url1='';
+                                try{
+                                url1=findUrls(text); 
+                                }
+                                catch(err){}
+                                if(url1!='')
+                                for (var ii = 0; ii < url1.length; ii++)
+                                {
+                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                                }
+                head=head.concat('<table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><div id='+tweet_id+' >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br />' + media_url + '<br />');
+		}
+
+		head=head.concat(tail)
+		$('#tweets').append(head)
+
+            }
+			
+            $('#tweets').fadeIn('fast');
+            $("#tweets").animate({ scrollTop: 0 }, "fast");
+            $('#tweets_loading').fadeOut('fast');
+        });
+    }
+	//);
+    var sentEditFlag = []
+    var relEditFlag = []
+    var EditCounter = 50;
+    $('body').on('click', '.editSentiment', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	var user_action=$(this).attr("value")
+	var stock = window.stock_N
+        $('#negative'+item).show();
+        $('#neutral'+item).show();
+        editstring="<button id= positive"+item+ " class=sentiment type=button value=positive>Positive</button>"
+	//console.debug(user_action)
+	$('#editSentLab'+item).replaceWith(editstring);
+
+	if(user_action == "positive")
+                        {
+                        N=(Number(document.getElementById('total_pos').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='total_pos' class='stat_total'><font color='black'> Total number of positive entries in DB is: " + N + "</font></div>" 
+			$('#total_pos').hide();
+			$('#total_pos').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_pos').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='stock_pos' class='stat_total'><font color='black'> Total number of positive entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_pos').hide();
+			$('#stock_pos').replaceWith(newstring);
+                        }		
+	else if(user_action == "negative")	
+	            {
+                        N=(Number(document.getElementById('total_neg').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='total_neg' class='stat_total'><font color='black'> Total number of negative entries in DB is: " + N + "</font></div>" 
+			$('#total_neg').hide();
+			$('#total_neg').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_neg').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='stock_neg' class='stat_total'><font color='black'> Total number of negative entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_neg').hide();
+			$('#stock_neg').replaceWith(newstring);
+                        }	
+	else if(user_action == "neutral")	
+	            {
+                        N=(Number(document.getElementById('total_neu').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='total_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB is: " + N + "</font></div>" 
+			$('#total_neu').hide();
+			$('#total_neu').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_neu').innerHTML.match(/\d+/))-1).toString();
+			newstring="<div id='stock_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_neu').hide();
+			$('#stock_neu').replaceWith(newstring);
+                    }	
+	sentEditFlag[item]=0;
+	});	
+
+    $('body').on('click', '.sentiment', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	if ( sentEditFlag[item] == 1 )
+	{
+		return;
+	}
+	sentEditFlag[item]=1
+	//var stock = $('.select_list_item').text();
+	var stock = window.stock_N ;
+        var user_action = $(this).attr("value")
+	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") ,'tweet_id': item,'stock':stock },function (content) {
+        //console.debug($('#positive'+item))
+	if ( stock_fully_lab > 700)
+	{
+	window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");
+	return
+	}
+        $('#negative'+item).hide();
+        $('#neutral'+item).hide();
+        editstring="<button id= editSentLab"+item +" class=editSentiment type=button value="+user_action+">Edit My Label</button>"
+	//console.debug(editstring)
+       	$('#positive'+item).replaceWith(editstring);
+
+
+	if(user_action == "positive")
+                        {
+                        N=(Number(document.getElementById('total_pos').innerHTML.match(/\d+/))+1).toString();
+			newstring="<div id='total_pos' class='stat_total'><font color='black'> Total number of positive entries in DB is: " + N + "</font></div>" 
+			$('#total_pos').hide();
+			$('#total_pos').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_pos').innerHTML.match(/\d+/))+1).toString();
+			newstring="<div id='stock_pos' class='stat_total'><font color='black'> Total number of positive entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_pos').hide();
+			$('#stock_pos').replaceWith(newstring);
+                        }		
+	else if(user_action == "negative")	
+	            {
+                        N=(Number(document.getElementById('total_neg').innerHTML.match(/\d+/))+1).toString();
+			newstring="<div id='total_neg' class='stat_total'><font color='black'> Total number of negative entries in DB is: " + N + "</font></div>" 
+			$('#total_neg').hide();
+			$('#total_neg').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_neg').innerHTML.match(/\d+/))+1).toString();
+			newstring="<div id='stock_neg' class='stat_total'><font color='black'> Total number of negative entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_neg').hide();
+			$('#stock_neg').replaceWith(newstring);
+                        }	
+	else if(user_action == "neutral")	
+	            {
+                        N=(Number(document.getElementById('total_neu').innerHTML.match(/\d+/))+1).toString();
+			newstring="<div id='total_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB is: " + N + "</font></div>" 
+			$('#total_neu').hide();
+			$('#total_neu').replaceWith(newstring);
+			
+			N=(Number(document.getElementById('stock_neu').innerHTML.match(/\d+/))+1).toString();
+			newstring="<div id='stock_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB for " + stock + " is: " + N + "</font></div>" 
+			$('#stock_neu').hide();
+			$('#stock_neu').replaceWith(newstring);
+                    }	
+		});
+	});
+
+    $('body').on('click', '.editRel', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	var user_action=$(this).attr("value")
+	var stock = window.stock_N
+        $('#corIrrel'+item).show();
+        editstring="<button id= corRel"+item+" class=cor type=button value=relevant>Relevant</button>"
+        $('#corRel'+item).replaceWith(editstring);
+	//console.debug(editstring)
+	//console.debug(user_action)
+	$('#editRelLab'+item).replaceWith(editstring);
+
+        if(user_action == "relevant")      
+                    {
+                        N=(Number(document.getElementById('total_rel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='total_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB is: " + N + "</font></div>" 
+                        $('#total_rel').hide();
+                        $('#total_rel').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_rel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='stock_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_rel').hide();
+                        $('#stock_rel').replaceWith(newstring);
+                    }      
+        else if(user_action == "irrelevant")
+                    {
+                        N=(Number(document.getElementById('total_irel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='total_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB is: " + N + "</font></div>" 
+                        $('#total_irel').hide();
+                        $('#total_irel').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_irel').innerHTML.match(/\d+/))-1).toString();
+                        newstring="<div id='stock_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_irel').hide();
+                        $('#stock_irel').replaceWith(newstring);
+                    } 
+	relEditFlag[item]=0
+
+	});	
+    $('body').on('click', '.cor', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+        if ( relEditFlag[item] == 1)
+        {
+                return;
+        }
+	relEditFlag[item] = 1
+        //$('#debug').html('');
+        //$('#debug').append('<div><font color="black">' + $(this).attr("id").slice(-1)+ '</font></div>')
+	//var item = $(this).attr("id").slice(-1);
+        //$('#debug').append('<div><font color="black">' + item + '</font></div>');
+	var stock = window.stock_N
+        var user_action = $(this).attr("value")
+	    ajaxPost('/get_correction', { 'relevancy': $(this).attr("value") ,'sentiment': 'none', 'tweet_id': item,'stock':stock },function (content) {
+  	    //$('#debug').html('');
+            //$('#debug').append('<div>' + item + '</div>')
+        if ( stock_fully_lab > 700)
+        {            window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");        return
+        } 
+
+            $('#corIrrel'+item).hide();
+            editstring="<button id= editRelLab"+item +" class=editRel type=button value="+user_action+">Edit My Label</button>"
+       	    $('#corRel'+item).replaceWith(editstring);
+
+        if(user_action == "relevant")      
+                    {
+                        N=(Number(document.getElementById('total_rel').innerHTML.match(/\d+/))+1).toString();
+                        newstring="<div id='total_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB is: " + N + "</font></div>" 
+                        $('#total_rel').hide();
+                        $('#total_rel').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_rel').innerHTML.match(/\d+/))+1).toString();
+                        newstring="<div id='stock_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_rel').hide();
+                        $('#stock_rel').replaceWith(newstring);
+                        }       
+        else if(user_action == "irrelevant")
+                    {
+                        N=(Number(document.getElementById('total_irel').innerHTML.match(/\d+/))+1).toString();
+                        newstring="<div id='total_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB is: " + N + "</font></div>" 
+                        $('#total_irel').hide();
+                        $('#total_irel').replaceWith(newstring);
+                        
+                        N=(Number(document.getElementById('stock_irel').innerHTML.match(/\d+/))+1).toString();
+                        newstring="<div id='stock_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB for " + stock + " is: " + N + "</font></div>" 
+                        $('#stock_irel').hide();
+                        $('#stock_irel').replaceWith(newstring);
+                    }  
+
+		});
+	});
+</script>
+
+  <script>
+  $(function() {
+var availableTags = 
+[
+"استثمار: البنك السعودي للاستثمار(أستثمار): 1030",
+"السعودى الهولندى: البنك السعودي الهولندي: 1040",
+"السعودى الفرنسى: البنك السعودي الفرنسي: 1050",
+"ساب: البنك السعودي البريطاني: 1060",
+"العربى الوطنى: البنك العربي الوطني: 1080",
+"سامبا: مجموعة سامبا المالية: 1090",
+"تاسي: تاسي",
+"الرياض: بنك الرياض: 1010",
+"الجزيرة: بنك الجزيرة: 1020",
+"الراجحي: مصرف الراجحي: 1120",
+"البلاد: بنك البلاد: 1140",
+"الإنماء: مصرف الإنماء(انماء): 1150",
+"كيمانول: شركة تكوين المتطورة للصناعات: 1201",
+"بتروكيم: شركة الصحراء للبتروكيماويات : 2260",
+"سابك: شركة الصناعات الكيميائية الأساسية: 1210",
+"سافكو: شركة الأسمدة العربية السعودية: 2020",
+"التصنيع: شركة مجموعة السريع التجارية الصناعية: 1213",
+"اللجين: شركة الحسن غازي إبراهيم شاكر: 1214",
+"نماء للكيماويات: شركة نماء للكيماويات: 2210",
+"المجموعة السعودية: المجموعة السعودية للإستثمار الصناعي: 2250",
+"الصحراء للبتروكيماويات: شركة الصحراء للبتروكيماويات: 2260",
+"ينساب: شركة ينبع الوطنية للبتروكيماويات: 2290",
+"أسمنت حائل: شركة أسمنت حائل(اسمنت حائل): 3001",
+"أسمنت نجران: شركة أسمنت نجران(اسمنت نجران) : 3002",
+"اسمنت المدينة: شركة اسمنت المدينة(أسمنت المدينه) : 3003",
+"اسمنت ام القرى: شركة اسمنت ام القرى(أسمنت ام القرى): 3005",
+"اسمنت الشمالية: شركة أسمنت المنطقة الشمالية(أسمنت الشماليه) : 3004",
+"الاسمنت العربية: شركة الاسمنت العربية(اسمنت العربيه) : 3010",
+"اسمنت اليمامة: شركة اسمنت اليمامة(أسمنت اليمامه) : 3020",
+"اسمنت السعوديه: شركة الأسمنت السعودية(أسمنت السعوديه) : 3030",
+"اسمنت القصيم: شركة اسمنت القصيم (أسمنت القصيم): 3040",
+"اسمنت الجنوبيه: شركة اسمنت المنطقة الجنوبيه(أسمنت الجنوبية) : 3050",
+"اسمنت ينبع: شركة اسمنت ينبع(أسمنت ينبع) : 3060",
+"اسمنت الشرقية: شركة اسمنت المنطقة الشرقية(أسمنت الشرقيه) : 3080",
+"اسمنت تبوك: شركة اسمنت تبوك(أسمنت تبوك) : 3090",
+"اسمنت الجوف: شركة اسمنت الجوف(أسمنت الجوف) : 3091",
+"أسواق ع العثيم: شركة أسواق عبدالله العثيم(اسواق ع العثيم) : 4001",
+"المواساة: شركة المواساة للخدمات الطبية: 4002",
+"إكسترا: الشركة المتحدة للإلكترونيات(اكسترا): 4003",
+"دله الصحية: شركة دله للخدمات الصحية القابضة: 4004",
+"رعاية: الشركة الوطنية للرعاية الطبية: 4005",
+"أسواق المزرعة: الشركة السعودية للتسويق(اسواق المزرعه): 4006",
+"ساسكو: الشركة السعودية لخدمات السيارات والمعدات: 4050",
+"ثمار: الشركة الوطنية للتسويق الزراعي: 4160",
+"مجموعة فتيحي: مجموعة فتيحي القابضة(مجموعه فتيحي) : 4180",
+"جرير: شركة جرير للتسويق: 4190",
+"الدريس: شركة الدريس للخدمات البترولية و النقليات: 4200",
+"الحكير: شركة فواز عبدالعزيز الحكير وشركاه: 4240",
+"الحمادي:شركة الحمادي للتنمية والاستثمار: 4007",
+"الخليج للتدريب: شركة الخليج للتدريب و التعليم : 4290",
+"الغاز والتصنيع: شركة الغاز والتصنيع الاهلية : 2080",
+"كهرباء السعودية: الشركة السعودية للكهرباء : 5110",
+"مجموعة صافولا: مجموعة صافولا(مجموعه صافولا): 2050",
+"الغذائية: شركة وفرة للصناعة والتنمية: 6002",
+"سدافكو: الشركة السعودية لمنتجات الألبان والأغذية (سدافكو): 2270 ",
+"المراعي: شركة المراعي: 2280",
+"أنعام القابضة: شركة مجموعة أنعام الدولية القابضة(انعام) : 4061",
+"حلواني إخوان: حلواني إخوان: 6001",
+"هرفي للأغذية: شركة هرفي للخدمات الغذائية: 6002",
+"التموين: شركة الخطوط السعودية للتموين: 6004",
+"نادك: الشركة الوطنية للتنمية الزراعية: 6010",
+"القصيم الزراعيه: شركة القصيم الزراعية: 6020",
+"تبوك الزراعيه: شركة تبوك للتنمية الزراعية : 6040",
+"الأسماك: الشركة السعودية للأسماك: 6050",
+"الشرقية للتنمية: الشركة الشرقية للتنمية 6060",
+"الجوف الزراعيه: شركة الجوف الزراعية: 6070",
+"بيشة الزراعيه: شركة بيشة للتنمية الزراعية: 6080",
+"جازان للتنمية: شركة جازان للتنمية: 6090",
+"الاتصالات: شركة الاتصالات السعودية: 7010",
+"اتحاد اتصالات: شركة إتحاد إتصالات: 7020",
+"زين السعودية: شركة الاتصالات المتنقلة السعودية: 7030",
+"عذيب للاتصالات: شركة إتحاد عذيب للاتصالات: 7040",
+"المتكاملة: الشركة السعودية للإتصالات المتكاملة ",
+"التعاونية: شركة التعاونية للتأمين : 8010 ",
+"ملاذ للتأمين: ملاذ للتأمين: 8020",
+"ميدغلف للتأمين: شركة المتوسط والخليج للتأمين وإعادة التأمين التعاوني: 8030",
+"أليانز إس إف: شركة أليانز السعودي الفرنسي للتأمين التعاوني(اليانز) : 8040",
+"سلامة: شركة سلامة للتأمين التعاوني: 8050",
+"ولاء للتأمين: الشركة السعودية المتحدة للتأمين التعاوني: 8060",
+"جزيرة تكافل:شركة الجزيرة تكافل تعاوني: 8012",
+"الدرع العربي: شركة الدرع العربي للتأمين التعاوني : 8070",
+"ساب تكافل: ساب للتكافل: 8080",
+"سند: شركة سند للتأمين و إعادة التأمين التعاوني: 8090",
+"سايكو: الشركة العربية السعودية للتأمين التعاوني: 8100",
+"وفا للتأمين: الشركة السعودية الهندية للتأمين التعاوني: 8110 ",
+"إتحاد الخليج: شركة إتحاد الخليج للتأمين التعاوني(اتحاد الخليج) : 8120",
+"الأهلي للتكافل: شركة الأهلي للتكافل(الاهلى) : 8130",
+"العربي للتأمين: شركة متلايف وايه أي جي والبنك العربي للتأمين التعاوني: 8011",
+"الأهلية: الشركة الأهلية للتأمين التعاوني(الاهليه) : 8140",
+"أسيج: المجموعة المتحدة للتأمين التعاوني (اسيج): 8050",
+"التأمين العربية: شركة التأمين العربية التعاونية(التامين العربيه) : 8160",
+"الاتحاد التجاري: شركة الاتحاد التجاري للتأمين التعاوني(الأتحاد) : 8170 ",
+"الصقر للتأمين: شركة الصقر للتأمين التعاوني : 8180",
+"المتحدة للتأمين: المجموعة المتحدة للتأمين التعاوني : 8060",
+"الإعادة السعودية: الشركة السعودية لإعادة التأمين(الاعادة) التعاونية : 8200",
+"بوبا العربية: بوبا العربية للتأمين التعاوني : 8210",
+"وقاية للتكافل: شركة وقاية للتأمين و إعادة التأمين التكافلي: 8220",
+"تكافل الراجحي: شركة الراجحي للتأمين التعاوني : 8230",
+"ايس: شركة أيس العربية للتأمين التعاوني: 8240",
+"اكسا- التعاونية: شركة اكسا للتأمين التعاوني: 8250",
+"الخليجية العامة: الشركة الخليجية العامة للتأمين التعاوني: 8260",
+"بروج للتأمين: شركة بروج للتأمين التعاوني: 8270",
+"العالمية: شركة العالمية للتأمين التعاوني: 8280",
+"سوليدرتي تكافل: شركة سوليدرتي السعودية للتكافل: 8290",
+"الوطنية: الشركة الوطنية للتأمين: 8300",
+"أمانة للتأمين: شركة أمانة للتأمين التعاوني(امانه) : 8310",
+"عناية: شركة عناية السعودية للتأمين التعاوني: 8311",
+"الإنماء طوكيو مارين: شركة الإنماء طوكيو مارين(الانماء) : 8312",
+"المصافي: شركة المصافي العربية السعودية: 2030",
+"المتطورة: الشركة السعودية للصناعات المتطورة: 2120",
+"الاحساء للتنميه: شركة الاحساء للتنمية: 2140",
+"سيسكو: الشركة السعودية للخدمات الصناعية: 2190",
+"عسير: شركة عسير للتجارة والسياحة والصناعة: 4080",
+"الباحة: شركة الباحة للإستثمار والتنمية: 4130",
+"المملكة: شركة المملكة القابضة: 4280",
+"تكوين: شركة تكوين المتطورة للصناعات: 1201",
+"بى سى آى: شركة الصناعات الكيميائية الأساسية: 1210",
+"معادن: شركة التعدين العربية السعودية: 1211",
+"أسترا الصناعية: مجموعة أسترا الصناعية(استرا) : 1212",
+"مجموعة السريع: شركة مجموعة السريع التجارية الصناعية: 1213",
+"شاكر: شركة الحسن غازي إبراهيم شاكر: 1214",
+"الدوائية: الشركة السعودية للصناعات الدوائية والمستلزمات الطبية: 2070",
+"زجاج: شركة الصناعات الزجاجية الوطنية: 2150",
+"فيبكو: شركة تصنيع مواد التعبئة والتغليف: 2180",
+"معدنية: الشركة الوطنية لتصنيع وسبك المعادن: 2220",
+"الكيميائيه السعوديه: الشركة الكيميائية السعودية: 2230",
+"صناعة الورق: الشركة السعودية لصناعة الورق: 2300 ",
+"العبداللطيف: شركة العبداللطيف للاستثمار الصناعي: 2340",
+"الصادرات: الشركة السعودية للصادرات الصناعية: 4140",
+"أسلاك: شركة إتحاد مصانع الأسلاك(اسلاك) : 1301",
+"مجموعة المعجل: شركة مجموعة محمد المعجل: 1310",
+"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1310",
+"الخضري: شركة أبناء عبدالله عبدالمحسن الخضري: 1330",
+"الخزف: شركة الخزف السعودي: 2040",
+"الجبس: شركة الجبس الأهلية: 2090",
+"الكابلات: شركة الكابلات السعودية: 2110",
+"صدق: الشركة السعودية للتنمية الصناعية: 2130",
+"اميانتيت: شركة اميانتيت العربية السعودية: 2160",
+"أنابيب: الشركة العربية للأنابيب(انابيب) : 2200",
+"الزامل للصناعة: شركة الزامل للاستثمار الصناعي: 2240",
+"البابطين: شركة البابطين للطاقة و الاتصالات: 2320",
+"الفخارية: الشركة السعودية لإنتاج الأنابيب الفخارية: 2360",
+"مسك: شركة الشرق الأوسط للكابلات المتخصصة: 2370",
+"البحر الأحمر: شركة البحر الأحمر لخدمات الإسكان: 4230",
+"العقارية: الشركة العقارية السعودية: 4020",
+"طيبة للاستثمار:  شركة طيبه القابضة : 4090",
+"مكة للانشاء: شركة مكه للإنشاء والتعمير: 4100",
+"التعمير: شركة الرياض للتعمير: 4150",
+"إعمار: إعمار المدينة الإقتصادية(اعمار) : 4220",
+"جبل عمر: شركة جبل عمر للتطوير: 4250",
+"دار الأركان: شركة دار الأركان للتطوير العقاري: 4300",
+"مدينة المعرفة: شركة مدينة المعرفة الإقتصادية : 4310",
+"البحري: الشركة الوطنية السعودية للنقل البحري: 4030",
+"النقل الجماعي: الشركة السعودية للنقل الجماعي ( سابتكو ): 4040 ",
+"مبرد: الشركة السعودية للنقل والاستثمار: 4110",
+"بدجت السعودية: الشركة المتحدة الدولية للمواصلات: 4260",
+"تهامه للاعلان: شركة تهامه للاعلان والعلاقات العامة: 4070",
+"الأبحاث و التسويق: الابحاث و التسويق ",
+"طباعة وتغليف: الشركة السعودية للطباعة والتغليف: 4270",
+"الطيار: مجموعة الطيار للسفر ",
+"دور: شركة دور للضيافة: 4010",
+"شمس: شركة المشروعات السياحية: 4170",
+"مجموعة الحكير: شركة مجموعة عبدالمحسن الحكير للسياحة والتنمية: 1820",
+"بوان: شركة بوان: 1302",
+"مبكو:شركة الشرق الاوسط لصناعة وانتاج الورق: 1202",
+"ساكو: الشركة السعودية للعدد والأدوات: 4008",
+"الشركة السعودية للخدمات الأرضية:الشركة السعودية للخدمات الأرضية",
+"الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية"
+    ];
+
+
+    $( "#tags" ).autocomplete({
+      source: availableTags
+    });
+  });
+  </script>
+<script type="text/javascript">
+$('#containerUL').find('ul').slideUp();
+$(function(){
+$('#containerUL').find('SPAN').click(function(e){
+// $('#containerUL').find('ul').slideUp();  
+if($(this).text() ==  "المصارف والخدمات المالية" ||
+$(this).text() ==  "الاسمنت" ||
+$(this).text() ==  "الصناعات البتروكيماوية" ||
+$(this).text() ==  "التجزئة" ||
+$(this).text() ==  "الطاقة والمرافق الخدمية" ||
+$(this).text() ==  "الزراعة والصناعات الغذائية" ||
+$(this).text() ==  "الاتصالات وتقنية المعلومات" ||
+$(this).text() ==  "التأمين" ||
+$(this).text() ==  "الأستثمار المتعدد" ||
+$(this).text() ==  "الأستثمار الصناعي" ||
+$(this).text() ==  "التشييد والبناء" ||
+$(this).text() ==  "التطوير العقاري" ||
+$(this).text() ==  "النقل" ||
+$(this).text() ==  "الاعلام والنشر" ||
+$(this).text() ==  "الفنادق والسياحة" )
+{
+$('#containerUL').find('ul').slideUp();
+$("#tweets").animate({ scrollTop: 0 }, "fast");
+}
+$(this).parent().children('UL').toggle();
+});
+});
+
+function srch()
+{
+var  x=document.getElementById('tags').value;
+if(x != "") {
+if(x.indexOf(":") < 0)
+str=x;
+else
+str=x.substr(0,x.indexOf(":") );
+stock_N=str;
+	dosearch(str); 
+var a = document.getElementById("tags");
+a.value = a.defaultValue;
+}
+
+}
+</script>
+
+{% endblock %}
