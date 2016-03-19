@@ -25,11 +25,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'kalamacom',
-        #'NAME': 'django_0114_test_1',
         'OPTIONS': {'charset': 'utf8mb4'},
         'USER': 'root',
-        'PASSWORD': 'kalamacom',
-        'HOST': 'kalamacom.cganvnnahixy.us-east-1.rds.amazonaws.com',
+        'PASSWORD': 'Django1.5',
         'PORT': '3306',
     }
 }
@@ -68,7 +66,7 @@ INSTALLED_APPS = (
 )
 
 CRONJOBS = [
-('*/5 *  * * *', 'app.views.runPriceCrawling')
+('*/2 *  * * *', 'app.views.runPriceCrawling')
 ]
 
 
