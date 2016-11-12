@@ -1,0 +1,34 @@
+(function(window,document,undefined){if('placeholder'in document.createElement('input')){document.placeholderPolyfill=function(){};document.placeholderPolyfill.active=false;return;}
+var inputs=document.getElementsByTagName('input');var textareas=document.getElementsByTagName('textarea');document.placeholderPolyfill=function(elems){elems=elems?validElements(elems):validElements(inputs,textareas);each(elems,polyfillElement);};document.placeholderPolyfill.active=true;document.placeholderPolyfill();if(document.addEventListener){document.addEventListener('DOMAttrModified',document.placeholderPolyfill);document.addEventListener('DOMNodeInserted',document.placeholderPolyfill);}
+else if(document.attachEvent&&'onpropertychange'in document){document.attachEvent('onpropertychange',document.placeholderPolyfill);}
+else{}
+firstStylesheet().addRule('.-placeholder','color: #888;',0);function polyfillElement(elem){if(elem.__placeholder!=null){if(elem.__placeholder){elem.value=getPlaceholder();}
+return;}
+var currentPlaceholder=getPlaceholderFor(elem);function getPlaceholder(){return currentPlaceholder=getPlaceholderFor(elem);}
+if(elem.value){elem.__placeholder=false;if(elem.value===getPlaceholder()){doShowPlaceholder();}}else{showPlaceholder();}
+addEvent(elem,'keyup',checkPlaceholder);addEvent(elem,'keyDown',checkPlaceholder);addEvent(elem,'blur',checkPlaceholder);addEvent(elem,'focus',hidePlaceholder);addEvent(elem,'click',hidePlaceholder);if(elem.addEventListener){addEvent(elem,'DOMAttrModified',updatePlaceholder);}
+else if(elem.attachEvent&&'onpropertychange'in elem){addEvent(elem,'propertychange',updatePlaceholder);}
+else{}
+function updatePlaceholder(){setTimeout(function(){var old=currentPlaceholder;var current=getPlaceholder();if(old!==current){if(elem.__placeholder){elem.value=current;}}
+if(elem.__placeholder&&elem.value!==current){elem.__placeholder=false;}},0);}
+function checkPlaceholder(){if(elem.value){hidePlaceholder();}else{showPlaceholder();}}
+function showPlaceholder(){if(!elem.__placeholder&&!elem.value){doShowPlaceholder();}}
+function doShowPlaceholder(){elem.__placeholder=true;elem.value=getPlaceholder();addClass(elem,'-placeholder');}
+function hidePlaceholder(){if(elem.__placeholder){elem.__placeholder=false;elem.value='';removeClass(elem,'-placeholder');}}}
+function validElements(){var result=[];each(arguments,function(arg){if(typeof arg.length!=='number'){arg=[arg];}
+result.push.apply(result,filter(arg,isValidElement));});return result;}
+function isValidElement(elem){var tag=(elem.nodeName||'').toLowerCase();return(tag==='textarea'||(tag==='input'&&(elem.type==='text'||elem.type==='password')));}
+function addEvent(obj,event,func){if(obj.addEventListener){obj.addEventListener(event,func,false);}else if(obj.attachEvent){obj.attachEvent('on'+ event,func);}}
+function removeEvent(obj,event,func){if(obj.removeEventListener){obj.removeEventListener(event,func,false);}else if(obj.detachEvent){obj.detachEvent('on'+ event,func);}}
+function each(arr,func){if(arr.forEach){return arr.forEach(func);}
+for(var i=0,c=arr.length;i<c;i++){func.call(null,arr[i],i,arr);}}
+function filter(arr,func){if(arr.filter){return arr.filter(func);}
+var result=[];for(var i=0,c=arr.length;i<c;i++){if(func.call(null,arr[i],i,arr)){result.push(arr[i]);}}
+return result;}
+var regexCache={};function classNameRegex(cn){if(!regexCache[cn]){regexCache[cn]=new RegExp('(^|\\s)+'+ cn+'(\\s|$)+','g');}
+return regexCache[cn];}
+function addClass(elem,cn){elem.className+=' '+ cn;}
+function removeClass(elem,cn){elem.className=elem.className.replace(classNameRegex(cn),' ');}
+function getPlaceholderFor(elem){return elem.getAttribute('placeholder')||(elem.attributes.placeholder&&elem.attributes.placeholder.nodeValue);}
+function firstStylesheet(){var sheet=document.styleSheets&&document.styleSheets[0];if(!sheet){var head=document.head||document.getElementsByTagName('head')[0];var style=document.createElement('style');style.appendChild(document.createTextNode(''));document.head.appendChild(style);sheet=style.sheet;}
+return sheet;}}(window,document));

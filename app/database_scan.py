@@ -1,5 +1,5 @@
 from datetime import datetime
-from app.models import Opinion
+from app.models import Opinion,Stocks
 from django.utils import timezone
 from Filter.Filter import Filter
 import threading, time
@@ -12,219 +12,54 @@ import django
 django.setup()
 
 
+def runUpdate(tweet,i_similarId):
+    tweet.similarId = i_similarId;
+    tweet.save();
 
-stock_list=[
-'ﺕﺎﺴﻳ',
-'ﺎﻟﺮﻳﺎﺿ',
-'ﺎﻠﺟﺰﻳﺭﺓ',
-'ﺎﺴﺘﺜﻣﺍﺭ',
-'ﺎﻠﺴﻋﻭﺪﻳ ﺎﻠﻫﻮﻠﻧﺪﻳ',
-'ﺎﻠﺴﻋﻭﺪﻳ ﺎﻠﻓﺮﻨﺴﻳ',
-'ﺱﺎﺑ',
-'ﺎﻠﻋﺮﺒﻳ ﺎﻟﻮﻄﻨﻳ',
-'ﺱﺎﻤﺑﺍ',
-'ﺎﻟﺭﺎﺠﺤﻳ',
-'ﺎﻠﺑﻻﺩ',
-'ﺍﻺﻨﻣﺍﺀ',
-'ﻚﻴﻣﺎﻧﻮﻟ',
-'ﺐﺗﺭﻮﻜﻴﻣ',
-'ﺱﺎﺒﻛ',
-'ﺱﺎﻔﻛﻭ',
-'ﺎﻠﺘﺼﻨﻴﻋ',
-'ﺎﻠﻠﺠﻴﻧ',
-'ﻦﻣﺍﺀ ﻞﻠﻜﻴﻣﺍﻮﻳﺎﺗ',
-'ﺎﻠﻤﺠﻣﻮﻋﺓ ﺎﻠﺴﻋﻭﺪﻳﺓ',
-'ﺎﻠﺼﺣﺭﺍﺀ ﻞﻠﺒﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ',
-'ﻲﻨﺳﺎﺑ',
-'ﺲﺒﻜﻴﻣ ﺎﻠﻋﺎﻠﻤﻳﺓ',
-'ﺎﻠﻤﺘﻗﺪﻣﺓ',
-'ﻚﻳﺎﻧ',
-'ﺐﺗﺭﻭ ﺭﺎﺒﻏ',
-'ﺄﺴﻤﻨﺗ ﺡﺎﺌﻟ',
-'ﺄﺴﻤﻨﺗ ﻦﺟﺭﺎﻧ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﻣﺪﻴﻧﺓ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﺸﻣﺎﻠﻳﺓ',
-'ﺍﻼﺴﻤﻨﺗ ﺎﻠﻋﺮﺒﻳﺓ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﻴﻣﺎﻣﺓ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﺴﻋﻭﺪﻴﻫ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﻘﺼﻴﻣ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﺠﻧﻮﺒﻴﻫ',
-'ﺎﺴﻤﻨﺗ ﻲﻨﺒﻋ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﺷﺮﻘﻳﺓ',
-'ﺎﺴﻤﻨﺗ ﺖﺑﻮﻛ',
-'ﺎﺴﻤﻨﺗ ﺎﻠﺟﻮﻓ',
-'ﺄﺳﻭﺎﻗ ﻉ ﺎﻠﻌﺜﻴﻣ',
-'ﺎﻠﻣﻭﺎﺳﺍﺓ',
-'ﺈﻜﺴﺗﺭﺍ',
-'ﺪﻠﻫ ﺎﻠﺼﺤﻳﺓ',
-'ﺮﻋﺎﻳﺓ',
-'ﺱﺎﺴﻛﻭ',
-'ﺚﻣﺍﺭ',
-'ﻢﺠﻣﻮﻋﺓ ﻒﺘﻴﺤﻳ',
-'ﺝﺮﻳﺭ',
-'ﺎﻟﺩﺮﻴﺳ',
-'ﺎﻠﺤﻜﻳﺭ',
-'ﺎﻠﺨﻠﻴﺟ ﻞﻠﺗﺩﺮﻴﺑ',
-'ﺎﻠﻏﺍﺯ ﻭﺎﻠﺘﺼﻨﻴﻋ',
-'ﻚﻫﺮﺑﺍﺀ ﺎﻠﺴﻋﻭﺪﻳﺓ',
-'ﻢﺠﻣﻮﻋﺓ ﺹﺎﻓﻭﻻ',
-'ﺎﻠﻏﺫﺎﺌﻳﺓ',
-'ﺱﺩﺎﻔﻛﻭ',
-'ﺎﻠﻣﺭﺎﻌﻳ',
-'ﺄﻨﻋﺎﻣ ﺎﻠﻗﺎﺒﺿﺓ',
-'ﺢﻟﻭﺎﻨﻳ ﺈﺧﻭﺎﻧ',
-'ﻩﺮﻔﻳ ﻝﻸﻏﺬﻳﺓ',
-'ﺎﻠﺘﻣﻮﻴﻧ',
-'ﻥﺍﺪﻛ',
-'ﺎﻠﻘﺼﻴﻣ ﺎﻟﺯﺭﺎﻌﻴﻫ',
-'ﺖﺑﻮﻛ ﺎﻟﺯﺭﺎﻌﻴﻫ',
-'ﺍﻸﺴﻣﺎﻛ',
-'ﺎﻠﺷﺮﻘﻳﺓ ﻞﻠﺘﻨﻤﻳﺓ',
-'ﺎﻠﺟﻮﻓ ﺎﻟﺯﺭﺎﻌﻴﻫ',
-'ﺐﻴﺷﺓ ﺎﻟﺯﺭﺎﻌﻴﻫ',
-'ﺝﺍﺯﺎﻧ ﻞﻠﺘﻨﻤﻳﺓ',
-'ﺍﻼﺘﺻﺍﻼﺗ',
-'ﺎﺘﺣﺍﺩ ﺎﺘﺻﺍﻼﺗ',
-'ﺰﻴﻧ ﺎﻠﺴﻋﻭﺪﻳﺓ',
-'ﻉﺬﻴﺑ ﻝﻼﺘﺻﺍﻼﺗ',
-'ﺎﻠﻤﺘﻛﺎﻤﻟﺓ',
-'ﺎﻠﺘﻋﺍﻮﻨﻳﺓ',
-'ﻡﻻﺫ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﻢﻳﺪﻐﻠﻓ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﺄﻠﻳﺎﻧﺯ ﺈﺳ ﺈﻓ',
-'ﺱﻼﻣﺓ',
-'ﻭﻻﺀ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﺎﻟﺩﺮﻋ ﺎﻠﻋﺮﺒﻳ',
-'ﺱﺎﺑ ﺖﻛﺎﻔﻟ',
-'ﺲﻧﺩ',
-'ﺱﺎﻴﻛﻭ',
-'ﻮﻓﺍ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﺈﺘﺣﺍﺩ ﺎﻠﺨﻠﻴﺟ',
-'ﺍﻸﻬﻠﻳ ﻞﻠﺘﻛﺎﻔﻟ',
-'ﺍﻸﻬﻠﻳﺓ',
-'ﺄﺴﻴﺟ',
-'ﺎﻠﺗﺄﻤﻴﻧ ﺎﻠﻋﺮﺒﻳﺓ',
-'ﺍﻼﺘﺣﺍﺩ ﺎﻠﺘﺟﺍﺮﻳ',
-'ﺎﻠﺼﻗﺭ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﺎﻠﻤﺘﺣﺩﺓ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﺍﻺﻋﺍﺩﺓ ﺎﻠﺴﻋﻭﺪﻳﺓ',
-'ﺏﻮﺑﺍ ﺎﻠﻋﺮﺒﻳﺓ',
-'ﻮﻗﺎﻳﺓ ﻞﻠﺘﻛﺎﻔﻟ',
-'ﺖﻛﺎﻔﻟ ﺎﻟﺭﺎﺠﺤﻳ',
-'ﺎﻴﺳ',
-'ﺎﻜﺳﺍ- ﺎﻠﺘﻋﺍﻮﻨﻳﺓ',
-'ﺎﻠﺨﻠﻴﺠﻳﺓ ﺎﻠﻋﺎﻣﺓ',
-'ﺏﺭﻮﺟ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﺎﻠﻋﺎﻠﻤﻳﺓ',
-'ﺱﻮﻠﻳﺩﺮﺘﻳ ﺖﻛﺎﻔﻟ',
-'ﺎﻟﻮﻄﻨﻳﺓ',
-'ﺄﻣﺎﻧﺓ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﻊﻧﺎﻳﺓ',
-'ﺍﻺﻨﻣﺍﺀ ﻁﻮﻜﻳﻭ ﻡ',
-'ﺎﻠﻤﺻﺎﻔﻳ',
-'ﺎﻠﻤﺘﻃﻭﺭﺓ',
-'ﺍﻼﺤﺳﺍﺀ ﻞﻠﺘﻨﻤﻴﻫ',
-'ﺲﻴﺴﻛﻭ',
-'ﻊﺴﻳﺭ',
-'ﺎﻠﺑﺎﺣﺓ',
-'ﺎﻠﻤﻤﻠﻛﺓ',
-'ﺖﻛﻮﻴﻧ',
-'ﺏﻯ ﺱﻯ ﺁﻯ',
-'ﻢﻋﺍﺪﻧ',
-'ﺄﺴﺗﺭﺍ ﺎﻠﺼﻧﺎﻌﻳﺓ',
-'ﻢﺠﻣﻮﻋﺓ ﺎﻠﺳﺮﻴﻋ',
-'ﺵﺎﻛﺭ',
-'ﺎﻟﺩﻭﺎﺌﻳﺓ',
-'ﺰﺟﺎﺟ',
-'ﻒﻴﺒﻛﻭ',
-'ﻢﻋﺪﻨﻳﺓ',
-'ﺎﻠﻜﻴﻤﻳﺎﺌﻴﻫ ﺎﻠﺴﻋﻭﺪﻴﻫ',
-'ﺺﻧﺎﻋﺓ ﺎﻟﻭﺮﻗ',
-'ﺎﻠﻌﺑﺩﺎﻠﻠﻄﻴﻓ',
-'ﺎﻠﺻﺍﺩﺭﺎﺗ',
-'ﺄﺳﻼﻛ',
-'ﻢﺠﻣﻮﻋﺓ ﺎﻠﻤﻌﺠﻟ',
-'ﺍﻸﻧﺎﺒﻴﺑ ﺎﻠﺴﻋﻭﺪﻳﺓ',
-'ﺎﻠﺨﺿﺮﻳ',
-'ﺎﻠﺧﺰﻓ',
-'ﺎﻠﺠﺒﺳ',
-'ﺎﻠﻛﺎﺑﻼﺗ',
-'ﺹﺪﻗ',
-'ﺎﻤﻳﺎﻨﺘﻴﺗ',
-'ﺄﻧﺎﺒﻴﺑ',
-'ﺎﻟﺯﺎﻤﻟ ﻞﻠﺼﻧﺎﻋﺓ',
-'ﺎﻠﺑﺎﺒﻄﻴﻧ',
-'ﺎﻠﻔﺧﺍﺮﻳﺓ',
-'ﻢﺴﻛ',
-'ﺎﻠﺒﺣﺭ ﺍﻸﺤﻣﺭ',
-'ﺎﻠﻌﻗﺍﺮﻳﺓ',
-'ﻂﻴﺑﺓ ﻝﻼﺴﺘﺜﻣﺍﺭ',
-'ﻢﻛﺓ ﻝﻼﻨﺷﺍﺀ',
-'ﺎﻠﺘﻌﻤﻳﺭ',
-'ﺈﻌﻣﺍﺭ',
-'ﺞﺒﻟ ﻊﻣﺭ',
-'ﺩﺍﺭ ﺍﻷﺮﻛﺎﻧ',
-'ﻡﺪﻴﻧﺓ ﺎﻠﻤﻋﺮﻓﺓ',
-'ﺎﻠﺒﺣﺮﻳ',
-'ﺎﻠﻨﻘﻟ ﺎﻠﺠﻣﺎﻌﻳ',
-'ﻢﺑﺭﺩ',
-'ﺏﺪﺠﺗ ﺎﻠﺴﻋﻭﺪﻳﺓ',
-'ﺖﻫﺎﻤﻫ ﻝﻼﻋﻼﻧ',
-'ﺍﻸﺒﺣﺎﺛ ﻭ ﺎﻠﺘﺳﻮﻴﻗ',
-'ﻂﺑﺎﻋﺓ ﻮﺘﻐﻠﻴﻓ',
-'ﺎﻠﻄﻳﺍﺭ',
-'ﺎﻠﺤﻜﻳﺭ',
-'دور',
-'ﺶﻤﺳ',
-'البنك الأهلي',
-'الصناعات الكهربائيه',
-'بوان',
-'ﺎﺴﻤﻨﺗ ﺎﻣ ﺎﻠﻗﺭﻯ',
-'ﺄﺳﻭﺎﻗ ﺎﻠﻣﺯﺮﻋﺓ',
-'ﺎﻠﺤﻣﺍﺪﻳ',
-'ﺝﺰﻳﺭﺓ ﺖﻛﺎﻔﻟ',
-'ﺎﻠﻋﺮﺒﻳ ﻞﻠﺗﺄﻤﻴﻧ',
-'ﻢﺠﻣﻮﻋﺓ ﺎﻠﺤﻜﻳﺭ',
-'ميبكو',
-'ساكو',
-'مبكو',
-];
-
-
-
-print("Handling Dublicates")
-for line in stock_list:
-    print(line);
-    tweetes_to_render_temp = Opinion.objects.filter(stock=line, labeled = False, similarId='').values().order_by('-id')
-    tweetes_to_render = sorted(tweetes_to_render_temp, key=lambda x: time.strptime(x['created_at'],'%a %b %d %X %z %Y'))
-    tweets_dict = {}
-    tweets_dict[''] = ''
-    i = 1
-    x = 0
-    while x < len(tweetes_to_render):
-        tweet_render=tweetes_to_render[x];
-        tweet_render_text=tweet_render.get('text').strip()
-        try:
-            urls=re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', tweet_render_text);
-            for i in range(0,len(urls)):
-                rep='r\''+urls[i]+'\''
-                tweet_render_text=re.sub(r""+urls[i]+"", '', tweet_render_text, flags=re.MULTILINE)
-        except:
-            pass
-
-        tweet_render_text=re.sub(r"RT @\w*\w: ", '', tweet_render_text, flags=re.MULTILINE)
-        tweet_render_text=re.sub(r"@\w*\w ", '', tweet_render_text, flags=re.MULTILINE)
-        tweet_render_text=tweet_render_text.replace("…","")
-        #tweet_render_text=re.sub(r'\.\.\.', '', tweet_render_text, flags=re.MULTILINE)
-        tweet_render_text=tweet_render_text[0:min(110,len(tweet_render_text))]
-
-        if tweet_render_text in tweets_dict.keys():
-            tweet = Opinion.objects.filter(stock=line, twitter_id=tweet_render.get('twitter_id'))[0]
-            tweet.similarId = tweets_dict[tweet_render_text]
-            tweet.save()
-        else:
-            tweets_dict[tweet_render_text] = tweet_render.get('twitter_id')
-        x=x+1
+while True:
+    print("Handling Dublicates")
+    for x in Stocks.objects.filter().exclude(stock=None).exclude(stock='none').exclude(stock=''):
+        line = x.stock_id
+        stock_name = x.stock
+        print(stock_name);
+        tweetes_to_render = Opinion.objects.filter(stock=line, source = 1, similarId__isnull=True, conversation_reply__isnull=True).values().order_by('-id')[0:5000]
+        tweets_dict = {}
+        tweets_dict[''] = ''
+        i = 1
+        x = 0
+        while x < len(tweetes_to_render):
+            tweet_render=tweetes_to_render[x];
+            tweet_render_text=tweet_render.get('text').strip()
+            try:
+                urls=re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', tweet_render_text);
+                for i in range(0,len(urls)):
+                    rep='r\''+urls[i]+'\''
+                    tweet_render_text=re.sub(r""+urls[i]+"", '', tweet_render_text, flags=re.MULTILINE)
+            except:
+                pass
+            
+            tweet_render_text=re.sub(r"RT @\w*\w: ", '', tweet_render_text, flags=re.MULTILINE)
+            tweet_render_text=re.sub(r"@\w*\w ", '', tweet_render_text, flags=re.MULTILINE)
+            tweet_render_text=tweet_render_text.replace("…","")
+            #tweet_render_text=re.sub(r'\.\.\.', '', tweet_render_text, flags=re.MULTILINE)
+            tweet_render_text=tweet_render_text[0:min(110,len(tweet_render_text))]
+    
+            if tweet_render_text in tweets_dict.keys() and tweet_render_text != '' :
+                tweet = Opinion.objects.filter(stock=line, twitter_id=tweet_render.get('twitter_id'))[0]
+                # will update the similarId of the older tweet
+                print('---------------------- Will update the similarId of the older tweet')
+                print('Older tweet: ' + str(tweet_render.get('twitter_id')))
+                print('Newer tweet: ' + str(tweets_dict[tweet_render_text]))
+                print(tweet.text)
+                print(tweet_render.get('text'))
+                d = threading.Thread(target=runUpdate,args=(tweet,tweets_dict[tweet_render_text]))
+                time.sleep(0.05)
+                d.start()
+            else:
+                tweets_dict[tweet_render_text] = tweet_render.get('twitter_id')
+            x=x+1
+    print("sleeping 30 min...")
+    time.sleep(1800)
 
 ##print("Labeling Dublicates")
 ##duplicate_tweetes = Opinion.objects.exclude(similarId='');

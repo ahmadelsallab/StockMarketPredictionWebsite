@@ -16,12 +16,13 @@ class Classifier(object):
     classdocs
     '''    
     # Initialize the labels names map. Used for Lexicon classifier
-    labelsNamesMap = {}
+    
     
     def __init__(self,configDocName ,featuresSerializationFileName,  trainFeatures, trainTargets, testFeatures, testTargets):
         '''
         Constructor
         '''
+        self.labelsNamesMap = {}
         # Parse the configurations file
         self.ParseConfigFile(configDocName)
                  
@@ -78,14 +79,13 @@ class Classifier(object):
                 #print(self.classifierModel)
             elif(self.packageType == "sklearn"):
                 import sklearn.tree
-                self.classifierModel = sklearn.tree.DecisionTreeClassifier(criterion="entropy", splitter="best", max_depth=1000)
+                self.classifierModel = sklearn.tree.DecisionTreeClassifier(criterion="entropy", splitter="best", max_depth=1000, random_state=4242)
                 
                 # Convert into array not dictionary
                 trainFeatures = []
-                for feature in self.trainFeatures:
-                    trainFeatures.append(list(feature.values()))
-                    
-                self.classifierModel.fit(trainFeatures, self.trainTargets)
+                #for feature in self.trainFeatures:
+                    #trainFeatures.append(list(feature.values()))
+                self.classifierModel.fit(self.trainFeatures, self.trainTargets)
         elif(self.classifierType == "AdaBoost"):                
                 if(self.packageType == "sklearn"):
                     import sklearn.ensemble
@@ -148,7 +148,8 @@ class Classifier(object):
                 irrel = 0;
                 i = 0;
                 for test in self.testFeatures:
-                    res = self.classifierModel.predict(list(test.values()))
+                    #res = self.classifierModel.predict(list(test.values()))
+                    res = self.classifierModel.predict(test)
                     label.append(res)
                     if self.testTargets[i] == res:
                         acc += 1
@@ -157,8 +158,9 @@ class Classifier(object):
                     else:
                         irrel +=1
                     i +=1 
-                val = [rel/len(self.testFeatures) , irrel /len(self.testFeatures) ]
-                acc = acc / len(self.testFeatures) *100 
+                nitems = self.testFeatures.shape[0]
+                val = [1.0*rel/nitems , irrel /nitems*1.0]
+                acc = acc / nitems *100.0
                 print("Count " + str(rel+irrel))
                 print("Acc = " + str(acc) + " %")
                 return label, acc, val
@@ -210,6 +212,28 @@ class Classifier(object):
             
         else:
             print("Not supported classifier type")
+    
+
+    def predict_propa(self):        
+        # Check classifier type
+        
+        if(self.classifierType == "DecisionTree"):
+            if(self.packageType == "sklearn"):
+                label = []
+                acc  = 0
+                rel = 0
+                irrel = 0;
+                i = 0;
+                for test in self.testFeatures:
+                    res = self.classifierModel.predict_proba(test)
+                    label.append(res)
+                    
+                return label
+                 
+        print("Not supported classifier type")
+
+
+
     # Method to classsify new examples
     def Classify(self):        
         # Check classifier type
@@ -242,7 +266,7 @@ class Classifier(object):
                 irrel = 0;
                 i = 0;
                 for test in self.testFeatures:
-                    res = self.classifierModel.predict(list(test.values()))
+                    res = self.classifierModel.predict(test)
                     label.append(res)
                     
                 return label

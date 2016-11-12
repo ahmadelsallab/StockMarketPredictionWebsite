@@ -9,50 +9,65 @@
 
     <h1 class="page-header" align="right">التغريدات</h1>
     <h2 class="page-header" align="right">Overall statistics</h2>
-    <div id="overall_pie_stats">
-	    <table>
-		    <tr>
-		    	<td><div id="overall_rel_pie_chart" style="width: 500px;"></div></td>
-		    	<td><div id="overall_sent_pie_chart" style="width: 500px;"></div></td>
 
-		    </tr>
+    <span id="overall_pie_stats">
+    <table>
+	    <tr>
+	    	<td><div id="overall_rel_pie_chart" style="width: 500px;"></div></td>
+	    	<td><div id="overall_sent_pie_chart" style="width: 500px;"></div></td>
+	    </tr>
+    </table>
+    </span>
 
-	    </table>
-    </div>
     <div id="overall_stats_table"></div>
     <h2 class="page-header" align="right">Stock statistics</h2>
     <div id="stats"></div>
-    <table>
-    <tr class="controller">
-    <td style="width:40%; height:30px;"></td>
-    <td>
-    <nav id="primary_nav_wrap">
-    <ul>
-      <li>
-        <input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
-      </li>
-      <li><b>  </b></li>
-      <li>Time
-        <ul id="time_list">
-          <li>1W</li>
-          <li>1M</li>
-          <li>3M</li>
-        </ul>
-      </li>
-      <li>Graph
-        <ul id="graph_list">
-          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/line.png' %}" title="" alt="line"> Line</li>
-          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/mountain.png' %}" title="" alt="mountain"> Mountain</li>
-          <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/candle.png' %}" title="" alt="candle"> CandleStick</li>
-        </ul>
-      </li>
-    </ul>
-    </nav>
+<table>
+  <tr>
+    <td style="width:40%; height:25px;">
+      <p>Start time: <input type="text" id="datepicker1"></p>
     </td>
-    <td style="width:60%"><div id="price_chart" style="width: 700px; height: 350px"></div></td>
-    </tr>
-    </table>
-    
+    <td class="controller">
+      <nav id="primary_nav_wrap">
+        <ul>
+          <li>
+            <input type="range" id="slider" min="5" max="75" value="25" step="5" oninput="document.getElementById('slider').value=this.value" />
+          </li>
+          <li><b>  </b></li>
+          <li>
+            Time
+            <ul id="time_list">
+              <li>1W</li>
+              <li>1M</li>
+              <li>3M</li>
+            </ul>
+          </li>
+          <li>
+            Graph
+            <ul id="graph_list">
+              <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/line.png' %}" title="" alt="line"> Line</li>
+              <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/mountain.png' %}" title="" alt="mountain"> Mountain</li>
+              <li><img class="chType" style="width:30px;height:30px" src="{% static 'app/images/candle.png' %}" title="" alt="candle"> CandleStick</li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+    </td>
+  </tr>
+  <tr>
+    <td valign="top">
+      <p>End time : <input type="text" id="datepicker2"></p>
+      <br>
+
+      </br>
+      <span class="store-btn"><a href="javascript:updt()" style="float: left; display: inline; background-color: #428BCA; color: white; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Update Counters</a></span>
+     
+    </td>
+    <td class="controller" style="width:60%">
+      <div id="price_chart" style="width: 700px; height: 350px"></div>
+    </td>
+  </tr>
+</table> 
         
      <div>
 	    <table>
@@ -76,8 +91,6 @@
 	    <div id="stock_volume_chart"></div>
 	    <div id="stock_stats_table"></div>
     </div>
-    
-    
     <div id="tweets" style=" height: 2000px; overflow-y: scroll;"></div>
     <div id="tweets_loading">
         <img src="{% static 'app/images/loading.gif' %}" />
@@ -170,6 +183,7 @@
 <LI style="text-align: right ; direction:rtl" ><span>المواساة</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>جرير</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>دله الصحية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ميكو</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>الحكير</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>مجموعة فتيحي</span></LI>
 </UL>
@@ -224,7 +238,7 @@
 <LI style="text-align: right ; direction:rtl" ><span>ساب تكافل</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>أليانز إس إف</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>أمانة للتأمين</span></LI>
-<LI style="text-align: right ; direction:rtl" ><span>ايس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تشب</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>إتحاد الخليج</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>اكسا- التعاونية</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>الأهلي للتكافل</span></LI>
@@ -301,6 +315,7 @@
 </LI>
 <LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التطوير العقاري</font></b></a></span>
 <UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأندلس</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>إعمار</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>العقارية</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>التعمير</span></LI>
@@ -354,6 +369,20 @@
               'packages':['corechart', 'bar', 'table']
             }]
           }"></script>
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <link rel="stylesheet" href="/resources/demos/style.css">
+  <script>
+  $(function() {
+    $( "#datepicker1" ).datepicker({ dateFormat: 'yy-mm-dd' });
+    $( "#datepicker2" ).datepicker({ dateFormat: 'yy-mm-dd' });
+  });
+  </script>
+
+
+
 <script type="text/javascript">
 google.setOnLoadCallback(drawOverallStatsTablePost);
 google.setOnLoadCallback(drawPieChart_Rel_Overall);
@@ -1084,8 +1113,30 @@ var stock_fully_lab;
 
         );
         
+
     	function dosearch (stock_name)
         {
+        start_time=$("#datepicker1").datepicker().val();
+        end_time=$("#datepicker2").datepicker().val();
+
+        if ( start_time !== '' && start_time.charAt(4) !== '-' )
+        {
+        window.alert("Bad start date format");
+        return
+        }
+
+        if ( end_time !== '' && end_time.charAt(4) !== '-' )
+        {
+        window.alert("Bad end date format");
+        return
+        }
+
+        if ( start_time !== '' && end_time !== '' && start_time > end_time )
+        {
+        window.alert("The start date must be older than end date");
+        return
+        }
+
         $('.select_list_item').removeClass('select_list_item');
         $(this).addClass('select_list_item');
 
@@ -1107,15 +1158,20 @@ var stock_fully_lab;
         $('#tweets_loading').fadeIn('fast');
 
         //var stock_name = $(this).text()
-        ajaxPost('/get_tweets_filtered', { 'query': stock_name}, function (content) {
+        //console.debug($("#datepicker1").datepicker("getDate"));
+        //console.debug($("#datepicker1").datepicker({ dateFormat: "yy-m-dd" }));
+
+        drawPieChart_Rel_Overall();
+        drawPieChart_Sent_Overall();
+        drawPieChart_Rel_Stock(stock_name);
+        drawPieChart_Sent_Stock(stock_name);
+        drawVolumeChart(stock_name, 30);
+        drawColChart_Rel_Stock(stock_name);
+        drawColChart_Sent_Stock(stock_name);
+
+        ajaxPost('/get_tweets_filtered', { 'query': stock_name, 'start': start_time, 'end': end_time}, function (content) {
+	    cont=content;
             $('#tweets').html('');
-            drawPieChart_Rel_Overall();
-            drawPieChart_Sent_Overall();
-            drawPieChart_Rel_Stock(stock_name);
-            drawPieChart_Sent_Stock(stock_name);
-            drawVolumeChart(stock_name, 30);
-            drawColChart_Rel_Stock(stock_name);
-            drawColChart_Sent_Stock(stock_name);
             /*$('#stats').html('<div id="total_all" class="stat_total"><font color="black">' + 'Total number of entries in DB is: ' + content.total_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_lab" class="stat_total"><font color="black">' + 'Total number of fully labeled entries in DB is: ' + content.total_labeled_entries_in_DB + '</font></div>');
             $('#stats').append('<div id="total_rel" class="stat_total"><font color="black">' + 'Total number of relevant entries in DB is: ' + content.total_relevant_labeled_entries_in_DB + '</font></div>');
@@ -1157,11 +1213,22 @@ var stock_fully_lab;
             					content.stock_labeled_entries_in_DB,
             					content.user_relevant_for_stock_in_DB,
             					content.user_irrelevant_for_stock_in_DB);
-            //$('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>'); 
-            $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>');
-             var number_of_replies=0
-            for (var i = 0; i < Math.min(49,content.statuses.length)+number_of_replies; i++) {
-		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+            full_name_arabic=content.stock
+            //$('#stats').append('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' Price: ' + content.price + '</font></div>');
+            $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' (' + full_name_arabic + ')' +' Price: ' + content.price + '</font></div>');
+
+            var number_of_replies=0
+            console.debug(content.statuses.length)
+            //console.debug(content.statuses)
+            if ( content.statuses.length == 0 )
+            {
+            window.alert("No tweets to show");
+            } 
+	    cont_length=content.statuses.length
+            for (var i = 0; i < Math.min(50+number_of_replies,cont_length); i++) {
+		if(content.statuses[i].price_time_then == "Sat Jan 01 12:00 AM"){content.statuses[i].price_time_then=0;}
+                try { text = twemoji.parse(content.statuses[i]['text'], {size: 16}); }
+                catch(err) { text = content.statuses[i]['text'] } ;
                 //text = content.statuses[i]['text'];
                 date = content.statuses[i].created_at;
                 diff=(new Date()).getTimezoneOffset()*60*1000;
@@ -1179,28 +1246,28 @@ var stock_fully_lab;
                 image = content.statuses[i].user_profile_image_url;
                 tweet_id = content.statuses[i].twitter_id;
                 //ele=JSON.stringify(content.statuses[i].shw, null, 4);
-				media_url1='';
-				try{
-				media_url=content.statuses[i].media_url;
-				media_url=media_url.replace(/'/g, '"');
-				media_url1=JSON.parse(media_url);
-				media_url=(media_url1.media[0]).media_url;
-				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
-				}catch(err){
-				try{
-				media_url=(media_url1.urls[0]).expanded_url;
-				if(media_url.indexOf("youtu.be")>-1)
-				{
-				startindex=media_url.lastIndexOf('\/');
-				media_url=media_url.substr(startindex);
-                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
-				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
-				}
-				else media_url='';
-				}
-				catch(err){media_url='';}
+		media_url1='';
+		try{
+		media_url=content.statuses[i].media_url;
+		media_url=media_url.replace(/'/g, '"');
+		media_url1=JSON.parse(media_url);
+		media_url=(media_url1.media[0]).media_url;
+		if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+		}catch(err){
+		try{
+		media_url=(media_url1.urls[0]).expanded_url;
+		if(media_url.indexOf("youtu.be")>-1)
+		{
+		startindex=media_url.lastIndexOf('\/');
+		media_url=media_url.substr(startindex);
+                if(media_url == undefined || media_url == 'undefined' || media_url == '' || media_url == null  || media_url == 'null'  )  media_url='' ; else
+		media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+		}
+		else media_url='';
+		}
+		catch(err){media_url='';}
 
-				}
+		}
                 //media_url=JSON.stringify(media_url, null, 4);
                 /*
                 media_url='';
@@ -1215,33 +1282,38 @@ var stock_fully_lab;
                 }
                 catch(err){}
                 if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
-                                url1='';
-                                try{
-                                url1=findUrls(text); 
-                                }
-                                catch(err){}
-                                if(url1!='')
-                                for (var ii = 0; ii < url1.length; ii++)
-                                {
-                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
-                                }
+                url1='';
+                try{
+                url1=findUrls(text); 
+                }
+                catch(err){}
+                if(url1!='')
+                for (var ii = 0; ii < url1.length; ii++)
+                {
+                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                }
 
 		head='<div class="tweet">'
                 head=head.concat('<table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><div id='+tweet_id+' >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br/>' + media_url + '<br/>');
 
 		tail='<button id= "corRel'+tweet_id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+tweet_id+'" class="cor" type="button" value="irrelevant">Irrelevant</button><br/><br/><button id= "positive'+tweet_id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+tweet_id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+tweet_id+'" class="sentiment" type="button" value="neutral">Neutral</button></div>'
-           
-		while ( content.statuses[i]['conversation_reply'] == content.statuses[i+1]['twitter_id'] )
+   		if(i >= content.statuses.length-1) 
+		{content.statuses=content.statuses.concat(content.statuses[i]); while_falg=false;} 
+		else {while_falg=true}
+		//console.debug(i,content.statuses.length);
+
+		while ( while_falg && content.statuses[i]['conversation_reply'] == content.statuses[i+1]['twitter_id'] )
 		{
+		if(content.statuses[i].price_time_then == "Sat Jan 01 12:00 AM"){content.statuses[i].price_time_then=0;}
 		i++;
 		number_of_replies++;
-            		//console.debug(number_of_replies);
-		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+            	//console.debug(number_of_replies);
+                try { text = twemoji.parse(content.statuses[i]['text'], {size: 16}); }
+                catch(err) { text = content.statuses[i]['text'] } ;
                 //text = content.statuses[i]['text'];
                 date = content.statuses[i].created_at;
                 diff=(new Date()).getTimezoneOffset()*60*1000;
                 date=Date.parse(content.statuses[i]['created_at']);
-
                 date=new Date(date);
                 date1=date.toLocaleDateString();
                 currDate=date1;
@@ -1255,28 +1327,27 @@ var stock_fully_lab;
                 image = content.statuses[i].user_profile_image_url;
                 tweet_id = content.statuses[i].twitter_id;
                 //ele=JSON.stringify(content.statuses[i].shw, null, 4);
-				media_url1='';
-				try{
-				media_url=content.statuses[i].media_url;
-				media_url=media_url.replace(/'/g, '"');
-				media_url1=JSON.parse(media_url);
-				media_url=(media_url1.media[0]).media_url;
-				if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
-				}catch(err){
-				try{
-				media_url=(media_url1.urls[0]).expanded_url;
-				if(media_url.indexOf("youtu.be")>-1)
-				{
-				startindex=media_url.lastIndexOf('\/');
-				media_url=media_url.substr(startindex);
-                                if(media_url == undefined || media_url == 'undefined'  || media_url == ''  || media_url == null  || media_url == 'null'  )  media_url='' ; else
-				media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
-				}
-				else media_url='';
-				}
-				catch(err){media_url='';}
-
-				}
+		media_url1='';
+		try{
+		media_url=content.statuses[i].media_url;
+		media_url=media_url.replace(/'/g, '"');
+		media_url1=JSON.parse(media_url);
+		media_url=(media_url1.media[0]).media_url;
+		if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+		}catch(err){
+		try{
+		media_url=(media_url1.urls[0]).expanded_url;
+		if(media_url.indexOf("youtu.be")>-1)
+		{	
+		startindex=media_url.lastIndexOf('\/');
+		media_url=media_url.substr(startindex);
+                if(media_url == undefined || media_url == 'undefined' || media_url == '' || media_url == null  || media_url == 'null'  )  media_url='' ; else
+		media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+		}
+		else media_url='';
+		}
+		catch(err){media_url='';}
+		}
                 //media_url=JSON.stringify(media_url, null, 4);
                 /*
                 media_url='';
@@ -1291,22 +1362,25 @@ var stock_fully_lab;
                 }
                 catch(err){}
                 if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
-                                url1='';
-                                try{
-                                url1=findUrls(text); 
-                                }
-                                catch(err){}
-                                if(url1!='')
-                                for (var ii = 0; ii < url1.length; ii++)
-                                {
-                                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
-                                }
+                url1='';
+                try{
+                url1=findUrls(text); 
+                }
+                catch(err){}
+                if(url1!='')
+                for (var ii = 0; ii < url1.length; ii++)
+                {
+                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                }
                 head=head.concat('<table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><div id='+tweet_id+' >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br />' + media_url + '<br />');
+                if(i >= content.statuses.length-1) 
+                {content.statuses=content.statuses.concat(content.statuses[i]); while_falg=false;} 
+                else {while_falg=true}
+
 		}
 
 		head=head.concat(tail)
 		$('#tweets').append(head)
-
             }
 			
             $('#tweets').fadeIn('fast');
@@ -1327,43 +1401,6 @@ var stock_fully_lab;
         editstring="<button id= positive"+item+ " class=sentiment type=button value=positive>Positive</button>"
 	//console.debug(user_action)
 	$('#editSentLab'+item).replaceWith(editstring);
-
-	if(user_action == "positive")
-                        {
-                        N=(Number(document.getElementById('total_pos').innerHTML.match(/\d+/))-1).toString();
-			newstring="<div id='total_pos' class='stat_total'><font color='black'> Total number of positive entries in DB is: " + N + "</font></div>" 
-			$('#total_pos').hide();
-			$('#total_pos').replaceWith(newstring);
-			
-			N=(Number(document.getElementById('stock_pos').innerHTML.match(/\d+/))-1).toString();
-			newstring="<div id='stock_pos' class='stat_total'><font color='black'> Total number of positive entries in DB for " + stock + " is: " + N + "</font></div>" 
-			$('#stock_pos').hide();
-			$('#stock_pos').replaceWith(newstring);
-                        }		
-	else if(user_action == "negative")	
-	            {
-                        N=(Number(document.getElementById('total_neg').innerHTML.match(/\d+/))-1).toString();
-			newstring="<div id='total_neg' class='stat_total'><font color='black'> Total number of negative entries in DB is: " + N + "</font></div>" 
-			$('#total_neg').hide();
-			$('#total_neg').replaceWith(newstring);
-			
-			N=(Number(document.getElementById('stock_neg').innerHTML.match(/\d+/))-1).toString();
-			newstring="<div id='stock_neg' class='stat_total'><font color='black'> Total number of negative entries in DB for " + stock + " is: " + N + "</font></div>" 
-			$('#stock_neg').hide();
-			$('#stock_neg').replaceWith(newstring);
-                        }	
-	else if(user_action == "neutral")	
-	            {
-                        N=(Number(document.getElementById('total_neu').innerHTML.match(/\d+/))-1).toString();
-			newstring="<div id='total_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB is: " + N + "</font></div>" 
-			$('#total_neu').hide();
-			$('#total_neu').replaceWith(newstring);
-			
-			N=(Number(document.getElementById('stock_neu').innerHTML.match(/\d+/))-1).toString();
-			newstring="<div id='stock_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB for " + stock + " is: " + N + "</font></div>" 
-			$('#stock_neu').hide();
-			$('#stock_neu').replaceWith(newstring);
-                    }	
 	sentEditFlag[item]=0;
 	});	
 
@@ -1377,7 +1414,7 @@ var stock_fully_lab;
 	//var stock = $('.select_list_item').text();
 	var stock = window.stock_N ;
         var user_action = $(this).attr("value")
-	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") ,'tweet_id': item,'stock':stock },function (content) {
+	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") , 'question': 'none','pricetarget': 'none', 'tweet_id': item,'stock':stock },function (content) {
         //console.debug($('#positive'+item))
 	if ( stock_fully_lab > 700)
 	{
@@ -1389,45 +1426,7 @@ var stock_fully_lab;
         editstring="<button id= editSentLab"+item +" class=editSentiment type=button value="+user_action+">Edit My Label</button>"
 	//console.debug(editstring)
        	$('#positive'+item).replaceWith(editstring);
-
-
-	if(user_action == "positive")
-                        {
-                        N=(Number(document.getElementById('total_pos').innerHTML.match(/\d+/))+1).toString();
-			newstring="<div id='total_pos' class='stat_total'><font color='black'> Total number of positive entries in DB is: " + N + "</font></div>" 
-			$('#total_pos').hide();
-			$('#total_pos').replaceWith(newstring);
-			
-			N=(Number(document.getElementById('stock_pos').innerHTML.match(/\d+/))+1).toString();
-			newstring="<div id='stock_pos' class='stat_total'><font color='black'> Total number of positive entries in DB for " + stock + " is: " + N + "</font></div>" 
-			$('#stock_pos').hide();
-			$('#stock_pos').replaceWith(newstring);
-                        }		
-	else if(user_action == "negative")	
-	            {
-                        N=(Number(document.getElementById('total_neg').innerHTML.match(/\d+/))+1).toString();
-			newstring="<div id='total_neg' class='stat_total'><font color='black'> Total number of negative entries in DB is: " + N + "</font></div>" 
-			$('#total_neg').hide();
-			$('#total_neg').replaceWith(newstring);
-			
-			N=(Number(document.getElementById('stock_neg').innerHTML.match(/\d+/))+1).toString();
-			newstring="<div id='stock_neg' class='stat_total'><font color='black'> Total number of negative entries in DB for " + stock + " is: " + N + "</font></div>" 
-			$('#stock_neg').hide();
-			$('#stock_neg').replaceWith(newstring);
-                        }	
-	else if(user_action == "neutral")	
-	            {
-                        N=(Number(document.getElementById('total_neu').innerHTML.match(/\d+/))+1).toString();
-			newstring="<div id='total_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB is: " + N + "</font></div>" 
-			$('#total_neu').hide();
-			$('#total_neu').replaceWith(newstring);
-			
-			N=(Number(document.getElementById('stock_neu').innerHTML.match(/\d+/))+1).toString();
-			newstring="<div id='stock_neu' class='stat_total'><font color='black'> Total number of neutral entries in DB for " + stock + " is: " + N + "</font></div>" 
-			$('#stock_neu').hide();
-			$('#stock_neu').replaceWith(newstring);
-                    }	
-		});
+	});
 	});
 
     $('body').on('click', '.editRel', function () {
@@ -1440,34 +1439,9 @@ var stock_fully_lab;
 	//console.debug(editstring)
 	//console.debug(user_action)
 	$('#editRelLab'+item).replaceWith(editstring);
-
-        if(user_action == "relevant")      
-                    {
-                        N=(Number(document.getElementById('total_rel').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='total_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB is: " + N + "</font></div>" 
-                        $('#total_rel').hide();
-                        $('#total_rel').replaceWith(newstring);
-                        
-                        N=(Number(document.getElementById('stock_rel').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='stock_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_rel').hide();
-                        $('#stock_rel').replaceWith(newstring);
-                    }      
-        else if(user_action == "irrelevant")
-                    {
-                        N=(Number(document.getElementById('total_irel').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='total_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB is: " + N + "</font></div>" 
-                        $('#total_irel').hide();
-                        $('#total_irel').replaceWith(newstring);
-                        
-                        N=(Number(document.getElementById('stock_irel').innerHTML.match(/\d+/))-1).toString();
-                        newstring="<div id='stock_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_irel').hide();
-                        $('#stock_irel').replaceWith(newstring);
-                    } 
 	relEditFlag[item]=0
-
 	});	
+
     $('body').on('click', '.cor', function () {
 	var item = $(this).attr("id").match(/[0-9]+/g)[0];
         if ( relEditFlag[item] == 1)
@@ -1481,7 +1455,7 @@ var stock_fully_lab;
         //$('#debug').append('<div><font color="black">' + item + '</font></div>');
 	var stock = window.stock_N
         var user_action = $(this).attr("value")
-	    ajaxPost('/get_correction', { 'relevancy': $(this).attr("value") ,'sentiment': 'none', 'tweet_id': item,'stock':stock },function (content) {
+	    ajaxPost('/get_correction', { 'relevancy': $(this).attr("value") ,'sentiment': 'none', 'question': 'none','pricetarget': 'none', 'tweet_id': item,'stock':stock },function (content) {
   	    //$('#debug').html('');
             //$('#debug').append('<div>' + item + '</div>')
         if ( stock_fully_lab > 700)
@@ -1491,33 +1465,7 @@ var stock_fully_lab;
             $('#corIrrel'+item).hide();
             editstring="<button id= editRelLab"+item +" class=editRel type=button value="+user_action+">Edit My Label</button>"
        	    $('#corRel'+item).replaceWith(editstring);
-
-        if(user_action == "relevant")      
-                    {
-                        N=(Number(document.getElementById('total_rel').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='total_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB is: " + N + "</font></div>" 
-                        $('#total_rel').hide();
-                        $('#total_rel').replaceWith(newstring);
-                        
-                        N=(Number(document.getElementById('stock_rel').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='stock_rel' class='stat_total'><font color='black'> Total number of relevant entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_rel').hide();
-                        $('#stock_rel').replaceWith(newstring);
-                        }       
-        else if(user_action == "irrelevant")
-                    {
-                        N=(Number(document.getElementById('total_irel').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='total_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB is: " + N + "</font></div>" 
-                        $('#total_irel').hide();
-                        $('#total_irel').replaceWith(newstring);
-                        
-                        N=(Number(document.getElementById('stock_irel').innerHTML.match(/\d+/))+1).toString();
-                        newstring="<div id='stock_irel' class='stat_total'><font color='black'> Total number of irrelevant entries in DB for " + stock + " is: " + N + "</font></div>" 
-                        $('#stock_irel').hide();
-                        $('#stock_irel').replaceWith(newstring);
-                    }  
-
-		});
+	});
 	});
 </script>
 
@@ -1529,7 +1477,7 @@ var availableTags =
 "السعودى الهولندى: البنك السعودي الهولندي: 1040",
 "السعودى الفرنسى: البنك السعودي الفرنسي: 1050",
 "ساب: البنك السعودي البريطاني: 1060",
-"العربى الوطنى: البنك العربي الوطني: 1080",
+"العربي الوطني: البنك العربي الوطني: 1080",
 "سامبا: مجموعة سامبا المالية: 1090",
 "تاسي: تاسي",
 "الرياض: بنك الرياض: 1010",
@@ -1537,12 +1485,12 @@ var availableTags =
 "الراجحي: مصرف الراجحي: 1120",
 "البلاد: بنك البلاد: 1140",
 "الإنماء: مصرف الإنماء(انماء): 1150",
-"كيمانول: شركة تكوين المتطورة للصناعات: 1201",
-"بتروكيم: شركة الصحراء للبتروكيماويات : 2260",
-"سابك: شركة الصناعات الكيميائية الأساسية: 1210",
+"كيمانول: شركة كيمائيات الميثانول: 2001",
+"بتروكيم: الشركة الوطنية للبتروكيماويات: 2002",
+"سابك: الشركة السعودية للصناعات الأساسية: 2010",
 "سافكو: شركة الأسمدة العربية السعودية: 2020",
-"التصنيع: شركة مجموعة السريع التجارية الصناعية: 1213",
-"اللجين: شركة الحسن غازي إبراهيم شاكر: 1214",
+"التصنيع: شركة التصنيع الوطنية: 2060",
+"اللجين: شركة اللجين: 2170",
 "نماء للكيماويات: شركة نماء للكيماويات: 2210",
 "المجموعة السعودية: المجموعة السعودية للإستثمار الصناعي: 2250",
 "الصحراء للبتروكيماويات: شركة الصحراء للبتروكيماويات: 2260",
@@ -1574,11 +1522,12 @@ var availableTags =
 "الدريس: شركة الدريس للخدمات البترولية و النقليات: 4200",
 "الحكير: شركة فواز عبدالعزيز الحكير وشركاه: 4240",
 "الحمادي:شركة الحمادي للتنمية والاستثمار: 4007",
+"البنك الأهلي: البنك الأهلي التجاري: 1180",
 "الخليج للتدريب: شركة الخليج للتدريب و التعليم : 4290",
 "الغاز والتصنيع: شركة الغاز والتصنيع الاهلية : 2080",
 "كهرباء السعودية: الشركة السعودية للكهرباء : 5110",
 "مجموعة صافولا: مجموعة صافولا(مجموعه صافولا): 2050",
-"الغذائية: شركة وفرة للصناعة والتنمية: 6002",
+"الغذائية: شركة وفرة للصناعة والتنمية: 2100",
 "سدافكو: الشركة السعودية لمنتجات الألبان والأغذية (سدافكو): 2270 ",
 "المراعي: شركة المراعي: 2280",
 "أنعام القابضة: شركة مجموعة أنعام الدولية القابضة(انعام) : 4061",
@@ -1587,9 +1536,11 @@ var availableTags =
 "التموين: شركة الخطوط السعودية للتموين: 6004",
 "نادك: الشركة الوطنية للتنمية الزراعية: 6010",
 "القصيم الزراعيه: شركة القصيم الزراعية: 6020",
+"بترو رابغ: شركة رابغ للتكرير والبتروكيماويات : 2380",
 "تبوك الزراعيه: شركة تبوك للتنمية الزراعية : 6040",
 "الأسماك: الشركة السعودية للأسماك: 6050",
-"الشرقية للتنمية: الشركة الشرقية للتنمية 6060",
+"الصناعات الكهربائيه: شركة الصناعات الكهربائية: 1303",
+"الشرقية للتنمية: الشركة الشرقية للتنمية: 6060",
 "الجوف الزراعيه: شركة الجوف الزراعية: 6070",
 "بيشة الزراعيه: شركة بيشة للتنمية الزراعية: 6080",
 "جازان للتنمية: شركة جازان للتنمية: 6090",
@@ -1597,7 +1548,6 @@ var availableTags =
 "اتحاد اتصالات: شركة إتحاد إتصالات: 7020",
 "زين السعودية: شركة الاتصالات المتنقلة السعودية: 7030",
 "عذيب للاتصالات: شركة إتحاد عذيب للاتصالات: 7040",
-"المتكاملة: الشركة السعودية للإتصالات المتكاملة ",
 "التعاونية: شركة التعاونية للتأمين : 8010 ",
 "ملاذ للتأمين: ملاذ للتأمين: 8020",
 "ميدغلف للتأمين: شركة المتوسط والخليج للتأمين وإعادة التأمين التعاوني: 8030",
@@ -1607,6 +1557,7 @@ var availableTags =
 "جزيرة تكافل:شركة الجزيرة تكافل تعاوني: 8012",
 "الدرع العربي: شركة الدرع العربي للتأمين التعاوني : 8070",
 "ساب تكافل: ساب للتكافل: 8080",
+"المتقدمة: الشركة المتقدمة للبتروكيماويات: 2330",
 "سند: شركة سند للتأمين و إعادة التأمين التعاوني: 8090",
 "سايكو: الشركة العربية السعودية للتأمين التعاوني: 8100",
 "وفا للتأمين: الشركة السعودية الهندية للتأمين التعاوني: 8110 ",
@@ -1614,17 +1565,18 @@ var availableTags =
 "الأهلي للتكافل: شركة الأهلي للتكافل(الاهلى) : 8130",
 "العربي للتأمين: شركة متلايف وايه أي جي والبنك العربي للتأمين التعاوني: 8011",
 "الأهلية: الشركة الأهلية للتأمين التعاوني(الاهليه) : 8140",
-"أسيج: المجموعة المتحدة للتأمين التعاوني (اسيج): 8050",
+"أسيج: المجموعة المتحدة للتأمين التعاوني (اسيج): 8150",
 "التأمين العربية: شركة التأمين العربية التعاونية(التامين العربيه) : 8160",
 "الاتحاد التجاري: شركة الاتحاد التجاري للتأمين التعاوني(الأتحاد) : 8170 ",
 "الصقر للتأمين: شركة الصقر للتأمين التعاوني : 8180",
-"المتحدة للتأمين: المجموعة المتحدة للتأمين التعاوني : 8060",
+"المتحدة للتأمين: المجموعة المتحدة للتأمين التعاوني : 8190",
 "الإعادة السعودية: الشركة السعودية لإعادة التأمين(الاعادة) التعاونية : 8200",
 "بوبا العربية: بوبا العربية للتأمين التعاوني : 8210",
 "وقاية للتكافل: شركة وقاية للتأمين و إعادة التأمين التكافلي: 8220",
 "تكافل الراجحي: شركة الراجحي للتأمين التعاوني : 8230",
-"ايس: شركة أيس العربية للتأمين التعاوني: 8240",
+"تشب: الشركة تشب العربية للتأمين التعاوني : 8240",
 "اكسا- التعاونية: شركة اكسا للتأمين التعاوني: 8250",
+"سبكيم العالمية: الشركة السعودية العالمية للبتروكيماويات: 2310",
 "الخليجية العامة: الشركة الخليجية العامة للتأمين التعاوني: 8260",
 "بروج للتأمين: شركة بروج للتأمين التعاوني: 8270",
 "العالمية: شركة العالمية للتأمين التعاوني: 8280",
@@ -1632,7 +1584,7 @@ var availableTags =
 "الوطنية: الشركة الوطنية للتأمين: 8300",
 "أمانة للتأمين: شركة أمانة للتأمين التعاوني(امانه) : 8310",
 "عناية: شركة عناية السعودية للتأمين التعاوني: 8311",
-"الإنماء طوكيو مارين: شركة الإنماء طوكيو مارين(الانماء) : 8312",
+"الإنماء طوكيو م: شركة الإنماء طوكيو مارين(الانماء) : 8312",
 "المصافي: شركة المصافي العربية السعودية: 2030",
 "المتطورة: الشركة السعودية للصناعات المتطورة: 2120",
 "الاحساء للتنميه: شركة الاحساء للتنمية: 2140",
@@ -1656,7 +1608,7 @@ var availableTags =
 "الصادرات: الشركة السعودية للصادرات الصناعية: 4140",
 "أسلاك: شركة إتحاد مصانع الأسلاك(اسلاك) : 1301",
 "مجموعة المعجل: شركة مجموعة محمد المعجل: 1310",
-"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1310",
+"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1320",
 "الخضري: شركة أبناء عبدالله عبدالمحسن الخضري: 1330",
 "الخزف: شركة الخزف السعودي: 2040",
 "الجبس: شركة الجبس الأهلية: 2090",
@@ -1682,22 +1634,31 @@ var availableTags =
 "مبرد: الشركة السعودية للنقل والاستثمار: 4110",
 "بدجت السعودية: الشركة المتحدة الدولية للمواصلات: 4260",
 "تهامه للاعلان: شركة تهامه للاعلان والعلاقات العامة: 4070",
-"الأبحاث و التسويق: الابحاث و التسويق ",
+"الأبحاث و التسويق: الابحاث و التسويق: 4210 ",
 "طباعة وتغليف: الشركة السعودية للطباعة والتغليف: 4270",
-"الطيار: مجموعة الطيار للسفر ",
+"الطيار: مجموعة الطيار للسفر: 1810",
 "دور: شركة دور للضيافة: 4010",
 "شمس: شركة المشروعات السياحية: 4170",
 "مجموعة الحكير: شركة مجموعة عبدالمحسن الحكير للسياحة والتنمية: 1820",
 "بوان: شركة بوان: 1302",
 "مبكو:شركة الشرق الاوسط لصناعة وانتاج الورق: 1202",
 "ساكو: الشركة السعودية للعدد والأدوات: 4008",
-"الشركة السعودية للخدمات الأرضية:الشركة السعودية للخدمات الأرضية",
-"الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية"
+"الخدمات الأرضية:الشركة السعودية للخدمات الأرضية: 4031",
+"الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية",
+"الأندلس: الأندلس العقارية: 4320",
+"ميكو: شركة الشرق الأوسط للرعاية الصحية",
+"ﺎﻠﻴﻣﺎﻣﺓ ﻞﻠﺣﺪﻳﺩ: ﺵﺮﻛﺓ ﺎﻠﻴﻣﺎﻣﺓ ﻞﻠﺼﻧﺎﻋﺎﺗ ﺎﻠﺣﺪﻳﺪﻳﺓ: 1304",
+"ﻻﺯﻭﺭﺪﻳ: ﺵﺮﻛﺓ ﻻﺯﻭﺭﺪﻳ ﻞﻠﻤﺟﻮﻫﺭﺎﺗ: 4011",
+"ﻚﻳﺎﻧ: ﺵﺮﻛﺓ ﻚﻳﺎﻧ ﺎﻠﺴﻋﻭﺪﻳﺓ ﻞﻠﺒﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ: 2350",
     ];
 
 
     $( "#tags" ).autocomplete({
-      source: availableTags
+      source: availableTags,
+      change: function(event, ui) {
+              if(ui.item === null || !ui.item)
+              $(this).val(''); /* clear the value */
+              }
     });
   });
   </script>
@@ -1742,6 +1703,16 @@ stock_N=str;
 var a = document.getElementById("tags");
 a.value = a.defaultValue;
 }
+
+}
+
+function updt()
+{
+
+ajaxPost('/update_counters', { }, function (update_counters) {
+});
+
+window.alert("The counters are being updated now, Please continue browsing the website in few minutes");
 
 }
 </script>

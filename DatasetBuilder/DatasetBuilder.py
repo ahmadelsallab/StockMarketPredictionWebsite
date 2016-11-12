@@ -375,21 +375,109 @@ class DatasetBuilder(object):
                     #/DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST        
         except openpyxl.shared.exc.InvalidFileException:
             print('File not found' + fileName + ".xlsx")
-            
+    
+
+    def GetDatasetFromBackend(self, stock):
+        from app import models
+        dataSet = []
+        try:
+            stock_select = models.Stocks.objects.get(stock_id=stock)
+
+            rows = models.Opinion.objects.filter(stock=stock_select, relevancy__in=['relevant','irrelevant']).order_by('created_at')
+            for row in rows:
+                if not row.relevancy.strip():
+                    continue
+                # Update the label from the manual updated labels
+                #NOT DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+                if not DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST:
+                    dataSet.append({'label' : row.relevancy, 'text' : row.text})
+                #/NOT DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+                
+                #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+                if DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST:
+                    if(row.relevancy == 'irrelevant'):
+                        self.irrelevantNum += 1
+                        if(self.irrelevantNum <= self.limitIrrelevant):
+                            # Update the label from the manual updated labels
+                            dataSet.append({'label' : row.relevancy, 'text' : row.text})
+                    else:
+                            dataSet.append({'label' : row.relevancy, 'text' : row.text})
+                        
+                #/DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
+        except openpyxl.shared.exc.InvalidFileException:
+            print('File not found' + fileName + ".xlsx")
+        finally:
+            return dataSet
+
+    def GetSentimentDatasetFromBackend(self):
+        from app import models
+        dataSet = {}
+        rows = models.Opinion.objects.filter(sentiment__in=['neutral','negative', 'positive']).order_by('created_at')
+        for row in rows:
+            if not row.sentiment.strip():
+                continue
+           
+            dataSet[row.twitter_id] = {'label' : row.sentiment, 'text' : row.text, 'stock': row.stock}
+          
+        return dataSet
+
+    def GetSentimentDatasetFromXLSXFile(self, fileName):
+        dataSet = {}
+        # Open xlsx for reading
+        wb = load_workbook(filename = fileName + ".xlsx")
+        sheets = ['Negative', 'Positive', 'Neutral']
+        cnames = ['negative', 'positive', 'neutral']
+        for sheet, cname in zip(sheets, cnames):
+            sheet_ranges = wb.get_sheet_by_name(name=sheet)
+            row_count = sheet_ranges.max_row
+            # Read the label from each row            
+            #for row in range(self.numberTweetsPerCsvFile + 2): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped
+            for row in range(row_count): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped                if(row >= 2):
+
+                if(row >= 2):
+                    if sheet_ranges.cell('D' + str(row)).value == None:
+                        continue
+                  
+                    dataSet[sheet_ranges.cell('A' + str(row)).value] = {
+                                        'label' : cname, 
+                                        'text' : sheet_ranges.cell('C' + str(row)).value.strip(),
+                                        'words' : list(filter(lambda x: x != '', [
+                                            str(sheet_ranges.cell('H' + str(row)).value).strip() if sheet_ranges.cell('H' + str(row)).value != None else '',
+                                            str(sheet_ranges.cell('I' + str(row)).value).strip() if sheet_ranges.cell('I' + str(row)).value != None else '', 
+                                            str(sheet_ranges.cell('J' + str(row)).value).strip() if sheet_ranges.cell('J' + str(row)).value != None else '',
+                                            str(sheet_ranges.cell('K' + str(row)).value).strip() if sheet_ranges.cell('K' + str(row)).value != None else '',
+                                            str(sheet_ranges.cell('L' + str(row)).value).strip() if sheet_ranges.cell('L' + str(row)).value != None else '',
+                                        ])),
+                                        'stock': sheet_ranges.cell('B' + str(row)).value.strip()
+                                    }
+
+                 
+
+        return dataSet
+
+
+    def getQuestionsDataset(self, path):
+        return pickle.load(open(path, 'rb'))
+
+    def getQuestionsDatasetDictionary(self, path):
+        return pickle.load(open(path, 'rb'))
+
     # Load dataset from xlsx file
-    def GetDatasetFromXLSXFile(self, fileName):
-         
+    def GetDatasetFromXLSXFile(self, fileName, stock):
         dataSet = []
         try:
             # Open xlsx for reading
             wb = load_workbook(filename = fileName + ".xlsx")
-            sheet_ranges = wb.get_sheet_by_name(name = 'ManualLabels_1')
+            sheet_ranges = wb.get_sheet_by_name(name = 'Sheet1')
                       
-            row_count = sheet_ranges.get_highest_row()
+            row_count = sheet_ranges.max_row
             # Read the label from each row            
             #for row in range(self.numberTweetsPerCsvFile + 2): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped
             for row in range(row_count): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped                if(row >= 2):
                 if(row >= 2):
+                    rstock = sheet_ranges.cell('A' + str(row)).value
+                    if rstock != stock:
+                        continue
                     # Update the label from the manual updated labels
                     #NOT DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
                     if not DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST:
@@ -420,7 +508,7 @@ class DatasetBuilder(object):
             wb = load_workbook(filename = fileName + ".xlsx")
             sheet_ranges = wb.get_sheet_by_name(name = 'ManualLabels_1')
                       
-            row_count = sheet_ranges.get_highest_row()
+            row_count = sheet_ranges.max_row
             # Read the label from each row            
             #for row in range(self.numberTweetsPerCsvFile + 2): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped
             for row in range(row_count): # +2 since the xlsx rows start at 1 and also the first row is the header and should be skipped                if(row >= 2):

@@ -1,12 +1,11 @@
 <Configurations>
   <!--The desired length of features vector to be considered from the N-gram languge model. "Full" means the whole language model-->
-  <classifierType classifierType="DecisionTree"></classifierType>
-     <!--The classifier type. Examples: SVM, DecisionTree, AdaBoost, Lexicon. For AdaBoost, only DecisionTree is supported as the base classifier-->
   <ClassifierType classifierType="DecisionTree"></ClassifierType>
+     <!--The classifier type. Examples: SVM, DecisionTree, AdaBoost, Lexicon. For AdaBoost, only DecisionTree is supported as the base classifier-->
   <!--The base classifier used for boosting. Valid only for ClassifierType = AdaBoost. Only DecisionTrees are supported for now-->
   <BaseClassifierType baseClassifierType="DecisionTree"></BaseClassifierType>
   <!--PackageType defines which python package is used. Example: If ClassifierType = SVM, then PackageType could be either libsvm or liblinear. Example: If ClassifierType = DecisionTree, then PackageType could be either sklearn or nltk-->
-  <PackageType packageType="nltk"></PackageType>
+  <PackageType packageType="sklearn"></PackageType>
   <!--The threshold to compare to in case of 'Lexicon' classifierType-->
   <LexiconThreshold lexiconThreshold="0"></LexiconThreshold>
   <!--LibSVMFormat,  Label configurations are only needed in case of Lexicon classifier-->

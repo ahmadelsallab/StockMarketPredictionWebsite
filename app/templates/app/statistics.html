@@ -1,0 +1,353 @@
+﻿{% extends "app/layout.html" %}
+
+{% block content %}
+{% load static %}
+
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    background-color: #dddddd;
+    border: 1px solid #000000;
+    text-align: center;
+    padding: 8px;
+}
+
+td {
+    border: 1px solid #000000;
+    text-align: left;
+    padding: 8px;
+}
+
+/* Style the list */
+ul.tab {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #dddddd;
+}
+
+/* Float the list items side by side */
+ul.tab li {float: left;}
+
+/* Style the links inside the list items */
+ul.tab li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 17px;
+    width: 150px;
+}
+
+/* Change background color of links on hover */
+ul.tab li a:hover {background-color: #ccc;}
+
+/* Create an active/current tablink class */
+ul.tab li a:focus {background-color: #428BCA;}
+ul.tab li a:visited  {background-color: #428BCA;}
+ul.tab li a:active {background-color: #428BCA;}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    //padding: 6px 12px;
+    border: 1px solid #ccc;
+    border-top: none;
+}
+
+</style>
+<div id="debug"></div>
+<div id="main_content" style="width:85%">
+    <h2 class="page-header" align="right">Statistics</h2>
+    <div id="stats"></div><p>&nbsp;</p>
+
+    <div style="width:302px; align=center; margin: auto;">
+    <ul class="tab">
+      <li><a id="Classifiers" style="display: inline-block;color: black;text-align: center;padding: 14px 16px;text-decoration: none;transition: 0.3s;font-size: 17px;width: 150px;" href="#" class="tablinks" onclick="load()">Classifiers</a></li>
+      <li><a id="Corrections" style="display: inline-block;color: black;text-align: center;padding: 14px 16px;text-decoration: none;transition: 0.3s;font-size: 17px;width: 150px;" href="#" class="tablinks" onclick="correction_load()">Corrections</a></li>
+    </ul>
+    </div>
+
+    <br></br>
+
+    <span class="store-btn"><span style="padding-right: 5px; padding-left: 5px;"><input type="text" id="datepicker1" placeholder="Day ..."></span><a href="javascript:load()" style="display: inline; background-color: #428BCA; color: white; padding-left: 5px; padding-right: 5px; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Go</a>
+    </span>
+    <div id="tweets_loading">
+        <img src="{% static 'app/images/loading.gif' %}" />
+    </div>
+    <div id="stats2"><p>&nbsp;</p><table id="tab"></table></div>
+
+    <div id="tweets" style=" height: 20px; "></div>
+    <ul id="pagination-demo" class="pagination-sm" style="list-style:none;position:relative;left:35%;"></ul>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+
+{% load static %}
+<script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+<script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart', 'bar', 'table']
+            }]
+          }"></script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="{% static 'app/esimakin-twbs-pagination-4a2f5ff/jquery.twbsPagination.min.js' %}"></script>
+<script>
+
+$(function() {
+  $( "#datepicker1" ).datepicker({ dateFormat: 'yy-mm-dd' });
+});
+
+$('#pagination-demo').hide();
+
+function load_historical(elem)
+{
+var page_number = 1;
+var page_counter = 0;
+var page = 1;
+var pp = 0;
+var s_id = $(elem).attr("id").match(/[0-9]+/g)[0];
+$("#datepicker1").datepicker('setDate','');
+$('#tab').replaceWith('<table id="tab"></table>');
+$('#tweets_loading').fadeIn('fast');
+
+ajaxPost('/get_stock_price', { 's_id' : s_id }, function (content) {
+$('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + content.stock + ' (' + content.full + ')' +' Price: ' + content.price + '</font></div>');
+});
+
+ajaxPost('/h_table', { 's_id': s_id}, function (content) {
+var tab_head = '<table id="tab"> <tr> <th style="border:none;background-color:#FFFFFF;"> </th> <th colspan="3" > Relevancy </th> <th colspan="3" > Sentiment</th> <th colspan="3" > Question </th> </tr><tr> <th>Day</th> <th>Relevant</th> <th>Irrelevant</th> <th>Uncertain</th> <th>Positive</th> <th>Negative</th> <th>Neutral</th> <th>Question</th> <th>Not a question</th> </tr>';
+tab='';
+
+for (var day in content) {
+tab = '<tr class="'+page_number+'"> <td> <a id="'+content[day]['day']+'" onClick="set_then_load(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + content[day]["day"] + '</a> </td> <td>' + content[day]['r']['relevant'] + '</td> <td>' + content[day]['r']['irrelevant'] + '</td> <td>' + content[day]['r']['Uncertain'] + '</td> <td>' + content[day]['s']['positive'] + '</td> <td>' + content[day]['s']['negative'] + '</td> <td>' + content[day]['s']['neutral'] + '</td> <td>' + content[day]['q']['question'] + '</td> <td>' + content[day]['q']['notaquestion'] + '</td> </tr>' + tab;
+page_counter += 1;
+if ( page_counter === 30 ) { page_counter = 0; page_number += 1; }
+}
+page_number -= 1;
+
+tab += '</table></div>'
+tab = tab_head + tab;
+$('#tweets_loading').fadeOut('fast');
+$('#tab').replaceWith(tab);
+try {
+$('#pagination-demo').twbsPagination('destroy');
+}
+catch (err) {
+}
+$('#pagination-demo').twbsPagination({
+totalPages: page_number,
+visiblePages: 7,
+onPageClick: function (event, page) {
+for (p in Array.apply(null, Array(page_number)).map(function (_, i) {return i;})) { pp = parseInt(p) + 1; $('.'+pp).hide(); }
+pagetoshow = parseInt(page_number) - parseInt(page) + 1;
+$('.'+pagetoshow).show();
+}
+});
+
+$('#pagination-demo').show();
+});
+}
+
+function set_then_load(elem)
+{
+//$("#datepicker1").datepicker().val()=$(elem).attr("id");
+$("#datepicker1").datepicker('setDate',$(elem).attr("id"))
+load();
+}
+
+var co;
+
+function load()
+{
+$('#pagination-demo').hide();
+$('#tab').replaceWith('<table id="tab"></table>');
+$('#tweets_loading').fadeIn('fast');
+document.getElementById("Classifiers").style["background-color"]="#428BCA";
+document.getElementById("Corrections").style["background-color"]="#dddddd";
+$('#stats').html('<div id="stats"></div>');
+
+day_picker=$("#datepicker1").datepicker().val();
+$(".store-btn").show()
+ajaxPost('/p_table', { 'day': day_picker }, function (content) {
+var tab = '<table id="tab"> <tr> <th style="border:none;background-color:#FFFFFF;"> </th> <th colspan="3" > Relevancy </th> <th colspan="3" > Sentiment</th> <th colspan="3" > Question </th> </tr><tr> <th>Stock</th> <th>Relevant</th> <th>Irrelevant</th> <th>Uncertain</th> <th>Positive</th> <th>Negative</th> <th>Neutral</th> <th>Question</th> <th>Not question</th> </tr>';
+
+co = content;
+
+var sector_old = 'تاسي';
+//console.debug(content['tab'].length);
+for (var app_stocks_id in content['tab']) {
+
+if ( content['tab'][app_stocks_id]['sector'] === sector_old )
+        {
+tab += '<tr> <td > <a id="row'+app_stocks_id+'" onClick="load_historical(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + content['tab'][app_stocks_id]["stock"] + '</a> </td> <td>' + content['tab'][app_stocks_id]['r']['relevant'] + '</td> <td>' + content['tab'][app_stocks_id]['r']['irrelevant'] + '</td> <td>' + content['tab'][app_stocks_id]['r']['Uncertain'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['positive'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['negative'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['neutral'] + '</td> <td>' + content['tab'][app_stocks_id]['q']['question'] + '</td> <td>' + content['tab'][app_stocks_id]['q']['notaquestion'] + '</td> </tr> ';
+        }
+else
+        {
+tab += '<tr> <th colspan="9"> ' + content['tab'][app_stocks_id]['sector'] + '</th> <tr>'
+sector_old = content['tab'][app_stocks_id]['sector']
+tab += '<tr> <td> <a id="row'+app_stocks_id+'" onClick="load_historical(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + content['tab'][app_stocks_id]["stock"] + '</a> </td> <td>' + content['tab'][app_stocks_id]['r']['relevant'] + '</td> <td>' + content['tab'][app_stocks_id]['r']['irrelevant'] + '</td> <td>' + content['tab'][app_stocks_id]['r']['Uncertain'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['positive'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['negative'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['neutral'] + '</td> <td>' + content['tab'][app_stocks_id]['q']['question'] + '</td> <td>' + content['tab'][app_stocks_id]['q']['notaquestion'] + '</td> </tr> ';
+
+        }
+}
+
+tab += '<tr> <th> <a id="row5" onClick="load_historical(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">المجموع الكلي</a> </th> <th>' + content["tot"]["rr"] + '</th> <th>' + content["tot"]["ri"] + '</th> <th>' + content["tot"]["ru"] + '</th> <th>' + content["tot"]["sp"] + '</th> <th>' + content["tot"]["sn"] + '</th> <th>' + content["tot"]["su"] + '</th> <th>' + content["tot"]["qq"] + '</th> <th>' + content["tot"]["qr"] + '</th> </tr></table></div>'; 
+
+$('#tweets_loading').fadeOut('fast');
+$('#tab').replaceWith(tab);
+});
+}
+
+function correction_load()
+{
+$('#pagination-demo').hide();
+$('#tab').replaceWith('<table id="tab"></table>');
+$('#tweets_loading').fadeIn('fast');
+document.getElementById("Classifiers").style["background-color"]="#dddddd";
+document.getElementById("Corrections").style["background-color"]="#428BCA";
+$('#stats').html('<div id="stats"></div>');
+
+day_picker=$("#datepicker1").datepicker().val();
+$(".store-btn").hide();
+ajaxPost('/c_table', { 'segment': 1 }, function (content) {
+var tab = '<table id="tab"> <tr> <th style="border:none;background-color:#FFFFFF;"> </th> <th colspan="3" > Relevancy </th> <th colspan="3" > Sentiment</th> <th colspan="3" > Question </th> <th rowspan="2" >#Segments</th> </tr><tr> <th>Stock</th> <th> Correct </th> <th>Incorrect</th> <th>% Correct</th> <th> Correct </th> <th>Incorrect</th> <th>% Correct</th> <th> Correct </th> <th>Incorrect</th> <th>% Correct</th> </tr>';
+
+co = content;
+
+var sector_old = 'تاسي';
+//console.debug(content['tab'].length);
+for (var app_stocks_id in content['tab']) {
+
+pct_r = Math.round(100*content['tab'][app_stocks_id]['r']['correct']/(content['tab'][app_stocks_id]['r']['correct']+content['tab'][app_stocks_id]['r']['incorrect']))
+pct_s = Math.round(100*content['tab'][app_stocks_id]['s']['correct']/(content['tab'][app_stocks_id]['s']['correct']+content['tab'][app_stocks_id]['s']['incorrect']))
+pct_q = Math.round(100*content['tab'][app_stocks_id]['q']['correct']/(content['tab'][app_stocks_id]['q']['correct']+content['tab'][app_stocks_id]['q']['incorrect']))
+
+if (isNaN(pct_r)) { pct_r = '---' } else { pct_r = pct_r + ' %' } 
+if (isNaN(pct_s)) { pct_s = '---' } else { pct_s = pct_s + ' %' } 
+if (isNaN(pct_q)) { pct_q = '---' } else { pct_q = pct_q + ' %' } 
+
+if ( content['tab'][app_stocks_id]['sector'] === sector_old )
+        {
+tab += '<tr> <td> <a id="row'+app_stocks_id+'" onClick="correction_load_historical(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + content['tab'][app_stocks_id]["stock"] + '</a> </td> <td>' + content['tab'][app_stocks_id]['r']['correct'] + '</td> <td>' + content['tab'][app_stocks_id]['r']['incorrect'] + '</td> <td>' + pct_r + ' </td> <td>' + content['tab'][app_stocks_id]['s']['correct'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['incorrect'] + '</td> <td>' + pct_s + '</td> <td>' + content['tab'][app_stocks_id]['q']['correct'] + '</td> <td>' + content['tab'][app_stocks_id]['q']['incorrect'] + '</td> <td>' + pct_q + '</td> <td>' + content['tab'][app_stocks_id]['completed_segment'] + '</td> </tr> ';
+        }
+else
+        {
+tab += '<tr> <th colspan="11"> ' + content['tab'][app_stocks_id]['sector'] + '</th> <tr>'
+sector_old = content['tab'][app_stocks_id]['sector']
+tab += '<tr> <td> <a id="row'+app_stocks_id+'" onClick="correction_load_historical(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + content['tab'][app_stocks_id]["stock"] + '</a> </td> <td>' + content['tab'][app_stocks_id]['r']['correct'] + '</td> <td>' + content['tab'][app_stocks_id]['r']['incorrect'] + '</td> <td>' + pct_r + '</td> <td>' + content['tab'][app_stocks_id]['s']['correct'] + '</td> <td>' + content['tab'][app_stocks_id]['s']['incorrect'] + '</td> <td>' + pct_s + '</td> <td>' + content['tab'][app_stocks_id]['q']['correct'] + '</td> <td>' + content['tab'][app_stocks_id]['q']['incorrect'] + '</td> <td>' + pct_q + '</td> <td>' + content['tab'][app_stocks_id]['completed_segment'] + '</td> </tr> ';
+        }
+}
+
+pct_t_r = Math.round(100*content["tot"]["rc"]/(content["tot"]["rc"]+content["tot"]["ri"]))
+pct_t_s = Math.round(100*content["tot"]["sc"]/(content["tot"]["sc"]+content["tot"]["si"]))
+pct_t_q = Math.round(100*content["tot"]["qc"]/(content["tot"]["qc"]+content["tot"]["qi"]))
+
+if (isNaN(pct_t_r)) { pct_t_r = '---' } else { pct_t_r = pct_t_r + ' %' } 
+if (isNaN(pct_t_s)) { pct_t_s = '---' } else { pct_t_s = pct_t_s + ' %' } 
+if (isNaN(pct_t_q)) { pct_t_q = '---' } else { pct_t_q = pct_t_q + ' %' } 
+
+tab += '<tr> <th> <a id="row5" onClick="correction_load_historical(this)" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">المتوسط العام</a> </th> <th>' + content["tot"]["rc"] + '</th> <th>' + content["tot"]["ri"] + '</th> <th>' +  pct_t_r + '</th> <th>' + content["tot"]["sc"] + '</th> <th>' + content["tot"]["si"] + '</th> <th>' + pct_t_s + '</th> <th>' + content["tot"]["qc"] + '</th> <th>' + content["tot"]["qi"] + '</th> <th>' + pct_t_q + '</th> <th>' + content["tot"]["tot_completed_segments"] + '</th> </tr></table></div>'; 
+
+$('#tweets_loading').fadeOut('fast');
+$('#tab').replaceWith(tab);
+});
+}
+
+function correction_load_historical(elem)
+{
+var s_id = $(elem).attr("id").match(/[0-9]+/g)[0];
+$('#pagination-demo').hide();
+$('#tab').replaceWith('<table id="tab"></table>');
+$('#tweets_loading').fadeIn('fast');
+
+ajaxPost('/get_stock_price', { 's_id' : s_id }, function (content) {
+$('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + content.stock + ' (' + content.full + ')' +' Price: ' + content.price + '</font></div>');
+});
+
+ajaxPost('/ch_table', { 's_id': s_id }, function (content) {
+if ( s_id == 5 )
+{
+var tab = '<table id="tab"> <tr> <th style="border:none;background-color:#FFFFFF;"> </th> <th colspan="3" > Relevancy </th> <th colspan="3" > Sentiment</th> <th colspan="3" > Question </th> <th rowspan="2" >#Stocks</th> </tr><tr> <th>Segment</th> <th>Correct</th> <th>Incorrect</th> <th>% Correct</th> <th>Correct</th> <th>Incorrect</th> <th>% Correct</th> <th>Correct</th> <th>Incorrect</th> <th>% Correct</th> </tr>';
+}
+else
+{
+var tab = '<table id="tab"> <tr> <th style="border:none;background-color:#FFFFFF;"> </th> <th colspan="3" > Relevancy </th> <th colspan="3" > Sentiment</th> <th colspan="3" > Question </th> </tr> <tr> <th>Segment</th> <th>Correct</th> <th>Incorrect</th> <th>% Correct</th> <th>Correct</th> <th>Incorrect</th> <th>% Correct</th> <th>Correct</th> <th>Incorrect</th> <th>% Correct</th> </tr>';
+}
+co = content;
+
+var sector_old = 'ﺕﺎﺴﻳ';
+l = Object.keys(content['tab']).length
+tot_finished_seg = 0;
+for (var reversed_segment in content['tab']) {
+segment = l-reversed_segment+1;
+
+pct_r = Math.round(100*content['tab'][segment]['r']['correct']/(content['tab'][segment]['r']['correct']+content['tab'][segment]['r']['incorrect']))
+pct_s = Math.round(100*content['tab'][segment]['s']['correct']/(content['tab'][segment]['s']['correct']+content['tab'][segment]['s']['incorrect']))
+pct_q = Math.round(100*content['tab'][segment]['q']['correct']/(content['tab'][segment]['q']['correct']+content['tab'][segment]['q']['incorrect']))
+
+if (isNaN(pct_r)) { pct_r = '---' } else { pct_r = pct_r + ' %' } 
+if (isNaN(pct_s)) { pct_s = '---' } else { pct_s = pct_s + ' %' } 
+if (isNaN(pct_q)) { pct_q = '---' } else { pct_q = pct_q + ' %' } 
+
+seg_to_show = segment
+tot_finished_seg += content['tab'][segment]['r']['stock_count'];
+
+if ( s_id == 5 )
+{
+tab += '<tr> <td> <a id="row'+segment+'" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + seg_to_show + '</a> </td> <td>' + content['tab'][segment]['r']['correct'] + '</td> <td>' + content['tab'][segment]['r']['incorrect'] + '</td> <td>' + pct_r + ' </td> <td>' + content['tab'][segment]['s']['correct'] + '</td> <td>' + content['tab'][segment]['s']['incorrect'] + '</td> <td>' + pct_s + '</td> <td>' + content['tab'][segment]['q']['correct'] + '</td> <td>' + content['tab'][segment]['q']['incorrect'] + '</td> <td>' + pct_q + '</td> <td>' + content['tab'][segment]['r']['stock_count'] + '</td> </tr>';
+}
+else
+{
+tab += '<tr> <td> <a id="row'+segment+'" style="float: left; display: inline; color:#3c48b1; text-decoration: underline; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); ">' + seg_to_show + '</a> </td> <td>' + content['tab'][segment]['r']['correct'] + '</td> <td>' + content['tab'][segment]['r']['incorrect'] + '</td> <td>' + pct_r + ' </td> <td>' + content['tab'][segment]['s']['correct'] + '</td> <td>' + content['tab'][segment]['s']['incorrect'] + '</td> <td>' + pct_s + '</td> <td>' + content['tab'][segment]['q']['correct'] + '</td> <td>' + content['tab'][segment]['q']['incorrect'] + '</td> <td>' + pct_q + '</td> </tr> ';
+}
+}
+
+pct_t_r = Math.round(100*content["tot"]["rc"]/(content["tot"]["rc"]+content["tot"]["ri"]))
+pct_t_s = Math.round(100*content["tot"]["sc"]/(content["tot"]["sc"]+content["tot"]["si"]))
+pct_t_q = Math.round(100*content["tot"]["qc"]/(content["tot"]["qc"]+content["tot"]["qi"]))
+
+if (isNaN(pct_t_r)) { pct_t_r = '---' } else { pct_t_r = pct_t_r + ' %' } 
+if (isNaN(pct_t_s)) { pct_t_s = '---' } else { pct_t_s = pct_t_s + ' %' } 
+if (isNaN(pct_t_q)) { pct_t_q = '---' } else { pct_t_q = pct_t_q + ' %' } 
+
+if ( s_id == 5 )
+{
+tab += '<tr> <th style="text-align:left"> المتوسط العام </th> <th>' + content["tot"]["rc"] + '</th> <th>' + content["tot"]["ri"] + '</th> <th>' +  pct_t_r + '</th> <th>' + content["tot"]["sc"] + '</th> <th>' + content["tot"]["si"] + '</th> <th>' + pct_t_s + '</th> <th>' + content["tot"]["qc"] + '</th> <th>' + content["tot"]["qi"] + '</th> <th>' + pct_t_q + '</th> <th>' + tot_finished_seg + ' </th> </tr></table></div>'; 
+}
+else
+{
+tab += '<tr> <th style="text-align:left"> المتوسط العام </th> <th>' + content["tot"]["rc"] + '</th> <th>' + content["tot"]["ri"] + '</th> <th>' +  pct_t_r + '</th> <th>' + content["tot"]["sc"] + '</th> <th>' + content["tot"]["si"] + '</th> <th>' + pct_t_s + '</th> <th>' + content["tot"]["qc"] + '</th> <th>' + content["tot"]["qi"] + '</th> <th>' + pct_t_q + '</th> </tr></table></div>'; 
+}
+
+$('#tweets_loading').fadeOut('fast');
+$('#tab').replaceWith(tab);
+});
+}
+
+window.onload = function() {
+load();
+//correction_load()
+};
+
+</script>
+
+{% endblock %}

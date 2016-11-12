@@ -1,0 +1,1321 @@
+﻿{% extends "app/layout.html" %}
+
+{% block content %}
+{% load static %}
+
+<style>
+
+/* Style the list */
+ul.tab {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #F5F8FA;
+}
+
+/* Float the list items side by side */
+ul.tab li {float: left;}
+
+/* Style the links inside the list items */
+ul.tab li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+    transition: 0.3s;
+    font-size: 14px;
+    width: 100px;
+    height: 60px;
+}
+
+/* Change background color of links on hover */
+ul.tab li a:hover {background-color: #ccc;}
+
+/* Create an active/current tablink class */
+ul.tab li a:focus {background-color: #428BCA;}
+ul.tab li a:visited  {background-color: #428BCA;}
+ul.tab li a:active {background-color: #428BCA;}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    //padding: 6px 12px;
+    border-top: none;
+}
+
+</style>
+
+<div id="debug"></div>
+<div id="main_content">
+    <h2 class="page-header" align="right">Filter Training</h2>
+
+    <div id="stats"></div>
+    <div id="stock_stats_table"></div>
+
+<table>
+  <tr><td><p> </p></td></tr>
+  <tr>
+    <td style="width:40%; height:25px;">
+      <p>Start time: <input type="text" id="datepicker1"></p>
+    </td>
+  </tr>
+  <tr>
+    <td style="width:40%; height:25px;">
+      <p>End time : <input type="text" id="datepicker2"></p>
+    <br>
+  </tr>
+</table>
+
+<table id="overall_pie_stats" style="width: 100%;">
+        <tr>
+            <td id="relevancy_pie_chart" style="width: 33%;"></td>
+            <td id="sentiment_pie_chart" style="width: 33%;"></td>
+            <td id="question_pie_chart" style="width: 33%;"></td>
+        </tr>
+</table>
+    <div id="divtab" style="width:302px;">
+    <ul class="tab" style="display: none;">
+    </ul>
+    </div>
+<div id="tweets_training"></div>
+<div id="tweets_loading">
+    <img src="{% static 'app/images/loading.gif' %}" />
+</div>
+
+</div>
+<div id="side_bar">
+<br>
+
+<div><span class="store-btn"><a href="javascript:srch()" style="float: left; display: inline; background-color: #428BCA; color: white; padding: 0 0.3em; font-size: 1.5em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Go</a>
+<input id="tags" class="textfields" style="direction:RTL; width: 72%; height: 30px; " type="text" placeholder="بحث ..." >
+</span>
+</div>
+
+<p>
+
+</p>
+<UL style="text-align: right ; direction:rtl margin: 0; margin-bottom: 0px;" id="side_bar_list">
+<LI style="text-align: right ; direction:rtl" ><span>تاسي</span></LI></UL>
+
+<UL style="text-align: right ; direction:rtl; cursor: pointer; list-style:none; margin: 0; padding-right: 25px; " class="accordion" id="containerUL">
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >المصارف والخدمات المالية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>البنك الأهلي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>السعودي الفرنسي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>السعودي الهولندي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>استثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العربي الوطني</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البلاد</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجزيرة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الرياض</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سامبا</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإنماء</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الراجحي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white' size="3" >الصناعات البتروكيماوية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>سبكيم العالمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سابك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتقدمة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بتروكيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المجموعة السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سافكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التصنيع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصحراء للبتروكيماويات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اللجين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بترو رابغ</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>كيان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>كيمانول</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>نماء للكيماويات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ينساب</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl"  ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاسمنت</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الشمالية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسمنت حائل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسمنت نجران</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الجوف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت القصيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت المدينة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الجنوبيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت الشرقية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت اليمامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت ام القرى</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت تبوك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت ينبع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اسمنت السعوديه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاسمنت العربية</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التجزئة</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>ساسكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسواق المزرعة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إكسترا</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>رعاية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسواق ع العثيم</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الحمادي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخليج للتدريب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدريس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المواساة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جرير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دله الصحية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ميكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الحكير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة فتيحي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>لازوردي</span></LI>
+</UL>
+</LI>
+
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الطاقة والمرافق الخدمية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>كهرباء السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الغاز والتصنيع</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الزراعة والصناعات الغذائية</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأسماك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سدافكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الشرقية للتنمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>نادك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>حلواني إخوان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجوف الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التموين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>القصيم الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المراعي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بيشة الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تبوك الزراعيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جازان للتنمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أنعام القابضة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>هرفي للأغذية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الغذائية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة صافولا</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاتصالات وتقنية المعلومات</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>اتحاد اتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عذيب للاتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاتصالات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>زين السعودية</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التأمين</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأهلية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخليجية العامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ولاء للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>وفا للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإعادة السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سايكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتحدة للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الوطنية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسيج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بوبا العربية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ساب تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أليانز إس إف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أمانة للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تشب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إتحاد الخليج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اكسا- التعاونية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأهلي للتكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الإنماء طوكيو م</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاتحاد التجاري</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التأمين العربية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التعاونية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جزيرة تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدرع العربي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تكافل الراجحي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصقر للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العالمية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ميدغلف للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بروج للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سلامة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سند</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>سوليدرتي تكافل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عناية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العربي للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>ملاذ للتأمين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>وقاية للتكافل</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الأستثمار المتعدد</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>سيسكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المتطورة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الاحساء للتنميه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الباحة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المصافي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>المملكة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>عسير</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الأستثمار الصناعي</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>صناعة الورق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصادرات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الدوائية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الكيميائيه السعوديه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>معدنية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>معادن</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>شاكر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>زجاج</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بى سى آى</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العبداللطيف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>فيبكو</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تكوين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة السريع</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسترا الصناعية</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التشييد والبناء</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأنابيب السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الفخارية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>صدق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أنابيب</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخضري</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>أسلاك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البابطين</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البحر الأحمر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الجبس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الخزف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الزامل للصناعة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مسك</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الصناعات الكهربائيه</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الكابلات</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اميانتيت</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بوان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة المعجل</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>اليمامة للحديد</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >التطوير العقاري</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الأندلس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>إعمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>العقارية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>التعمير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>جبل عمر</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دار الأركان</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>طيبة للاستثمار</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مدينة المعرفة</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مكة للانشاء</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >النقل</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>الخدمات الأرضية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>النقل الجماعي</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مبرد</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>بدجت السعودية</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>البحري</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الاعلام والنشر</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>طباعة وتغليف</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأبحاث و التسويق</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تهامه للاعلان</span></LI>
+</UL>
+</LI>
+<LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >الفنادق والسياحة</font></b></a></span>
+<UL style="text-align: right ; direction:rtl"  id="side_bar_list"  >
+<LI style="text-align: right ; direction:rtl" ><span>شمس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>دور</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>مجموعة الحكير</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الطيار</span></LI>
+</UL>
+</LI>
+</ul>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+
+{% load static %}
+<script type="text/javascript" src="{% static 'django_ajax/js/jquery.ajax.min.js' %}"></script>
+<script src="{% static 'app/twemoji-gh-pages/twemoji.min.js' %}"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript"
+          src="https://www.google.com/jsapi?autoload={
+            'modules':[{
+              'name':'visualization',
+              'version':'1',
+              'packages':['corechart', 'bar', 'table']
+            }]
+          }"></script>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+  $(function() {
+    $( "#datepicker1" ).datepicker({ dateFormat: 'yy-mm-dd' });
+    $( "#datepicker2" ).datepicker({ dateFormat: 'yy-mm-dd' });
+  });
+</script>
+
+
+<script type="text/javascript">
+var stock_N;
+var stock_fully_lab;
+var div_array = [];
+var reply_array = [];
+var orig_reply_array = [];
+var current_tweet = 0;
+var tabs_dict=[];
+var current_shown_correction_div_id;
+
+    function drawStockStatsTable(total, rel, irrel, pos, neg, neu, labeled, user_rel, user_irrel) {
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', '');
+        data.addColumn('number', 'Value');
+        try
+        {
+            data.addRows([
+              ['Total number of stock entries',  {v: total, f: total.toString()}],
+              ['Total number of stock fully labeled entries',  {v: labeled, f: labeled.toString()}],
+              ['Total number of stock relevant entries',   {v:rel,   f: rel.toString()}],
+              ['Total number of stock irrelevant entries',   {v:irrel,   f: irrel.toString()}],
+              ['Total number of stock positive entries', {v: pos, f: pos.toString()}],
+              ['Total number of stock negative entries', {v: neg, f: neg.toString()}],
+              ['Total number of stock neutral entries',   {v: neu,  f: neu.toString()}]
+              
+            ]);
+        	if((user_rel !== null) && (user_irrel !== null))
+        	{
+        		data.addRow(['Total number of labeled relevant tweets entries by this user',   {v: user_rel,  f: user_rel.toString()}]);
+        		data.addRow(['Total number of labeled irrelevant tweets entries by this user',   {v: user_irrel,  f: user_irrel.toString()}]);
+        		
+        	}
+        	else
+        	{
+        		data.addRow(['Total number of labeled relevant tweets entries by this user',   {v: 0,  f: '0'}]);
+        		data.addRow(['Total number of labeled irrelevant tweets entries by this user',   {v: 0,  f: '0'}]);
+        	}
+        }
+        catch(e)
+        {
+        }
+        var table = new google.visualization.Table(document.getElementById('stock_stats_table'));
+        table.draw(data, {showRowNumber: true, width: '1000px'});
+    }
+
+    function drawPieChart(stock,cla,Title) {
+        ajaxPost('/get_last_100', {'query': stock, 'classifier': cla}, function (content) {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', cla);
+            data.addColumn('number', 'Number of tweets');
+            data.addRows(content);
+            var options = {
+              title: Title,
+              is3D: true,
+              slices: [{color: '#0acf08'}, {}, {}, {color: '#fe0f00'}] 
+            };
+        switch(cla)
+        {
+        case 'r':
+            chart1 = new google.visualization.PieChart(document.getElementById('relevancy_pie_chart'));
+            chart1.draw(data, options);
+            break;
+        case 's':
+            chart2 = new google.visualization.PieChart(document.getElementById('sentiment_pie_chart'));
+            chart2.draw(data, options);
+            break;
+        case 'q':
+            chart3 = new google.visualization.PieChart(document.getElementById('question_pie_chart'));
+            chart3.draw(data, options);
+            break;
+        }
+        });
+    }
+
+    function findUrls( text )
+    {
+        var source = (text || '').toString();
+        var urlArray = [];
+        var url;
+        var matchArray;
+    
+        // Regular expression to find FTP, HTTP(S) and email URLs.
+        var regexToken = /(((ftp|https?):\/\/)[\-\w@:%_\+.~#?,&\/\/=]+)|((mailto:)?[_.\w-]+@([\w][\w\-]+\.)+[a-zA-Z]{2,3})/g;
+    
+        // Iterate through any URLs in the text.
+        while( (matchArray = regexToken.exec( source )) !== null )
+        {
+            var token = matchArray[0];
+	    if (token.indexOf("twemoji") < 0) 
+             {urlArray.push(token);}
+            //console.debug(token)
+            //console.debug(token.indexOf("twemoji"))
+        }
+    
+        return urlArray;
+    }
+
+function change_stock(elem) {
+	try { document.getElementById(window.stock_N).style["background-color"]="#F5F8FA"; }
+	catch(err) { $('#addstocktable').replaceWith('<li id="li'+ i +'"><a id="addstock" class="tablinks" onclick="change_stock(this)" style="font-size:20px; color: #8c8c8c;"> + </a></li>'); }
+	document.getElementById(window.orig_stock_N).style["background-color"]="#F5F8FA";
+	window.stock_N = $(elem).attr("id");	
+	document.getElementById(window.stock_N).style["background-color"]="#428BCA";
+	dict = tabs_dict[current_tweet]
+	old_id = current_shown_correction_div_id.match(/[0-9]+/g)[0];
+	console.debug("old_id: "+old_id)
+        var new_tweet = 1;
+	for(i=0; i < Object.keys(tabss).length; i++) 
+		{
+			if(tabss[i].stock == window.stock_N)
+			{ 
+			p_rel=tabss[i].p_relevancy
+			p_sen=tabss[i].p_sentiment
+			p_que=tabss[i].p_question
+			p_pri=tabss[i].p_pricetarget
+			price_th=tabss[i].price
+			curr_id=tabss[i].id
+			new_tweet = 0
+			//console.debug(tabss[i].stock);
+			}
+		}
+	if ( new_tweet == 1 )
+	{
+		//document.getElementById("divtab").style.width = parseInt(document.getElementById("divtab").style.width.match(/[0-9]+/g))+400 + "px";
+		$('#li'+Object.keys(tabss).length).replaceWith('<table id="addstocktable" style="height:60px;"><tr><td><input id="tags2" class="textfields" style="direction:RTL;width: 100px;" type="text" placeholder="اختر السهم ..." ></a></td></tr><tr><td><a href="javascript:addstock_fun('+ tabss[0].id +')" style="float: center; align:center; width:40px ; display: block; background-color: #428BCA; color: white; padding: 0.3em; font-size: 1.1em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Add</a>');
+		load_autocomplete()
+	}
+	else
+	{
+	console.debug("curr to be replaced: "+curr_id)
+	price_str='<font class="pri'+curr_id+'" color="black">the price was: ' + price_th + '</font>';
+	$('.pri'+old_id).replaceWith(price_str);
+        current_reply_array_index = reply_array.indexOf("twt"+old_id); 
+	reply_array[current_reply_array_index]="twt"+curr_id
+	i=current_reply_array_index+1
+        //if ( window.stock_N != window.orig_stock_N )
+	//	{
+		while(reply_array[i].toString().substr(0,3) != "twt")
+		{
+		//console.debug(i);
+		ajaxPost('/get_stock_price_by_id', { 'stock' : window.stock_N, 'opinion_id': orig_reply_array[i] }, function (content) {
+		price_str='<font class="pri'+content.old_opinion_id+'" color="black">the price was: ' + content.price + '</font>';
+		$('.pri'+content.old_opinion_id).replaceWith(price_str);
+		//reply_array[reply_array.indexOf(parseInt(content.old_opinion_id))]=content.id
+		//reply_array[reply_array.indexOf(content.old_opinion_id)]=content.id
+		console.debug("old:"+content.old_opinion_id)
+		console.debug("new:"+content.id)
+		});
+		i++;
+		}
+	//	};
+	tail = '<table id="tag'+curr_id+'" style="top: 0; bottom: 0; left: 0; right: 0;"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Relevancy: ' + p_rel + '<span class="correct-btn"><a id="correct'+curr_id+'r" onClick="correct_r(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+curr_id+'r" onClick="notcorrect_r(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Sentiment: ' + p_sen + '<span class="correct-btn"><a id="correct'+curr_id+'s" onClick="correct_s(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+curr_id+'s" onClick="notcorrect_s(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Question: ' + p_que + '<span class="correct-btn"><a id="correct'+curr_id+'q" onClick="correct_q(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+curr_id+'q" onClick="notcorrect_q(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Price Target: ' + p_pri + '<span class="correct-btn"><a id="correct'+curr_id+'p" onClick="correct_p(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+curr_id+'p" onClick="notcorrect_p(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr></table>';
+	$('#tag'+old_id).replaceWith(tail);
+	current_shown_correction_div_id = 'tag' + curr_id;
+        drawPieChart(window.stock_N,'r','Last 100 relevancy corrections');
+        drawPieChart(window.stock_N,'s','Last 100 sentiment corrections');
+        drawPieChart(window.stock_N,'q','Last 100 question corrections');
+	}
+    }
+	
+    function load_tab(current_tweet) {
+        tabss = tabs_dict[current_tweet]
+	//console.debug(tabss)
+       	editstr='<div id="divtab" style="width:' + Math.min(((102*(Object.keys(tabss).length+1))+0),1200) + 'px; "><ul class="tab" >';
+        for(i=0; i < Object.keys(tabss).length; i++) 
+		{
+                if ( tabss[i].with_frame == true )
+	{editstr=editstr +'<li style="border:1px solid green;" id="li'+ i +'"><a id="' + tabss[i].stock + '" class="tablinks" onclick="change_stock(this)">' + tabss[i].stock + '</a></li>'}
+		else
+	{editstr=editstr +'<li id="li'+ i +'"><a id="' + tabss[i].stock + '" class="tablinks" onclick="change_stock(this)">' + tabss[i].stock + '</a></li>'}
+		};
+                editstr=editstr +'<li id="li'+ i +'"><a id="addstock" class="tablinks" onclick="change_stock(this)" style="font-size:20px; color: #8c8c8c;"> + </a></li>';
+
+        editstr = editstr + '</ul></div>';      
+        $('#divtab').replaceWith(editstr);
+	document.getElementById(window.stock_N).style["background-color"]="#428BCA";
+    }
+
+    function next() {
+	$('.tweet').hide();
+	window.stock_N = window.orig_stock_N;
+	$('#'+div_array[current_tweet+1]).show();
+	current_tweet++;
+	change_stock('<a id="' + stock_N + '" class="tablinks" onclick="change_stock(this)" </a>');
+	load_tab(current_tweet);
+	current_shown_correction_div_id = 'tag'+ div_array[current_tweet].match(/[0-9]+/g)[0];
+	$('#previous').show();
+        if ( current_tweet >= div_array.length-1 )
+	{$('#next').hide()}
+        }
+
+    function previous() {
+	$('.tweet').hide();
+        window.stock_N = window.orig_stock_N;
+	$('#'+div_array[current_tweet-1]).show();
+	current_tweet--;
+	change_stock('<a id="' + stock_N + '" class="tablinks" onclick="change_stock(this)" </a>');
+	load_tab(current_tweet);
+	current_shown_correction_div_id = 'tag'+ div_array[current_tweet].match(/[0-9]+/g)[0];
+	$('#next').show();
+        if ( current_tweet <= 0)
+	{$('#previous').hide()}
+	}
+
+    $(window).load(function () {
+        var screenWidth = document.documentElement.clientWidth;
+        var screenHeight = document.documentElement.clientHeight;
+
+	$(".controller").hide()
+        $("#side_bar").css({ "min-height": (screenHeight - 52) + "px" });
+        $("#containerUL").css({ "min-height": (screenHeight - 52) + "px" });
+        $("#main_content").width(screenWidth - 270);
+    });
+
+    $('#side_bar_selection').keyup(function () {
+        var value = $(this).val();
+        $("#side_bar_list > li").each(function () {
+            if ($(this).text().indexOf(value) > -1) {
+                $(this).show();
+            } else {
+                $(this).hide();
+            }
+        });
+    });
+
+    $('#side_bar_list > li').click( function () {
+			window.stock_N=$(this).text();
+			window.orig_stock_N=$(this).text();
+	        dosearch($(this).text()); 
+		}
+
+        );
+        
+    	function dosearch (stock_name)
+        {
+        start_time=$("#datepicker1").datepicker().val();
+        end_time=$("#datepicker2").datepicker().val();
+	$(".tab").hide();
+
+        if ( start_time !== '' && start_time.charAt(4) !== '-' )
+        {
+        window.alert("Bad start date format");
+        return
+        }
+
+        if ( end_time !== '' && end_time.charAt(4) !== '-' )
+        {
+        window.alert("Bad end date format");
+        return
+        }
+
+        if ( start_time !== '' && end_time !== '' && start_time > end_time )
+        {
+        window.alert("The start date must be older than end date");
+        return
+        }
+
+        $('#tweets_training').fadeOut('fast');
+        $('#tweets_loading').fadeIn('fast');
+	drawPieChart(stock_name,'r','Last 100 relevancy corrections');
+	drawPieChart(stock_name,'s','Last 100 sentiment corrections');
+	drawPieChart(stock_name,'q','Last 100 question corrections');
+
+
+        ajaxPost('/get_tweets_predicted', { 'query': stock_name, 'start': start_time, 'end': end_time}, function (content) {
+	    cont=content;
+	    current_tweet=0;
+	    div_array=[];
+	    reply_array=[];
+	    orig_reply_array=[];
+	    tabs_dict=[];
+            $('#tweets_training').html('');
+            drawStockStatsTable(content.stock_entries_in_DB,
+            					content.stock_relevant_labeled_entries_in_DB,
+            					content.stock_irrelevant_labeled_entries_in_DB,
+            					content.stock_positive_labeled_entries_in_DB,
+            					content.stock_negative_labeled_entries_in_DB,
+            					content.stock_neutral_labeled_entries_in_DB,
+            					content.stock_labeled_entries_in_DB,
+            					content.user_relevant_for_stock_in_DB,
+            					content.user_irrelevant_for_stock_in_DB);
+            full_name_arabic=content.stock
+            $('#stats').html('<div class="stat" id="Price" ><font color="black">' + 'Stock: '  + stock_name + ' (' + full_name_arabic + ')' +' Price: ' + content.price + '</font></div>');
+
+            var number_of_replies=0
+            //console.debug(content.statuses.length)
+            //console.debug(content.statuses)
+            if ( content.statuses.length == 0 )
+            {
+            window.alert("No tweets to show");
+            } 
+	    cont_length=content.statuses.length
+            for (var i = 0; i < Math.min(50+number_of_replies,cont_length); i++) {
+		if(content.statuses[i].price_time_then == "Sat Jan 01 12:00 AM"){content.statuses[i].price_time_then=0;}
+                try { text = twemoji.parse(content.statuses[i]['text'], {size: 16}); }
+                catch(err) { text = content.statuses[i]['text'] } ;
+                //text = content.statuses[i]['text'];
+		//console.debug(content.statuses[i]['text'])
+		//console.debug(text)
+                //console.debug(content.statuses[i]['r_correction_time'])
+                //console.debug(Object.keys(content.statuses[i]['r_correction_time']).length);
+                date = content.statuses[i].created_at;
+                diff=(new Date()).getTimezoneOffset()*60*1000;
+                date=Date.parse(content.statuses[i]['created_at']);
+                date=new Date(date);
+                date1=date.toLocaleDateString();
+                currDate=date1;
+                date2=date.toLocaleTimeString();
+                date=date1+' '+date2;
+                followers_no = content.statuses[i].user_followers_count;
+                p_rel = content.statuses[i].p_relevancy;
+                p_sen = content.statuses[i].p_sentiment;
+                p_que = content.statuses[i].p_question;
+                p_pri = content.statuses[i].p_pricetarget;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = content.statuses[i].tweeter_sname;
+                price_time_then = 'at time: ' +content.statuses[i].price_time_then;
+                price_then = 'the price was: ' + content.statuses[i].price_then;
+                image = content.statuses[i].user_profile_image_url;
+                tweet_id = content.statuses[i].twitter_id;
+                opinion_id = content.statuses[i].id;
+		tabs_dict.push(content.statuses[i]['r_correction_time'])
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+		media_url1='';
+		load_tab(current_tweet);
+		try{
+		media_url=content.statuses[i].media_url;
+		media_url=media_url.replace(/'/g, '"');
+		media_url1=JSON.parse(media_url);
+		media_url=(media_url1.media[0]).media_url;
+		if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+		}catch(err){
+		try{
+		media_url=(media_url1.urls[0]).expanded_url;
+		if(media_url.indexOf("youtu.be")>-1)
+		{
+		startindex=media_url.lastIndexOf('\/');
+		media_url=media_url.substr(startindex);
+                if(media_url == undefined || media_url == 'undefined' || media_url == '' || media_url == null  || media_url == 'null'  )  media_url='' ; else
+		media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+		}
+		else media_url='';
+		}
+		catch(err){media_url='';}
+
+		}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                url1='';
+                try{
+                url1=findUrls(text); 
+                }
+                catch(err){}
+                if(url1!='')
+                for (var ii = 0; ii < url1.length; ii++)
+                {
+                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                }
+		div_array.push("twt"+opinion_id);
+		reply_array.push("twt"+opinion_id);
+		orig_reply_array.push("twt"+opinion_id);
+		current_shown_correction_div_id = 'tag'+ div_array[0].match(/[0-9]+/g)[0];
+		head='<div id="twt'+opinion_id+'" class="tweet">';
+
+                head=head.concat('<div style="border:1px solid black;"><table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font class="pri'+opinion_id+'" color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><a target="_blank" style="color: black;" href="/profile/' + tweeter_sname + '">'+ tweeter_name +'</a></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><a target="_blank" href="/profile/' + tweeter_sname + '">@'+ tweeter_sname +'</a></td></tr></table><br></br><br></br><pre id='+opinion_id+' >' + text + '</pre><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br/>' + media_url + '<br/></div>');
+
+		tail='<table id="tag'+opinion_id+'" style="top: 0; bottom: 0; left: 0; right: 0;"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Relevancy: ' + p_rel + '<span class="correct-btn"><a id="correct'+opinion_id+'r" onClick="correct_r(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+opinion_id+'r" onClick="notcorrect_r(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Sentiment: ' + p_sen + '<span class="correct-btn"><a id="correct'+opinion_id+'s" onClick="correct_s(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+opinion_id+'s" onClick="notcorrect_s(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Question: ' + p_que + '<span class="correct-btn"><a id="correct'+opinion_id+'q" onClick="correct_q(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+opinion_id+'q" onClick="notcorrect_q(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up">Predicted Price Target: ' + p_pri + '<span class="correct-btn"><a id="correct'+opinion_id+'p" onClick="correct_p(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Correct?</a> <a id="notcorrect'+opinion_id+'p" onClick="notcorrect_p(this)" style="float: left; display: inline; color: DodgerBlue; padding: 0 0.3em; font-size: 1.0em; text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25); text-decoration: none;">Not Correct?</a></td></tr></table></div>';
+
+   		if(i >= content.statuses.length-1) 
+		{content.statuses=content.statuses.concat(content.statuses[i]); while_falg=false;} 
+		else {while_falg=true}
+		//console.debug(i,content.statuses[i]['conversation_reply']);
+
+		while ( while_falg && content.statuses[i]['conversation_reply'] == content.statuses[i+1]['twitter_id'] )
+		{
+		if(content.statuses[i].price_time_then == "Sat Jan 01 12:00 AM"){content.statuses[i].price_time_then=0;}
+		i++;
+		number_of_replies++;
+            	//console.debug(number_of_replies);
+                try { text = twemoji.parse(content.statuses[i]['text'], {size: 16}); }
+                catch(err) { text = content.statuses[i]['text'] } ;
+                //text = content.statuses[i]['text'];
+                date = content.statuses[i].created_at;
+                diff=(new Date()).getTimezoneOffset()*60*1000;
+                date=Date.parse(content.statuses[i]['created_at']);
+                date=new Date(date);
+                date1=date.toLocaleDateString();
+                currDate=date1;
+                date2=date.toLocaleTimeString();
+                date=date1+' '+date2;
+                followers_no = content.statuses[i].user_followers_count;
+                tweeter_name =  "\n" + content.statuses[i].tweeter_name;
+                tweeter_sname = content.statuses[i].tweeter_sname;
+                price_time_then = 'at time: ' +content.statuses[i].price_time_then;
+                price_then = 'the price was: ' + content.statuses[i].price_then;
+                image = content.statuses[i].user_profile_image_url;
+                tweet_id = content.statuses[i].twitter_id;
+                opinion_id = content.statuses[i].id;
+		reply_array.push(opinion_id);
+		orig_reply_array.push(opinion_id);
+                //ele=JSON.stringify(content.statuses[i].shw, null, 4);
+		media_url1='';
+		try{
+		media_url=content.statuses[i].media_url;
+		media_url=media_url.replace(/'/g, '"');
+		media_url1=JSON.parse(media_url);
+		media_url=(media_url1.media[0]).media_url;
+		if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';
+		}catch(err){
+		try{
+		media_url=(media_url1.urls[0]).expanded_url;
+		if(media_url.indexOf("youtu.be")>-1)
+		{	
+		startindex=media_url.lastIndexOf('\/');
+		media_url=media_url.substr(startindex);
+                if(media_url == undefined || media_url == 'undefined' || media_url == '' || media_url == null  || media_url == 'null'  )  media_url='' ; else
+		media_url='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+media_url+'" frameborder="0" allowfullscreen></iframe>'
+		}
+		else media_url='';
+		}
+		catch(err){media_url='';}
+		}
+                //media_url=JSON.stringify(media_url, null, 4);
+                /*
+                media_url='';
+                try{
+                media_url=content.statuses[i].media_url;
+                if(media_url.indexOf('media_url') < 0 )      media_url=null;
+                if(media_url!=null){
+                media_url=media_url.substr(media_url.indexOf("'media_url': 'http://")+12);
+                media_url=media_url.substr(0,media_url.indexOf(","));
+                media_url=media_url.replace(/\(|\)|\{|\}|\[|\]|\'/g, "");
+                }
+                }
+                catch(err){}
+                if(media_url !=null) media_url='<img src='+media_url+'>'; else media_url='';*/
+                url1='';
+                try{
+                url1=findUrls(text); 
+                }
+                catch(err){}
+                if(url1!='')
+                for (var ii = 0; ii < url1.length; ii++)
+                {
+                text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
+                }
+                head=head.concat('<div style="border:1px solid black;"><table align="right"><tr><td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font class="pri'+opinion_id+'" color="black">' + price_then + '</br></b></td><td style="white-space:nowrap;" height="20" width="70%" align="right" valign="up"><b><a target="_blank" style="color: black;" href="/profile/' + tweeter_sname + '">'+ tweeter_name +'</a></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr>    <td style="white-space:nowrap;" height="20" width="70%" align="left" valign="up"><b><br><font color="black">' + price_time_then + '</br></b></td><td style="white-space:nowrap;" align="right" valign="up"><a target="_blank" href="/profile/' + tweeter_sname + '">@'+ tweeter_sname +'</a></td></tr></table><br></br><br></br><pre id='+opinion_id+' >' + text + '</pre><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span><br/>' + media_url + '<br/></div>');
+                if(i >= content.statuses.length-1) 
+                {content.statuses=content.statuses.concat(content.statuses[i]); while_falg=false;} 
+                else {while_falg=true}
+
+		}
+		head=head.concat(tail)
+		$('#tweets_training').append(head)
+		$('.tweet').hide();
+		$('#'+div_array[0]).show();
+            }
+
+	    $('#tweets_training').append('<table align="center"><tr><td style="text-align: center;"><button id="previous" onclick="previous()" style="display: none;" class="nav" type="button" value="Previous">Previous</button></td> <td style="text-align: center;"><td><button id="next" onclick="next()" class="nav" type="button" value="Next">Next</button></td></tr></table>');
+            $('#tweets_training').fadeIn('fast');
+            $('#tweets_loading').fadeOut('fast');
+        });
+    }
+
+    var EditCounter = 50;
+    $('body').on('click', '.editSentiment', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	var user_action=$(this).attr("value")
+	var stock = window.stock_N
+        $('#negative'+item).show();
+        $('#neutral'+item).show();
+        editstring="<button id= positive"+item+ " class=sentiment type=button value=positive>Positive</button>"
+	//console.debug(user_action)
+	$('#editSentLab'+item).replaceWith(editstring);
+	});	
+
+    $('body').on('click', '.sentiment', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	//var stock = $('.select_list_item').text();
+	var stock = window.stock_N ;
+        var user_action = $(this).attr("value")
+	ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': $(this).attr("value") ,'question': 'none','pricetarget': 'none', 'opinion_id': item,'stock':stock },function (content) {
+        //console.debug($('#positive'+item))
+	if ( stock_fully_lab > 700)
+	{
+	window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");
+	return
+	}
+        $('#negative'+item).hide();
+        $('#neutral'+item).hide();
+       	$('#positive'+item).replaceWith("Thanks");
+	});
+	});
+
+    $('body').on('click', '.question', function () {
+        var item = $(this).attr("id").match(/[0-9]+/g)[0];
+        //var stock = $('.select_list_item').text();
+        var stock = window.stock_N ;
+        var user_action = $(this).attr("value")
+        ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': 'none','question': $(this).attr("value").replace(/\s/g, '') ,'pricetarget': 'none','opinion_id': item,'stock':stock },function (content) {
+        //console.debug($('#positive'+item))
+        if ( stock_fully_lab > 700)
+        {
+        window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");
+        return
+        }
+        $('#question'+item).hide();
+        $('#notquestion'+item).replaceWith("Thanks");
+        });
+        });
+
+    $('body').on('click', '.pricetarget', function () {
+        var item = $(this).attr("id").match(/[0-9]+/g)[0];
+        //var stock = $('.select_list_item').text();
+        var stock = window.stock_N ;
+        var user_action = $(this).attr("value")
+        ajaxPost('/get_correction', { 'relevancy': 'none', 'sentiment': 'none', 'question': 'none', 'pricetarget': $(this).attr("value").replace(/\s/g, '') ,'opinion_id': item,'stock':stock },function (content) {
+        //console.debug($('#positive'+item))
+        if ( stock_fully_lab > 700)
+        {
+        window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");
+        return
+        }
+        $('#pricetarget'+item).hide();
+        $('#notpricetarget'+item).replaceWith("Thanks");
+        });
+        });
+
+    $('body').on('click', '.editRel', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+	var user_action=$(this).attr("value")
+	var stock = window.stock_N
+        $('#corIrrel'+item).show();
+        //editstring="<button id= corRel"+item+" class=cor type=button value=relevant>Relevant</button>"
+        //$('#corRel'+item).replaceWith(editstring);
+        $('#corRel'+item).replaceWith("Thanks");
+	//console.debug(editstring)
+	//console.debug(user_action)
+	$('#editRelLab'+item).replaceWith(editstring);
+	});	
+
+    $('body').on('click', '.cor', function () {
+	var item = $(this).attr("id").match(/[0-9]+/g)[0];
+        //$('#debug').html('');
+        //$('#debug').append('<div><font color="black">' + $(this).attr("id").slice(-1)+ '</font></div>')
+	//var item = $(this).attr("id").slice(-1);
+        //$('#debug').append('<div><font color="black">' + item + '</font></div>');
+	var stock = window.stock_N
+        var user_action = $(this).attr("value")
+	    ajaxPost('/get_correction', { 'relevancy': $(this).attr("value") ,'sentiment': 'none','question': 'none','pricetarget': 'none', 'opinion_id': item,'stock':stock },function (content) {
+  	    //$('#debug').html('');
+            //$('#debug').append('<div>' + item + '</div>')
+        if ( stock_fully_lab > 700)
+        {
+            window.alert("The required number of fully labeled entries has been reached for this stock, Please go to the next stock");        return
+        } 
+
+        $('#corIrrel'+item).hide();
+       	$('#corRel'+item).replaceWith("Thanks");
+	});
+
+
+	});
+</script>
+
+<script>
+
+function load_autocomplete() {
+var availableTags = 
+[
+"استثمار: البنك السعودي للاستثمار(أستثمار): 1030",
+"السعودي الهولندي: البنك السعودي الهولندي: 1040",
+"السعودي الفرنسي: البنك السعودي الفرنسي: 1050",
+"ساب: البنك السعودي البريطاني: 1060",
+"العربي الوطني: البنك العربي الوطني: 1080",
+"سامبا: مجموعة سامبا المالية: 1090",
+"تاسي: تاسي",
+"الرياض: بنك الرياض: 1010",
+"الجزيرة: بنك الجزيرة: 1020",
+"الراجحي: مصرف الراجحي: 1120",
+"البلاد: بنك البلاد: 1140",
+"الإنماء: مصرف الإنماء(انماء): 1150",
+"كيمانول: شركة كيمائيات الميثانول: 2001",
+"بتروكيم: الشركة الوطنية للبتروكيماويات: 2002",
+"سابك: الشركة السعودية للصناعات الأساسية: 2010",
+"سافكو: شركة الأسمدة العربية السعودية: 2020",
+"التصنيع: شركة التصنيع الوطنية: 2060",
+"اللجين: شركة اللجين: 2170",
+"نماء للكيماويات: شركة نماء للكيماويات: 2210",
+"المجموعة السعودية: المجموعة السعودية للإستثمار الصناعي: 2250",
+"الصحراء للبتروكيماويات: شركة الصحراء للبتروكيماويات: 2260",
+"ينساب: شركة ينبع الوطنية للبتروكيماويات: 2290",
+"أسمنت حائل: شركة أسمنت حائل(اسمنت حائل): 3001",
+"أسمنت نجران: شركة أسمنت نجران(اسمنت نجران) : 3002",
+"اسمنت المدينة: شركة اسمنت المدينة(أسمنت المدينه) : 3003",
+"اسمنت ام القرى: شركة اسمنت ام القرى(أسمنت ام القرى): 3005",
+"اسمنت الشمالية: شركة أسمنت المنطقة الشمالية(أسمنت الشماليه) : 3004",
+"الاسمنت العربية: شركة الاسمنت العربية(اسمنت العربيه) : 3010",
+"اسمنت اليمامة: شركة اسمنت اليمامة(أسمنت اليمامه) : 3020",
+"اسمنت السعوديه: شركة الأسمنت السعودية(أسمنت السعوديه) : 3030",
+"اسمنت القصيم: شركة اسمنت القصيم (أسمنت القصيم): 3040",
+"اسمنت الجنوبيه: شركة اسمنت المنطقة الجنوبيه(أسمنت الجنوبية) : 3050",
+"اسمنت ينبع: شركة اسمنت ينبع(أسمنت ينبع) : 3060",
+"اسمنت الشرقية: شركة اسمنت المنطقة الشرقية(أسمنت الشرقيه) : 3080",
+"اسمنت تبوك: شركة اسمنت تبوك(أسمنت تبوك) : 3090",
+"اسمنت الجوف: شركة اسمنت الجوف(أسمنت الجوف) : 3091",
+"أسواق ع العثيم: شركة أسواق عبدالله العثيم(اسواق ع العثيم) : 4001",
+"المواساة: شركة المواساة للخدمات الطبية: 4002",
+"إكسترا: الشركة المتحدة للإلكترونيات(اكسترا): 4003",
+"دله الصحية: شركة دله للخدمات الصحية القابضة: 4004",
+"رعاية: الشركة الوطنية للرعاية الطبية: 4005",
+"أسواق المزرعة: الشركة السعودية للتسويق(اسواق المزرعه): 4006",
+"ساسكو: الشركة السعودية لخدمات السيارات والمعدات: 4050",
+"ثمار: الشركة الوطنية للتسويق الزراعي: 4160",
+"مجموعة فتيحي: مجموعة فتيحي القابضة(مجموعه فتيحي) : 4180",
+"جرير: شركة جرير للتسويق: 4190",
+"الدريس: شركة الدريس للخدمات البترولية و النقليات: 4200",
+"الحكير: شركة فواز عبدالعزيز الحكير وشركاه: 4240",
+"الحمادي:شركة الحمادي للتنمية والاستثمار: 4007",
+"البنك الأهلي: البنك الأهلي التجاري: 1180",
+"الخليج للتدريب: شركة الخليج للتدريب و التعليم : 4290",
+"الغاز والتصنيع: شركة الغاز والتصنيع الاهلية : 2080",
+"كهرباء السعودية: الشركة السعودية للكهرباء : 5110",
+"مجموعة صافولا: مجموعة صافولا(مجموعه صافولا): 2050",
+"الغذائية: شركة وفرة للصناعة والتنمية: 2100",
+"سدافكو: الشركة السعودية لمنتجات الألبان والأغذية (سدافكو): 2270 ",
+"المراعي: شركة المراعي: 2280",
+"أنعام القابضة: شركة مجموعة أنعام الدولية القابضة(انعام) : 4061",
+"حلواني إخوان: حلواني إخوان: 6001",
+"هرفي للأغذية: شركة هرفي للخدمات الغذائية: 6002",
+"التموين: شركة الخطوط السعودية للتموين: 6004",
+"نادك: الشركة الوطنية للتنمية الزراعية: 6010",
+"القصيم الزراعيه: شركة القصيم الزراعية: 6020",
+"بترو رابغ: شركة رابغ للتكرير والبتروكيماويات : 2380",
+"تبوك الزراعيه: شركة تبوك للتنمية الزراعية : 6040",
+"الأسماك: الشركة السعودية للأسماك: 6050",
+"الصناعات الكهربائيه: شركة الصناعات الكهربائية: 1303",
+"الشرقية للتنمية: الشركة الشرقية للتنمية: 6060",
+"الجوف الزراعيه: شركة الجوف الزراعية: 6070",
+"بيشة الزراعيه: شركة بيشة للتنمية الزراعية: 6080",
+"جازان للتنمية: شركة جازان للتنمية: 6090",
+"الاتصالات: شركة الاتصالات السعودية: 7010",
+"اتحاد اتصالات: شركة إتحاد إتصالات: 7020",
+"زين السعودية: شركة الاتصالات المتنقلة السعودية: 7030",
+"عذيب للاتصالات: شركة إتحاد عذيب للاتصالات: 7040",
+"التعاونية: شركة التعاونية للتأمين : 8010 ",
+"ملاذ للتأمين: ملاذ للتأمين: 8020",
+"ميدغلف للتأمين: شركة المتوسط والخليج للتأمين وإعادة التأمين التعاوني: 8030",
+"أليانز إس إف: شركة أليانز السعودي الفرنسي للتأمين التعاوني(اليانز) : 8040",
+"سلامة: شركة سلامة للتأمين التعاوني: 8050",
+"ولاء للتأمين: الشركة السعودية المتحدة للتأمين التعاوني: 8060",
+"جزيرة تكافل:شركة الجزيرة تكافل تعاوني: 8012",
+"الدرع العربي: شركة الدرع العربي للتأمين التعاوني : 8070",
+"ساب تكافل: ساب للتكافل: 8080",
+"المتقدمة: الشركة المتقدمة للبتروكيماويات: 2330",
+"سند: شركة سند للتأمين و إعادة التأمين التعاوني: 8090",
+"سايكو: الشركة العربية السعودية للتأمين التعاوني: 8100",
+"وفا للتأمين: الشركة السعودية الهندية للتأمين التعاوني: 8110 ",
+"إتحاد الخليج: شركة إتحاد الخليج للتأمين التعاوني(اتحاد الخليج) : 8120",
+"الأهلي للتكافل: شركة الأهلي للتكافل(الاهلى) : 8130",
+"العربي للتأمين: شركة متلايف وايه أي جي والبنك العربي للتأمين التعاوني: 8011",
+"الأهلية: الشركة الأهلية للتأمين التعاوني(الاهليه) : 8140",
+"أسيج: المجموعة المتحدة للتأمين التعاوني (اسيج): 8150",
+"التأمين العربية: شركة التأمين العربية التعاونية(التامين العربيه) : 8160",
+"الاتحاد التجاري: شركة الاتحاد التجاري للتأمين التعاوني(الأتحاد) : 8170 ",
+"الصقر للتأمين: شركة الصقر للتأمين التعاوني : 8180",
+"المتحدة للتأمين: المجموعة المتحدة للتأمين التعاوني : 8190",
+"الإعادة السعودية: الشركة السعودية لإعادة التأمين(الاعادة) التعاونية : 8200",
+"بوبا العربية: بوبا العربية للتأمين التعاوني : 8210",
+"وقاية للتكافل: شركة وقاية للتأمين و إعادة التأمين التكافلي: 8220",
+"تكافل الراجحي: شركة الراجحي للتأمين التعاوني : 8230",
+"تشب: الشركة تشب العربية للتأمين التعاوني : 8240",
+"اكسا- التعاونية: شركة اكسا للتأمين التعاوني: 8250",
+"سبكيم العالمية: الشركة السعودية العالمية للبتروكيماويات: 2310",
+"الخليجية العامة: الشركة الخليجية العامة للتأمين التعاوني: 8260",
+"بروج للتأمين: شركة بروج للتأمين التعاوني: 8270",
+"العالمية: شركة العالمية للتأمين التعاوني: 8280",
+"سوليدرتي تكافل: شركة سوليدرتي السعودية للتكافل: 8290",
+"الوطنية: الشركة الوطنية للتأمين: 8300",
+"أمانة للتأمين: شركة أمانة للتأمين التعاوني(امانه) : 8310",
+"عناية: شركة عناية السعودية للتأمين التعاوني: 8311",
+"الإنماء طوكيو م: شركة الإنماء طوكيو مارين(الانماء) : 8312",
+"المصافي: شركة المصافي العربية السعودية: 2030",
+"المتطورة: الشركة السعودية للصناعات المتطورة: 2120",
+"الاحساء للتنميه: شركة الاحساء للتنمية: 2140",
+"سيسكو: الشركة السعودية للخدمات الصناعية: 2190",
+"عسير: شركة عسير للتجارة والسياحة والصناعة: 4080",
+"الباحة: شركة الباحة للإستثمار والتنمية: 4130",
+"المملكة: شركة المملكة القابضة: 4280",
+"تكوين: شركة تكوين المتطورة للصناعات: 1201",
+"بى سى آى: شركة الصناعات الكيميائية الأساسية: 1210",
+"معادن: شركة التعدين العربية السعودية: 1211",
+"أسترا الصناعية: مجموعة أسترا الصناعية(استرا) : 1212",
+"مجموعة السريع: شركة مجموعة السريع التجارية الصناعية: 1213",
+"شاكر: شركة الحسن غازي إبراهيم شاكر: 1214",
+"الدوائية: الشركة السعودية للصناعات الدوائية والمستلزمات الطبية: 2070",
+"زجاج: شركة الصناعات الزجاجية الوطنية: 2150",
+"فيبكو: شركة تصنيع مواد التعبئة والتغليف: 2180",
+"معدنية: الشركة الوطنية لتصنيع وسبك المعادن: 2220",
+"الكيميائيه السعوديه: الشركة الكيميائية السعودية: 2230",
+"صناعة الورق: الشركة السعودية لصناعة الورق: 2300 ",
+"العبداللطيف: شركة العبداللطيف للاستثمار الصناعي: 2340",
+"الصادرات: الشركة السعودية للصادرات الصناعية: 4140",
+"أسلاك: شركة إتحاد مصانع الأسلاك(اسلاك) : 1301",
+"مجموعة المعجل: شركة مجموعة محمد المعجل: 1310",
+"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1320",
+"الخضري: شركة أبناء عبدالله عبدالمحسن الخضري: 1330",
+"الخزف: شركة الخزف السعودي: 2040",
+"الجبس: شركة الجبس الأهلية: 2090",
+"الكابلات: شركة الكابلات السعودية: 2110",
+"صدق: الشركة السعودية للتنمية الصناعية: 2130",
+"اميانتيت: شركة اميانتيت العربية السعودية: 2160",
+"أنابيب: الشركة العربية للأنابيب(انابيب) : 2200",
+"الزامل للصناعة: شركة الزامل للاستثمار الصناعي: 2240",
+"البابطين: شركة البابطين للطاقة و الاتصالات: 2320",
+"الفخارية: الشركة السعودية لإنتاج الأنابيب الفخارية: 2360",
+"مسك: شركة الشرق الأوسط للكابلات المتخصصة: 2370",
+"البحر الأحمر: شركة البحر الأحمر لخدمات الإسكان: 4230",
+"العقارية: الشركة العقارية السعودية: 4020",
+"طيبة للاستثمار:  شركة طيبه القابضة : 4090",
+"مكة للانشاء: شركة مكه للإنشاء والتعمير: 4100",
+"التعمير: شركة الرياض للتعمير: 4150",
+"إعمار: إعمار المدينة الإقتصادية(اعمار) : 4220",
+"جبل عمر: شركة جبل عمر للتطوير: 4250",
+"دار الأركان: شركة دار الأركان للتطوير العقاري: 4300",
+"مدينة المعرفة: شركة مدينة المعرفة الإقتصادية : 4310",
+"البحري: الشركة الوطنية السعودية للنقل البحري: 4030",
+"النقل الجماعي: الشركة السعودية للنقل الجماعي ( سابتكو ): 4040 ",
+"مبرد: الشركة السعودية للنقل والاستثمار: 4110",
+"بدجت السعودية: الشركة المتحدة الدولية للمواصلات: 4260",
+"تهامه للاعلان: شركة تهامه للاعلان والعلاقات العامة: 4070",
+"الأبحاث و التسويق: الابحاث و التسويق: 4210 ",
+"طباعة وتغليف: الشركة السعودية للطباعة والتغليف: 4270",
+"الطيار: مجموعة الطيار للسفر: 1810",
+"دور: شركة دور للضيافة: 4010",
+"شمس: شركة المشروعات السياحية: 4170",
+"مجموعة الحكير: شركة مجموعة عبدالمحسن الحكير للسياحة والتنمية: 1820",
+"بوان: شركة بوان: 1302",
+"مبكو:شركة الشرق الاوسط لصناعة وانتاج الورق: 1202",
+"ساكو: الشركة السعودية للعدد والأدوات: 4008",
+"الخدمات الأرضية:الشركة السعودية للخدمات الأرضية: 4031",
+"الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية",
+"الأندلس: الأندلس العقارية: 4320",
+"ميكو: شركة الشرق الأوسط للرعاية الصحية: 4009",
+"اليمامة للحديد: شركة اليمامة للصناعات الحديدية: 1304",
+"لازوردي: شركة لازوردي للمجوهرات: 4011",
+"كيان: شركة كيان السعودية للبتروكيماويات: 2350",
+    ];
+
+    $(".textfields").autocomplete({
+      source: availableTags,
+      change: function(event, ui) {
+              if(ui.item === null || !ui.item)
+              $(this).val(''); /* clear the value */
+              }
+    });
+};
+
+load_autocomplete()
+
+</script>
+<script type="text/javascript">
+$('#containerUL').find('ul').slideUp();
+$(function(){
+$('#containerUL').find('SPAN').click(function(e){
+// $('#containerUL').find('ul').slideUp();  
+if($(this).text() ==  "المصارف والخدمات المالية" ||
+$(this).text() ==  "الاسمنت" ||
+$(this).text() ==  "الصناعات البتروكيماوية" ||
+$(this).text() ==  "التجزئة" ||
+$(this).text() ==  "الطاقة والمرافق الخدمية" ||
+$(this).text() ==  "الزراعة والصناعات الغذائية" ||
+$(this).text() ==  "الاتصالات وتقنية المعلومات" ||
+$(this).text() ==  "التأمين" ||
+$(this).text() ==  "الأستثمار المتعدد" ||
+$(this).text() ==  "الأستثمار الصناعي" ||
+$(this).text() ==  "التشييد والبناء" ||
+$(this).text() ==  "التطوير العقاري" ||
+$(this).text() ==  "النقل" ||
+$(this).text() ==  "الاعلام والنشر" ||
+$(this).text() ==  "الفنادق والسياحة" )
+{
+$('#containerUL').find('ul').slideUp();
+}
+$(this).parent().children('UL').toggle();
+});
+});
+
+function srch()
+{
+var  x=document.getElementById('tags').value;
+if(x != "") {
+if(x.indexOf(":") < 0)
+str=x;
+else
+str=x.substr(0,x.indexOf(":") );
+stock_N=str;
+orig_stock_N=str;
+	dosearch(str); 
+var a = document.getElementById("tags");
+a.value = a.defaultValue;
+}
+}
+
+function addstock_fun(ref)
+{
+var  x=document.getElementById('tags2').value;
+if(x != "") {
+if(x.indexOf(":") < 0)
+str=x;
+else
+str=x.substr(0,x.indexOf(":") );
+stock_N=str;
+console.debug(str);
+tabss = tabs_dict[current_tweet];
+old_length = tabs_dict[current_tweet].length;
+repeated = 0;
+        for(i=0; i < old_length; i++) 
+                {
+                        if(tabss[i].stock == window.stock_N)
+                        { 
+                        repeated = 1;
+                        }
+                }
+if(repeated == 0)
+{
+ajaxPost('/add_tweet_by_ref', { 'stock_name': stock_N , 'ref_tweet': ref }, function (content) {
+	tabs_dict[current_tweet][old_length]={};
+	tabs_dict[current_tweet][old_length].id=content.id;
+	tabs_dict[current_tweet][old_length].p_relevancy='none';
+	tabs_dict[current_tweet][old_length].p_sentiment='none';
+	tabs_dict[current_tweet][old_length].p_question='none';
+	tabs_dict[current_tweet][old_length].p_pricetarget='none';
+	tabs_dict[current_tweet][old_length].price=content.price;
+	tabs_dict[current_tweet][old_length].stock=stock_N;
+	tabs_dict[current_tweet][old_length].stock_id=content.stock_id;
+	load_tab(current_tweet);
+	tabss = tabs_dict[current_tweet];
+	change_stock('<a id="' + stock_N + '" class="tablinks" onclick="change_stock(this)" </a>');
+	});
+}
+else { window.alert("stock already exists"); };
+}
+};
+
+function updt()
+{
+ajaxPost('/update_counters', { }, function (update_counters) {
+});
+window.alert("The counters are being updated now, Please continue browsing the website in a few minutes");
+}
+
+function notcorrect_r(elem)
+{
+var notcorrect_id = $(elem).attr("id");
+id=notcorrect_id.match(/[0-9]+/g)[0];
+$('#'+notcorrect_id).replaceWith('</br><button id= "corRel'+id+'" class="cor" type="button" value="relevant">Relevant</button>    <button id ="corIrrel'+id+'" class="cor" type="button" value="irrelevant">Irrelevant</button>');
+$('#'+notcorrect_id.substring(3)).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 'r', 'correction': 0 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function correct_r(elem)
+{
+var correct_id = $(elem).attr("id");
+id=correct_id.match(/[0-9]+/g)[0];
+$('#'+correct_id).replaceWith('<br>Thanks</br>');
+$('#not'+correct_id).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 'r', 'correction': 1 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function notcorrect_s(elem)
+{
+var notcorrect_id = $(elem).attr("id");
+id=notcorrect_id.match(/[0-9]+/g)[0];
+$('#'+notcorrect_id).replaceWith('</br><button id= "positive'+id+'" class="sentiment" type="button" value="positive">Positive</button>      <button id ="negative'+id+'" class="sentiment" type="button" value="negative">Negative</button>   <button id ="neutral'+id+'" class="sentiment" type="button" value="neutral">Neutral</button>');
+$('#'+notcorrect_id.substring(3)).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 's', 'correction': 0 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function correct_s(elem)
+{
+var correct_id = $(elem).attr("id");
+console.debug(correct_id)
+id=correct_id.match(/[0-9]+/g)[0];
+$('#'+correct_id).replaceWith('<br>Thanks</br>');
+$('#not'+correct_id).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 's', 'correction': 1 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function notcorrect_q(elem)
+{
+var notcorrect_id = $(elem).attr("id");
+id=notcorrect_id.match(/[0-9]+/g)[0];
+$('#'+notcorrect_id).replaceWith('</br><button id= "question'+id+'" class="question" type="button" value="question">Question</button>    <button id ="notquestion'+id+'" class="question" type="button" value="notquestion">Not a question</button>');
+$('#'+notcorrect_id.substring(3)).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 'q', 'correction': 0 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function correct_q(elem)
+{
+var correct_id = $(elem).attr("id");
+id=correct_id.match(/[0-9]+/g)[0];
+$('#'+correct_id).replaceWith('<br>Thanks</br>');
+$('#not'+correct_id).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 'q', 'correction': 1 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function notcorrect_p(elem)
+{
+var notcorrect_id = $(elem).attr("id");
+id=notcorrect_id.match(/[0-9]+/g)[0];
+$('#'+notcorrect_id).replaceWith('</br><button id= "pricetarget'+id+'" class="pricetarget" type="button" value="pricetarget">Price Target</button>    <button id ="notpricetarget'+id+'" class="pricetarget" type="button" value="notpricetarget">Not a pricetarget</button>');
+$('#'+notcorrect_id.substring(3)).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 'p', 'correction': 0 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+function correct_p(elem)
+{
+var correct_id = $(elem).attr("id");
+id=correct_id.match(/[0-9]+/g)[0];
+$('#'+correct_id).replaceWith('<br>Thanks</br>');
+$('#not'+correct_id).hide()
+var stock = window.stock_N ;
+ajaxPost('/correct', { 'classifier': 'p', 'correction': 1 ,'opinion_id': id,'stock':stock },function (content) {});
+}
+
+</script>
+
+{% endblock %}

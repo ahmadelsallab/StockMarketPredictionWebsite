@@ -1,0 +1,14 @@
+"""
+stocks = ['لازوردي']
+"""
+"""
+stocks = \
+[
+u'تاسي',
+u'العقارية']
+"""
+
+from app.models import Stocks
+#stocks = Stocks.objects.values_list('stock', flat=True).filter(stock_id__gt=120).exclude(stock_id__in=[1,2,4,5]);
+stocks = Stocks.objects.values_list('stock', flat=True).exclude(stock_id__in=[1,2,4,5]);
+#stocks = [s.decode('utf7') for s in stocks]

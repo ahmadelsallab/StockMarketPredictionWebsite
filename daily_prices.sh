@@ -1,7 +1,7 @@
 if ! ps -fe | grep -v "grep" | grep --quiet -i "mysql -u root -px"
     then 
-        export PYTHONPATH=/home/ubuntu/DjangoWebProject1_20150620
+        export PYTHONPATH=/project/DjangoWebProject1_20150924
         export DJANGO_SETTINGS_MODULE=DjangoWebProject1.settings
-        cd /home/ubuntu/DjangoWebProject1_20150620
-	mysql --host=kalamacom.cganvnnahixy.us-east-1.rds.amazonaws.com --port=3306 --user=root --password=kalamacom kalamacom < /home/ubuntu/DjangoWebProject1_20150620/daily_prices.sql > /home/ubuntu/DjangoWebProject1_20150620/daily_prices.out
+        cd /project/DjangoWebProject1_20150924/app
+	mysql -u root -pDjango1.5  kalamacom < /project/DjangoWebProject1_20150924/daily_prices.sql >> logs/daily_prices$(date +"%Y%m%d").out 2>&1 
 fi

@@ -25,11 +25,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql', 
         'NAME': 'kalamacom',
-        #'NAME': 'django_0114_test_1',
         'OPTIONS': {'charset': 'utf8mb4'},
         'USER': 'root',
-        'PASSWORD': 'kalamacom',
-        'HOST': 'kalamacom.cganvnnahixy.us-east-1.rds.amazonaws.com',
+        'PASSWORD': 'Django1.5',
+#        'CONN_MAX_AGE': '60',   # gave me this error TypeError: unsupported operand type(s) for +: 'float' and 'str'
         'PORT': '3306',
     }
 }
@@ -68,7 +67,8 @@ INSTALLED_APPS = (
 )
 
 CRONJOBS = [
-('*/5 *  * * *', 'app.views.runPriceCrawling')
+('*/2 * * * *', 'app.views.runPriceCrawling'),
+('0,10,20,30,40,50 * * * *', 'app.views.runNewsCrawling')
 ]
 
 

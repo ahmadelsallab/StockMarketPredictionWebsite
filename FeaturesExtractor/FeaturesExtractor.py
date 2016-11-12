@@ -31,13 +31,14 @@ class FeaturesExtractor(object):
     labelsNamesMap = {}
     #featuresMapExist = False
         
-    def __init__(self, configFileName, featuresSerializationFileName, labelsSerializationFileName, languageModel, dataSet):
+    def __init__(self, configFileName, featuresSerializationFileName, labelsSerializationFileName, languageModel, dataSet, sentiment_features = False, questions_features = False):
         '''
         Constructor
         '''
         # Store the language model. 
         self.languageModel = languageModel
-        
+        self.sentiment_features = sentiment_features
+        self.questions_features = questions_features
         self.linksDB = {}
         self.ranges=[]
         # Parse the configurations file
@@ -85,7 +86,18 @@ class FeaturesExtractor(object):
                 featureIdx += 1
                 for i in range(0,self.numOfRanges+1):
                     self.featuresNamesMap['numFeature'+str(i)] = featureIdx
-                    featureIdx += 1                                              
+                    featureIdx += 1
+            if self.sentiment_features == True:
+                self.featuresNamesMap['positiveDict'] = featureIdx
+                featureIdx += 1
+                self.featuresNamesMap['negativeDict'] = featureIdx
+                featureIdx += 1
+                self.featuresNamesMap['neutralDict'] = featureIdx
+                featureIdx += 1
+            if questions_features == True:
+                self.featuresNamesMap['questionsDict'] = featureIdx
+                featureIdx += 1
+
         # Store the dataset
         self.dataSet = dataSet
         
@@ -96,7 +108,10 @@ class FeaturesExtractor(object):
         # Initialize empty list of features corresponding to each item of a dataset
         self.features = []
         self.labels = []
-        
+        self.featureIdx = featureIdx
+
+
+
     def ExtractLexiconFeatures(self):
         
         # Loop on the dataset items
@@ -248,14 +263,14 @@ class FeaturesExtractor(object):
                     
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:
-                            print('Incorrect label ' + item['label']) 
+                            pass #print('Incorrect label ' + item['label']) 
                         if item['label'] == 'irirrelevant':
                             item['label'] = 'irrelevant'
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                         try:
                             self.labels.append(self.labelsNamesMap[item['label']])
                         except KeyError:
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                     else:
                         self.labels.append(item['label'])
     
@@ -407,14 +422,14 @@ class FeaturesExtractor(object):
                     '''
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:
-                            print('Incorrect label ' + item['label']) 
+                            pass #print('Incorrect label ' + item['label']) 
                         if item['label'] == 'irirrelevant':
                             item['label'] = 'irrelevant'
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                         try:
                             self.labels.append(self.labelsNamesMap[item['label']])
                         except KeyError:
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                     else:
                         self.labels.append(item['label'])
         #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
@@ -424,20 +439,24 @@ class FeaturesExtractor(object):
         
         # Print the label/index mapping
         
-        for label in self.labelsNamesMap:
-            print(label + '  ' + str(self.labelsNamesMap[label]))
-    
-    def ExtractNumTfFeatures(self):
         
+    
+    def ExtractNumTfFeatures(self, sentiment_dict=None, questions_dict= None, sparse=False):
+        if sparse:
+            from scipy.sparse import csr_matrix, vstack
+            #self.sparse_features = csr_matrix((len(self.dataSet), self.featureIdx))
+            self.sparse_features = []
         # Loop on the dataset items
         irrelevantNum = 0
-        for item in self.dataSet:
+        for iitem, item in enumerate(self.dataSet):
             if(not (item['text'] is None) and not(item['label'] is None)):
                 # Initialize the items dictionary. It's sparse dictionary, with only words in the language model that exist in the item.
                 itemFeatures = {}
                 
                 # Initialize the features vector                
                 for term in self.languageModel.languageModel:
+                    if term not in self.featuresNamesMap:
+                        continue
                     if(self.libSVMFormat == 'true'):
                         itemFeatures[self.featuresNamesMap[term]] = 0
                     else:
@@ -464,7 +483,8 @@ class FeaturesExtractor(object):
                     
                     # If the term exist in the language model
                     if term in self.languageModel.languageModel:
-                        
+                        if term not in self.featuresNamesMap:
+                            continue
                         # Add the feature if not exists or increment it if exists
                         if(self.libSVMFormat == 'true'):
                             if self.featuresNamesMap[term] in itemFeatures:
@@ -478,8 +498,18 @@ class FeaturesExtractor(object):
                                     itemFeatures[term] += 1
                             else:
                                 itemFeatures[term] = 1
-                                
-                                                      
+             
+                #Extract sentiment features
+                if sentiment_dict:
+                    fts = self.extract_sentiment_features(sentiment_dict, text)
+                    for k in fts:
+                        itemFeatures[self.featuresNamesMap[k + 'Dict']] = fts[k]
+
+                #Extract questions features
+                if questions_dict:
+                    fts = self.extract_questions_features(questions_dict, text)
+                    itemFeatures[self.featuresNamesMap['questionsDict']] = fts
+
                 nums = re.findall(u'([\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]*[066B|066C|060C|,|\.]*?[\d|\u0660-\u0669|\u06f0-\u06f3|\u06f7-\u07f9]+)+', text)
                 numFeaturesInfo = [0] * (self.numOfRanges+1) #Create List to set the output of each row
                 for num in nums:
@@ -545,11 +575,12 @@ class FeaturesExtractor(object):
                                     linkText = self.languageModel.ExtractLinkText(url)
                                     if(linkText != ''):
                                         text += linkText                                    
-                                                   
                 if(itemFeatures.__len__() != 0) :
                     # Calculate TF-IDF
                     maxTF = max(self.languageModel.languageModel.values())
                     for term in self.languageModel.languageModel:
+                        if term not in self.featuresNamesMap:
+                            continue    
                         #itemFeatures[self.featuresNamesMap[term]] = 1+math.log(termFrequency[self.featuresNamesMap[term]])*(self.languageModel.languageModel[term]/len(self.dataSet))
                         #itemFeatures[self.featuresNamesMap[term]] = (0.5 + 0.5 * termFrequency[self.featuresNamesMap[term]] / max(termFrequency.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
                         #itemFeatures[self.featuresNamesMap[term]] = (0.5 + 0.5 * termFrequency[self.featuresNamesMap[term]] / max(self.languageModel.languageModel.values())) * math.log(len(self.dataSet) / self.languageModel.languageModel[term])
@@ -577,8 +608,14 @@ class FeaturesExtractor(object):
                     #        if maxValue != 0:
                     #            itemFeatures[term] /= maxValue
                     # Add to the global features list
-                    self.features.append(itemFeatures)
-                    
+                    if sparse:
+                        xitem = numpy.zeros(self.featureIdx)
+                        for it in itemFeatures.items():
+                            xitem[it[0]] = it[1]
+                        self.sparse_features.append(csr_matrix(xitem))
+                    else:
+                        self.features.append(itemFeatures)
+
                     '''
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:
@@ -595,16 +632,19 @@ class FeaturesExtractor(object):
                     '''
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:
-                            print('Incorrect label ' + item['label']) 
+                            pass #print('Incorrect label ' + item['label']) 
                         if item['label'] == 'irirrelevant':
                             item['label'] = 'irrelevant'
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                         try:
                             self.labels.append(self.labelsNamesMap[item['label']])
                         except KeyError:
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                     else:
                         self.labels.append(item['label'])
+        if sparse:
+            self.sparse_features = vstack(self.sparse_features)
+            print(self.sparse_features.shape)
         #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
         if DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST:
             print('Number of irrelevant examples: ' + str(irrelevantNum) + '\n')
@@ -612,12 +652,29 @@ class FeaturesExtractor(object):
         
         # Print the label/index mapping
         
-        for label in self.labelsNamesMap:
-            print(label + '  ' + str(self.labelsNamesMap[label]))
+        
             
     ##
     #Returns 1 if not Date or Link
     ##
+
+    def extract_sentiment_features(self, words_dict, text):
+        item_swords_ft = {'negative':0, 'positive':0, 'neutral':0}
+        for k in words_dict:
+            for sword in words_dict[k]:
+                if sword in text:
+                    item_swords_ft[k] += 1
+        return item_swords_ft
+
+
+    def extract_questions_features(self, words_dict, text):
+        item_words_ft = 0
+        for word in words_dict:
+            if word in text:
+                item_words_ft += 1
+        return item_words_ft
+
+
     def isDateLink(self,d , matched):
         month = [ 'Ø¯ÙŠØ³Ù…Ø¨Ø±' , 'Ù†ÙˆÙ�Ù…Ø¨Ø±' , 'Ø§ÙƒØªÙˆØ¨Ø±' ,'Ø³Ø¨ØªÙ…Ø¨Ø±' , 'Ø§ØºØ³Ø·Ø³' , 'ÙŠÙˆÙ„ÙŠÙˆ' ,'ÙŠÙˆÙ†ÙŠÙˆ' , 'Ù…Ø§ÙŠÙˆ' , 'Ø§Ø¨Ø±ÙŠÙ„' ,'Ù…Ø§Ø±Ø³' , 'Ù�Ø¨Ø±Ø§ÙŠØ±' , 'ÙŠÙ†Ø§ÙŠØ±'  , 'Ø£Ø¨Ø±ÙŠÙ„'  , 'Ø£ÙƒØªÙˆØ¨Ø±' , 'ÙŠÙˆÙ„ÙŠØ©' , 'ÙŠÙˆÙ†ÙŠØ©' , 'Ø£Ø¹Ø³Ø·Ø³' ]
         for m in month:
@@ -779,14 +836,15 @@ class FeaturesExtractor(object):
                     '''
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:
-                            print('Incorrect label ' + item['label']) 
+                            pass
+                            #pass #print('Incorrect label ' + item['label'])     
                         if item['label'] == 'irirrelevant':
                             item['label'] = 'irrelevant'
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                         try:
                             self.labels.append(self.labelsNamesMap[item['label']])
                         except KeyError:
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                     else:
                         self.labels.append(item['label'])
         #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
@@ -796,8 +854,8 @@ class FeaturesExtractor(object):
         
         # Print the label/index mapping
         
-        for label in self.labelsNamesMap:
-            print(label + '  ' + str(self.labelsNamesMap[label]))
+        #for label in self.labelsNamesMap:
+            #print(label + '  ' + str(self.labelsNamesMap[label]))
        
     def ExtractKLFeatures(self):
         
@@ -932,14 +990,14 @@ class FeaturesExtractor(object):
                     '''
                     if(self.libSVMFormat == 'true'):
                         if not item['label'] in self.labelsNamesMap:
-                            print('Incorrect label ' + item['label']) 
+                            pass #print('Incorrect label ' + item['label']) 
                         if item['label'] == 'irirrelevant':
                             item['label'] = 'irrelevant'
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                         try:
                             self.labels.append(self.labelsNamesMap[item['label']])
                         except KeyError:
-                            print('Incorrect label ' + item['label'])
+                            pass #print('Incorrect label ' + item['label'])
                     else:
                         self.labels.append(item['label'])
         #DEBUG_LIMIT_IRRELEVANT_TRAIN_AND_TEST
@@ -949,8 +1007,7 @@ class FeaturesExtractor(object):
         
         # Print the label/index mapping
         
-        for label in self.labelsNamesMap:
-            print(label + '  ' + str(self.labelsNamesMap[label]))
+        
  
     def DumpFeaturesToTxt(self, exportFileName):
         # Open the file

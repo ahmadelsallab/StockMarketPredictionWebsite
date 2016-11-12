@@ -18,11 +18,11 @@ import os
 
 
 import sys
-path = '/home/ubuntu/DjangoWebProject1_20150620/'
+path = '/home/ubuntu/DjangoWebProject1_20150620'
 if path not in sys.path:
     sys.path.append(path)
 
-path = '/usr/local/lib/python3.4/dist-packages/'
+path = '/usr/local/lib/python3.4/dist-packages'
 if path not in sys.path:
     sys.path.append(path)
 

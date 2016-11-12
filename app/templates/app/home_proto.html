@@ -168,7 +168,7 @@
 <LI style="text-align: right ; direction:rtl" ><span>ساب تكافل</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>أليانز إس إف</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>أمانة للتأمين</span></LI>
-<LI style="text-align: right ; direction:rtl" ><span>ايس</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>تشب</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>إتحاد الخليج</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>اكسا- التعاونية</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>الأهلي للتكافل</span></LI>
@@ -253,6 +253,7 @@
 <LI style="text-align: right ; direction:rtl" ><span>طيبة للاستثمار</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>مدينة المعرفة</span></LI>
 <LI style="text-align: right ; direction:rtl" ><span>مكة للانشاء</span></LI>
+<LI style="text-align: right ; direction:rtl" ><span>الأندلس العقارية</span></LI>
 </UL>
 </LI>
 <LI style="text-align: right ; direction:rtl" ><span><a style="line-height: 40px;"><b><font color='white'  size="3" >النقل</font></b></a></span>
@@ -448,7 +449,8 @@ function drawTrendlines(stock,slid) {
             $('#tweets').html('');
             
             for (var i = 0; i < content.statuses.length; i++) {
-		text = twemoji.parse(content.statuses[i]['text'], {size: 16});
+                try { text = twemoji.parse(content.statuses[i]['text'], {size: 16}); }
+                catch(err) { text = content.statuses[i]['text'] } ;
                 //text = content.statuses[i]['text'];
                 date = content.statuses[i].created_at;
                 diff=(new Date()).getTimezoneOffset()*60*1000;
@@ -512,7 +514,7 @@ function drawTrendlines(stock,slid) {
                                 text=text.replace(url1[ii],'<a target="_blank" href="'+url1[ii]+'">'+url1[ii]+'</a>');
                                 }
 
-                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><div id='+tweet_id+'" >' + text + '</div><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /></div>');
+                $('#tweets').append('<div class="tweet"><table align="right"><tr><td width="70%" align="right" valign="up"><b><br><font color="black">' + tweeter_name + '</br></b></td><td></td><th rowspan="2" valign="up"><img src="' + image + '"/></th></tr><tr><td align="right" valign="up"><p><font color="LightGray">' + tweeter_sname + '</p></td></tr></table><br></br><br></br><p><font color="black"><pre id='+tweet_id+'" >' + text + '</pre><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br />' + media_url + '<br /></div>');
 
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "corRel'+i+'" class="cor" type="button" value="relevant">Relevant</button><button id ="corIrrel'+i+'" class="cor" type="button" value="irrelevant">Irrelevant</button></div>');
                 //$('#tweets').append('<div class="tweet"><img src="' + image + '" /><p><span id="text'+i+'" >' + text + '</span><br />' + date + '<br /><span>Followers no: ' + followers_no + '</span></p><br /><button id= "postive'+i+'" class="sentiment" type="button" value="positive">Positive</button><button id ="negative'+i+'" class="sentiment" type="button" value="irrelevant">Negative</button><button id ="neutral'+i+'" class="sentiment" type="button" value="neutral">Neutral</button></div>');
@@ -538,7 +540,7 @@ var availableTags =
 "السعودى الهولندى: البنك السعودي الهولندي: 1040",
 "السعودى الفرنسى: البنك السعودي الفرنسي: 1050",
 "ساب: البنك السعودي البريطاني: 1060",
-"العربى الوطنى: البنك العربي الوطني: 1080",
+"العربي الوطني: البنك العربي الوطني: 1080",
 "سامبا: مجموعة سامبا المالية: 1090",
 "تاسي: تاسي",
 "الرياض: بنك الرياض: 1010",
@@ -632,7 +634,7 @@ var availableTags =
 "بوبا العربية: بوبا العربية للتأمين التعاوني : 8210",
 "وقاية للتكافل: شركة وقاية للتأمين و إعادة التأمين التكافلي: 8220",
 "تكافل الراجحي: شركة الراجحي للتأمين التعاوني : 8230",
-"ايس: شركة أيس العربية للتأمين التعاوني: 8240",
+"تشب: الشركة تشب العربية للتأمين التعاوني : 8240",
 "اكسا- التعاونية: شركة اكسا للتأمين التعاوني: 8250",
 "الخليجية العامة: الشركة الخليجية العامة للتأمين التعاوني: 8260",
 "بروج للتأمين: شركة بروج للتأمين التعاوني: 8270",
@@ -665,7 +667,7 @@ var availableTags =
 "الصادرات: الشركة السعودية للصادرات الصناعية: 4140",
 "أسلاك: شركة إتحاد مصانع الأسلاك(اسلاك) : 1301",
 "مجموعة المعجل: شركة مجموعة محمد المعجل: 1310",
-"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1310",
+"الأنابيب السعودية: الشركة السعودية لأنابيب الصلب(الانابيب) : 1320",
 "الخضري: شركة أبناء عبدالله عبدالمحسن الخضري: 1330",
 "الخزف: شركة الخزف السعودي: 2040",
 "الجبس: شركة الجبس الأهلية: 2090",
@@ -691,9 +693,9 @@ var availableTags =
 "مبرد: الشركة السعودية للنقل والاستثمار: 4110",
 "بدجت السعودية: الشركة المتحدة الدولية للمواصلات: 4260",
 "تهامه للاعلان: شركة تهامه للاعلان والعلاقات العامة: 4070",
-"الأبحاث و التسويق: الابحاث و التسويق ",
+"الأبحاث و التسويق: الابحاث و التسويق: 4210",
 "طباعة وتغليف: الشركة السعودية للطباعة والتغليف: 4270",
-"الطيار: مجموعة الطيار للسفر ",
+"الطيار: مجموعة الطيار للسفر: 1810",
 "دور: شركة دور للضيافة: 4010",
 "شمس: شركة المشروعات السياحية: 4170",
 "مجموعة الحكير: شركة مجموعة عبدالمحسن الحكير للسياحة والتنمية: 1820",
@@ -702,6 +704,10 @@ var availableTags =
 "ساكو: الشركة السعودية للعدد والأدوات: 4008",
 "الشركة السعودية للخدمات الأرضية:الشركة السعودية للخدمات الأرضية",
 "الشركة العربية للتعهدات الفنية:الشركة العربية للتعهدات الفنية"
+"ﻢﻴﻛﻭ: ﺵﺮﻛﺓ ﺎﻠﺷﺮﻗ ﺍﻷﻮﺴﻃ ﻞﻟﺮﻋﺎﻳﺓ ﺎﻠﺼﺤﻳﺓ: 4009",
+"ﺎﻠﻴﻣﺎﻣﺓ ﻞﻠﺣﺪﻳﺩ: ﺵﺮﻛﺓ ﺎﻠﻴﻣﺎﻣﺓ ﻞﻠﺼﻧﺎﻋﺎﺗ ﺎﻠﺣﺪﻳﺪﻳﺓ: 1304",
+"ﻻﺯﻭﺭﺪﻳ: ﺵﺮﻛﺓ ﻻﺯﻭﺭﺪﻳ ﻞﻠﻤﺟﻮﻫﺭﺎﺗ: 4011",
+"ﻚﻳﺎﻧ: ﺵﺮﻛﺓ ﻚﻳﺎﻧ ﺎﻠﺴﻋﻭﺪﻳﺓ ﻞﻠﺒﺗﺭﻮﻜﻴﻣﺍﻮﻳﺎﺗ: 2350",
     ];
 
 
